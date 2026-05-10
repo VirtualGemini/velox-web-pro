@@ -83,3 +83,10 @@ export function fetchResetPassword(data: Api.Auth.ResetPasswordParams) {
     data
   })
 }
+
+export function fetchLogout() {
+  return request.post<void>({
+    url: '/api/auth/logout',
+    showErrorMessage: false
+  })
+}

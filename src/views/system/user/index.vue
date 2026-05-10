@@ -78,7 +78,7 @@
     userGender: undefined,
     userPhone: undefined,
     userEmail: undefined,
-    status: '1'
+    status: undefined
   })
 
   // 用户状态配置
