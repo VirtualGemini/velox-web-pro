@@ -148,7 +148,7 @@ export class RoutePermissionValidator {
   static validatePath(
     targetPath: string,
     menuList: AppRouteRecord[],
-    homePath: string = '/'
+    homePath: string = '/auth'
   ): { path: string; hasPermission: boolean } {
     const hasPermission = this.hasPermission(targetPath, menuList)
 

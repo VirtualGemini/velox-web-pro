@@ -34,7 +34,6 @@
  * @module utils/sys/upgrade
  * @author Art Design Pro Team
  */
-import { upgradeLogList } from '@/mock/upgrade/changeLog'
 import { ElNotification } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
 import { StorageConfig } from '@/utils/storage/storage-config'
@@ -114,38 +113,15 @@ class VersionManager {
   /**
    * 检查是否需要重新登录
    */
-  private shouldRequireReLogin(storedVersion: string): boolean {
-    const normalizedCurrent = this.normalizeVersion(StorageConfig.CURRENT_VERSION)
-    const normalizedStored = this.normalizeVersion(storedVersion)
-
-    return upgradeLogList.value.some((item) => {
-      const itemVersion = this.normalizeVersion(item.version)
-      return (
-        item.requireReLogin && itemVersion > normalizedStored && itemVersion <= normalizedCurrent
-      )
-    })
+  private shouldRequireReLogin(): boolean {
+    return false
   }
 
   /**
    * 构建升级通知消息
    */
-  private buildUpgradeMessage(requireReLogin: boolean): string {
-    const { title: content } = upgradeLogList.value[0]
-
-    const messageParts = [
-      `<p style="color: var(--art-gray-800) !important; padding-bottom: 5px;">`,
-      `系统已升级到 ${StorageConfig.CURRENT_VERSION} 版本，此次更新带来了以下改进：`,
-      `</p>`,
-      content
-    ]
-
-    if (requireReLogin) {
-      messageParts.push(
-        `<p style="color: var(--theme-color); padding-top: 5px;">升级完成，请重新登录后继续使用。</p>`
-      )
-    }
-
-    return messageParts.join('')
+  private buildUpgradeMessage(): string {
+    return `系统已升级到 ${StorageConfig.CURRENT_VERSION} 版本`
   }
 
   /**
@@ -198,24 +174,15 @@ class VersionManager {
     legacyStorage: ReturnType<typeof this.findLegacyStorage>
   ): Promise<void> {
     try {
-      if (!upgradeLogList.value.length) {
-        console.warn('[Upgrade] 升级日志列表为空')
-        return
-      }
+      const requireReLogin = this.shouldRequireReLogin()
+      const message = this.buildUpgradeMessage()
 
-      const requireReLogin = this.shouldRequireReLogin(storedVersion)
-      const message = this.buildUpgradeMessage(requireReLogin)
-
-      // 显示升级通知
       this.showUpgradeNotification(message)
 
-      // 更新版本号
       this.setStoredVersion(StorageConfig.CURRENT_VERSION)
 
-      // 清理旧数据
       this.cleanupLegacyData(legacyStorage.oldSysKey, legacyStorage.oldVersionKeys)
 
-      // 执行登出（如果需要）
       if (requireReLogin) {
         this.performLogout()
       }

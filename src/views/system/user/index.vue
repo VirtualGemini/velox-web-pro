@@ -13,7 +13,9 @@
       <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
         <template #left>
           <ElSpace wrap>
-            <ElButton @click="showDialog('add')" v-ripple>新增用户</ElButton>
+            <ElButton v-if="hasAuth('system:user:create')" @click="showDialog('add')" v-ripple>
+              新增用户
+            </ElButton>
           </ElSpace>
         </template>
       </ArtTableHeader>
@@ -43,9 +45,14 @@
 
 <script setup lang="ts">
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { ACCOUNT_TABLE_DATA } from '@/mock/temp/formData'
   import { useTable } from '@/hooks/core/useTable'
-  import { fetchGetUserList } from '@/api/system-manage'
+  import {
+    fetchCreateUser,
+    fetchDeleteUser,
+    fetchGetUserList,
+    fetchUpdateUser
+  } from '@/api/system-manage'
+  import { useAuth } from '@/hooks/core/useAuth'
   import UserSearch from './modules/user-search.vue'
   import UserDialog from './modules/user-dialog.vue'
   import { ElTag, ElMessageBox, ElImage } from 'element-plus'
@@ -54,6 +61,8 @@
   defineOptions({ name: 'User' })
 
   type UserListItem = Api.SystemManage.UserListItem
+
+  const { hasAuth } = useAuth()
 
   // 弹窗相关
   const dialogType = ref<DialogType>('add')
@@ -92,6 +101,15 @@
     )
   }
 
+  const resolveUserId = (row?: Partial<UserListItem>) => {
+    const userId = row?.userId?.trim()
+    if (!userId) {
+      ElMessage.error('当前用户数据缺少 userId，请确认列表接口返回内容')
+      return null
+    }
+    return userId
+  }
+
   const {
     columns,
     columnChecks,
@@ -123,7 +141,7 @@
         { type: 'index', width: 60, label: '序号' }, // 序号
         {
           prop: 'userInfo',
-          label: '用户名',
+          label: '用户信息',
           width: 280,
           // visible: false, // 默认是否显示列
           formatter: (row) => {
@@ -168,16 +186,23 @@
           width: 120,
           fixed: 'right', // 固定列
           formatter: (row) =>
-            h('div', [
-              h(ArtButtonTable, {
-                type: 'edit',
-                onClick: () => showDialog('edit', row)
-              }),
-              h(ArtButtonTable, {
-                type: 'delete',
-                onClick: () => deleteUser(row)
-              })
-            ])
+            h(
+              'div',
+              [
+                hasAuth('system:user:update')
+                  ? h(ArtButtonTable, {
+                      type: 'edit',
+                      onClick: () => showDialog('edit', row)
+                    })
+                  : null,
+                hasAuth('system:user:delete')
+                  ? h(ArtButtonTable, {
+                      type: 'delete',
+                      onClick: () => deleteUser(row)
+                    })
+                  : null
+              ].filter(Boolean)
+            )
         }
       ]
     },
@@ -185,19 +210,7 @@
     transform: {
       // 数据转换器 - 替换头像
       dataTransformer: (records) => {
-        // 类型守卫检查
-        if (!Array.isArray(records)) {
-          console.warn('数据转换器: 期望数组类型，实际收到:', typeof records)
-          return []
-        }
-
-        // 使用本地头像替换接口返回的头像
-        return records.map((item, index: number) => {
-          return {
-            ...item,
-            avatar: ACCOUNT_TABLE_DATA[index % ACCOUNT_TABLE_DATA.length].avatar
-          }
-        })
+        return records
       }
     }
   })
@@ -215,6 +228,9 @@
    * 显示用户弹窗
    */
   const showDialog = (type: DialogType, row?: UserListItem): void => {
+    if (type === 'edit' && !resolveUserId(row)) {
+      return
+    }
     console.log('打开弹窗:', { type, row })
     dialogType.value = type
     currentUserData.value = row || {}
@@ -227,23 +243,36 @@
    * 删除用户
    */
   const deleteUser = (row: UserListItem): void => {
-    console.log('删除用户:', row)
     ElMessageBox.confirm(`确定要注销该用户吗？`, '注销用户', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'error'
-    }).then(() => {
+    }).then(async () => {
+      const userId = resolveUserId(row)
+      if (!userId) return
+      await fetchDeleteUser(userId)
       ElMessage.success('注销成功')
+      refreshData()
     })
   }
 
   /**
    * 处理弹窗提交事件
    */
-  const handleDialogSubmit = async () => {
+  const handleDialogSubmit = async (payload: Api.SystemManage.UserSaveCommand) => {
     try {
+      if (dialogType.value === 'add') {
+        await fetchCreateUser(payload)
+        ElMessage.success('添加成功')
+      } else {
+        const userId = resolveUserId(currentUserData.value)
+        if (!userId) return
+        await fetchUpdateUser(userId, payload)
+        ElMessage.success('更新成功')
+      }
       dialogVisible.value = false
       currentUserData.value = {}
+      refreshData()
     } catch (error) {
       console.error('提交失败:', error)
     }

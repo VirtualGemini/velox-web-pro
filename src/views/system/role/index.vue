@@ -17,7 +17,9 @@
       >
         <template #left>
           <ElSpace wrap>
-            <ElButton @click="showDialog('add')" v-ripple>新增角色</ElButton>
+            <ElButton v-if="hasAuth('system:role:create')" @click="showDialog('add')" v-ripple>
+              新增角色
+            </ElButton>
           </ElSpace>
         </template>
       </ArtTableHeader>
@@ -39,7 +41,7 @@
       v-model="dialogVisible"
       :dialog-type="dialogType"
       :role-data="currentRoleData"
-      @success="refreshData"
+      @submit="handleRoleSubmit"
     />
 
     <!-- 菜单权限弹窗 -->
@@ -54,8 +56,14 @@
 <script setup lang="ts">
   import { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
   import { useTable } from '@/hooks/core/useTable'
-  import { fetchGetRoleList } from '@/api/system-manage'
+  import {
+    fetchCreateRole,
+    fetchDeleteRole,
+    fetchGetRoleList,
+    fetchUpdateRole
+  } from '@/api/system-manage'
   import ArtButtonMore from '@/components/core/forms/art-button-more/index.vue'
+  import { useAuth } from '@/hooks/core/useAuth'
   import RoleSearch from './modules/role-search.vue'
   import RoleEditDialog from './modules/role-edit-dialog.vue'
   import RolePermissionDialog from './modules/role-permission-dialog.vue'
@@ -67,6 +75,8 @@
   type RoleSearchFormParams = Api.SystemManage.RoleSearchParams & {
     daterange?: string[]
   }
+
+  const { hasAuth } = useAuth()
 
   // 搜索表单
   const searchForm = ref<RoleSearchFormParams>({
@@ -160,18 +170,21 @@
                   {
                     key: 'permission',
                     label: '菜单权限',
-                    icon: 'ri:user-3-line'
+                    icon: 'ri:user-3-line',
+                    auth: 'system:role:permission'
                   },
                   {
                     key: 'edit',
                     label: '编辑角色',
-                    icon: 'ri:edit-2-line'
+                    icon: 'ri:edit-2-line',
+                    auth: 'system:role:update'
                   },
                   {
                     key: 'delete',
                     label: '删除角色',
                     icon: 'ri:delete-bin-4-line',
-                    color: '#f56c6c'
+                    color: '#f56c6c',
+                    auth: 'system:role:delete'
                   }
                 ],
                 onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row)
@@ -184,10 +197,36 @@
 
   const dialogType = ref<'add' | 'edit'>('add')
 
+  const resolveRoleId = (row?: RoleListItem) => {
+    const roleId = row?.roleId?.trim()
+    if (!roleId) {
+      ElMessage.error('当前角色数据缺少 roleId，请确认列表接口返回内容')
+      return null
+    }
+    return roleId
+  }
+
   const showDialog = (type: 'add' | 'edit', row?: RoleListItem) => {
+    if (type === 'edit' && !resolveRoleId(row)) {
+      return
+    }
     dialogVisible.value = true
     dialogType.value = type
     currentRoleData.value = row
+  }
+
+  const handleRoleSubmit = async (payload: Api.SystemManage.RoleSaveCommand) => {
+    if (dialogType.value === 'add') {
+      await fetchCreateRole(payload)
+      ElMessage.success('新增成功')
+    } else {
+      const roleId = resolveRoleId(currentRoleData.value)
+      if (!roleId) return
+      await fetchUpdateRole(roleId, payload)
+      ElMessage.success('修改成功')
+    }
+    dialogVisible.value = false
+    refreshData()
   }
 
   /**
@@ -228,8 +267,10 @@
       cancelButtonText: '取消',
       type: 'warning'
     })
-      .then(() => {
-        // TODO: 调用删除接口
+      .then(async () => {
+        const roleId = resolveRoleId(row)
+        if (!roleId) return
+        await fetchDeleteRole(roleId)
         ElMessage.success('删除成功')
         refreshData()
       })

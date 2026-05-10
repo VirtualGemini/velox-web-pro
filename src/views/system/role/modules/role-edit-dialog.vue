@@ -45,7 +45,7 @@
 
   interface Emits {
     (e: 'update:modelValue', value: boolean): void
-    (e: 'success'): void
+    (e: 'submit', value: Api.SystemManage.RoleSaveCommand): void
   }
 
   const props = withDefaults(defineProps<Props>(), {
@@ -85,7 +85,7 @@
    * 表单数据
    */
   const form = reactive<RoleListItem>({
-    roleId: 0,
+    roleId: '',
     roleName: '',
     roleCode: '',
     description: '',
@@ -123,7 +123,7 @@
       Object.assign(form, props.roleData)
     } else {
       Object.assign(form, {
-        roleId: 0,
+        roleId: '',
         roleName: '',
         roleCode: '',
         description: '',
@@ -150,11 +150,12 @@
 
     try {
       await formRef.value.validate()
-      // TODO: 调用新增/编辑接口
-      const message = props.dialogType === 'add' ? '新增成功' : '修改成功'
-      ElMessage.success(message)
-      emit('success')
-      handleClose()
+      emit('submit', {
+        roleName: form.roleName.trim(),
+        roleCode: form.roleCode.trim(),
+        description: form.description.trim(),
+        enabled: form.enabled
+      })
     } catch (error) {
       console.log('表单验证失败:', error)
     }

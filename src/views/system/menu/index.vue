@@ -19,7 +19,9 @@
         @refresh="handleRefresh"
       >
         <template #left>
-          <ElButton v-auth="'add'" @click="handleAddMenu" v-ripple> 添加菜单 </ElButton>
+          <ElButton v-auth="'system:menu:create'" @click="handleAddMenu" v-ripple>
+            添加菜单
+          </ElButton>
           <ElButton @click="toggleExpand" v-ripple>
             {{ isExpanded ? '收起' : '展开' }}
           </ElButton>
@@ -42,8 +44,9 @@
         v-model:visible="dialogVisible"
         :type="dialogType"
         :editData="editData"
+        :parentData="parentData"
         :lockType="lockMenuType"
-        @submit="handleSubmit"
+        @submit="handleSubmit || ''"
       />
     </ElCard>
   </div>
@@ -53,12 +56,20 @@
   import { formatMenuTitle } from '@/utils/router'
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
+  import { useAuth } from '@/hooks/core/useAuth'
   import type { AppRouteRecord } from '@/types/router'
   import MenuDialog from './modules/menu-dialog.vue'
-  import { fetchGetMenuList } from '@/api/system-manage'
+  import {
+    fetchCreateMenu,
+    fetchDeleteMenu,
+    fetchGetMenuList,
+    fetchUpdateMenu
+  } from '@/api/system-manage'
   import { ElTag, ElMessageBox } from 'element-plus'
 
   defineOptions({ name: 'Menus' })
+
+  const { hasAuth } = useAuth()
 
   // 状态管理
   const loading = ref(false)
@@ -69,6 +80,7 @@
   const dialogVisible = ref(false)
   const dialogType = ref<'menu' | 'button'>('menu')
   const editData = ref<AppRouteRecord | any>(null)
+  const parentData = ref<AppRouteRecord | null>(null)
   const lockMenuType = ref(false)
 
   // 搜索相关
@@ -98,6 +110,15 @@
   onMounted(() => {
     getMenuList()
   })
+
+  const resolveMenuId = (row?: Pick<AppRouteRecord, 'id'> | null) => {
+    const menuId = row?.id?.trim()
+    if (!menuId) {
+      ElMessage.error('当前菜单数据缺少 id，请确认列表接口返回内容')
+      return null
+    }
+    return menuId
+  }
 
   /**
    * 获取菜单列表数据
@@ -175,6 +196,9 @@
         if (row.meta?.isAuthButton) {
           return row.meta?.authMark || ''
         }
+        if (row.meta?.authMark) {
+          return row.meta.authMark
+        }
         if (!row.meta?.authList?.length) return ''
         return `${row.meta.authList.length} 个权限标识`
       }
@@ -182,12 +206,17 @@
     {
       prop: 'date',
       label: '编辑时间',
-      formatter: () => '2022-3-12 12:00:00'
+      formatter: (row: AppRouteRecord) => row.meta?.updateTime || '-'
     },
     {
       prop: 'status',
       label: '状态',
-      formatter: () => h(ElTag, { type: 'success' }, () => '启用')
+      formatter: (row: AppRouteRecord) => {
+        const isEnabled = row.meta?.isEnable !== false
+        return h(ElTag, { type: isEnabled ? 'success' : 'info' }, () =>
+          isEnabled ? '启用' : '禁用'
+        )
+      }
     },
     {
       prop: 'operation',
@@ -199,32 +228,46 @@
 
         if (row.meta?.isAuthButton) {
           return h('div', buttonStyle, [
-            h(ArtButtonTable, {
-              type: 'edit',
-              onClick: () => handleEditAuth(row)
-            }),
-            h(ArtButtonTable, {
-              type: 'delete',
-              onClick: () => handleDeleteAuth()
-            })
+            hasAuth('system:menu:update')
+              ? h(ArtButtonTable, {
+                  type: 'edit',
+                  onClick: () => handleEditAuth(row)
+                })
+              : null,
+            hasAuth('system:menu:delete')
+              ? h(ArtButtonTable, {
+                  type: 'delete',
+                  onClick: () => handleDeleteAuth(row)
+                })
+              : null
           ])
         }
 
-        return h('div', buttonStyle, [
-          h(ArtButtonTable, {
-            type: 'add',
-            onClick: () => handleAddAuth(),
-            title: '新增权限'
-          }),
-          h(ArtButtonTable, {
-            type: 'edit',
-            onClick: () => handleEditMenu(row)
-          }),
-          h(ArtButtonTable, {
-            type: 'delete',
-            onClick: () => handleDeleteMenu()
-          })
-        ])
+        return h(
+          'div',
+          buttonStyle,
+          [
+            hasAuth('system:menu:create')
+              ? h(ArtButtonTable, {
+                  type: 'add',
+                  onClick: () => handleAddAuth(row),
+                  title: '新增权限'
+                })
+              : null,
+            hasAuth('system:menu:update')
+              ? h(ArtButtonTable, {
+                  type: 'edit',
+                  onClick: () => handleEditMenu(row)
+                })
+              : null,
+            hasAuth('system:menu:delete')
+              ? h(ArtButtonTable, {
+                  type: 'delete',
+                  onClick: () => handleDeleteMenu(row)
+                })
+              : null
+          ].filter(Boolean)
+        )
       }
     }
   ])
@@ -290,12 +333,15 @@
 
       if (item.meta?.authList?.length) {
         const authChildren: AppRouteRecord[] = item.meta.authList.map(
-          (auth: { title: string; authMark: string }) => ({
+          (auth: { id?: string; title: string; authMark: string; sort?: number }) => ({
+            id: auth.id,
             path: `${item.path}_auth_${auth.authMark}`,
             name: `${String(item.name)}_auth_${auth.authMark}`,
+            parentId: item.id,
             meta: {
               title: auth.title,
               authMark: auth.authMark,
+              sort: auth.sort,
               isAuthButton: true,
               parentPath: item.path
             }
@@ -357,6 +403,7 @@
   const handleAddMenu = (): void => {
     dialogType.value = 'menu'
     editData.value = null
+    parentData.value = null
     lockMenuType.value = true
     dialogVisible.value = true
   }
@@ -364,9 +411,10 @@
   /**
    * 添加权限按钮
    */
-  const handleAddAuth = (): void => {
-    dialogType.value = 'menu'
+  const handleAddAuth = (row: AppRouteRecord): void => {
+    dialogType.value = 'button'
     editData.value = null
+    parentData.value = row
     lockMenuType.value = false
     dialogVisible.value = true
   }
@@ -376,8 +424,12 @@
    * @param row 菜单行数据
    */
   const handleEditMenu = (row: AppRouteRecord): void => {
+    if (!resolveMenuId(row)) {
+      return
+    }
     dialogType.value = 'menu'
     editData.value = row
+    parentData.value = null
     lockMenuType.value = true
     dialogVisible.value = true
   }
@@ -387,11 +439,19 @@
    * @param row 权限行数据
    */
   const handleEditAuth = (row: AppRouteRecord): void => {
+    const menuId = resolveMenuId(row)
+    if (!menuId) {
+      return
+    }
     dialogType.value = 'button'
     editData.value = {
+      id: menuId,
+      parentId: (row as any).parentId,
       title: row.meta?.title,
-      authMark: row.meta?.authMark
+      authMark: row.meta?.authMark,
+      sort: row.meta?.sort
     }
+    parentData.value = null
     lockMenuType.value = false
     dialogVisible.value = true
   }
@@ -400,11 +460,18 @@
    * 菜单表单数据类型
    */
   interface MenuFormData {
+    parentId: string
+    id: string
     name: string
     path: string
+    label: string
+    menuAuthMark: string
+    authName: string
+    authLabel: string
+    authSort: number
+    menuType: 'menu' | 'button'
     component?: string
     icon?: string
-    roles?: string[]
     sort?: number
     [key: string]: any
   }
@@ -413,22 +480,73 @@
    * 提交表单数据
    * @param formData 表单数据
    */
-  const handleSubmit = (formData: MenuFormData): void => {
-    console.log('提交数据:', formData)
-    // TODO: 调用API保存数据
-    getMenuList()
+  const handleSubmit = async (formData: MenuFormData): Promise<void> => {
+    const isEdit = Boolean(editData.value)
+    const menuId = isEdit ? resolveMenuId({ id: formData.id }) : null
+    if (isEdit && !menuId) {
+      return
+    }
+
+    const payload: Api.SystemManage.MenuSaveCommand =
+      formData.menuType === 'button'
+        ? {
+            parentId: formData.parentId,
+            menuType: 'button',
+            name: `${String(formData.authLabel).replace(/:/g, '_')}_${formData.parentId}`,
+            title: formData.authName,
+            authMark: formData.authLabel,
+            isEnable: formData.isEnable ?? true,
+            sort: formData.authSort || 1
+          }
+        : {
+            parentId: undefined,
+            menuType: 'menu',
+            name: formData.label,
+            title: formData.name,
+            path: formData.path,
+            component: formData.component,
+            icon: formData.icon,
+            authMark: formData.menuAuthMark,
+            isEnable: formData.isEnable ?? true,
+            sort: formData.sort || 1,
+            keepAlive: formData.keepAlive,
+            isHide: formData.isHide,
+            isHideTab: formData.isHideTab,
+            link: formData.link,
+            isIframe: formData.isIframe,
+            showBadge: formData.showBadge,
+            showTextBadge: formData.showTextBadge,
+            fixedTab: formData.fixedTab,
+            activePath: formData.activePath,
+            isFullPage: formData.isFullPage
+          }
+
+    if (menuId) {
+      await fetchUpdateMenu(menuId, payload)
+      ElMessage.success('编辑成功')
+    } else {
+      await fetchCreateMenu(payload)
+      ElMessage.success('新增成功')
+    }
+    dialogVisible.value = false
+    editData.value = null
+    parentData.value = null
+    await getMenuList()
   }
 
   /**
    * 删除菜单
    */
-  const handleDeleteMenu = async (): Promise<void> => {
+  const handleDeleteMenu = async (row: AppRouteRecord): Promise<void> => {
     try {
       await ElMessageBox.confirm('确定要删除该菜单吗？删除后无法恢复', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       })
+      const menuId = resolveMenuId(row)
+      if (!menuId) return
+      await fetchDeleteMenu(menuId)
       ElMessage.success('删除成功')
       getMenuList()
     } catch (error) {
@@ -441,13 +559,16 @@
   /**
    * 删除权限按钮
    */
-  const handleDeleteAuth = async (): Promise<void> => {
+  const handleDeleteAuth = async (row: AppRouteRecord): Promise<void> => {
     try {
       await ElMessageBox.confirm('确定要删除该权限吗？删除后无法恢复', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       })
+      const menuId = resolveMenuId(row)
+      if (!menuId) return
+      await fetchDeleteMenu(menuId)
       ElMessage.success('删除成功')
       getMenuList()
     } catch (error) {

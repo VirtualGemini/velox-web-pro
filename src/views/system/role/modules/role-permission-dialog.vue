@@ -12,9 +12,8 @@
         ref="treeRef"
         :data="processedMenuList"
         show-checkbox
-        node-key="name"
+        node-key="id"
         :default-expand-all="isExpandAll"
-        :default-checked-keys="[1, 2, 3]"
         :props="defaultProps"
         @check="handleTreeCheck"
       >
@@ -41,8 +40,13 @@
 </template>
 
 <script setup lang="ts">
-  import { useMenuStore } from '@/store/modules/menu'
+  import {
+    fetchGetMenuList,
+    fetchGetRoleMenuPermissions,
+    fetchUpdateRoleMenuPermissions
+  } from '@/api/system-manage'
   import { formatMenuTitle } from '@/utils/router'
+  import type { AppRouteRecord } from '@/types/router'
 
   type RoleListItem = Api.SystemManage.RoleListItem
 
@@ -63,10 +67,11 @@
 
   const emit = defineEmits<Emits>()
 
-  const { menuList } = storeToRefs(useMenuStore())
+  const menuList = ref<AppRouteRecord[]>([])
   const treeRef = ref()
   const isExpandAll = ref(true)
   const isSelectAll = ref(false)
+  const saving = ref(false)
 
   /**
    * 弹窗显示状态双向绑定
@@ -80,12 +85,13 @@
    * 菜单节点类型
    */
   interface MenuNode {
-    id?: string | number
+    id?: string
     name?: string
     label?: string
     meta?: {
       title?: string
       authList?: Array<{
+        id?: string
         authMark: string
         title: string
         checked?: boolean
@@ -106,7 +112,7 @@
       // 如果有 authList，将其转换为子节点
       if (node.meta?.authList?.length) {
         const authNodes = node.meta.authList.map((auth) => ({
-          id: `${node.id}_${auth.authMark}`,
+          id: auth.id,
           name: `${node.name}_${auth.authMark}`,
           label: auth.title,
           authMark: auth.authMark,
@@ -141,10 +147,9 @@
    */
   watch(
     () => props.modelValue,
-    (newVal) => {
+    async (newVal) => {
       if (newVal && props.roleData) {
-        // TODO: 根据角色加载对应的权限数据
-        console.log('设置权限:', props.roleData)
+        await initPermissionData()
       }
     }
   )
@@ -155,16 +160,28 @@
   const handleClose = () => {
     visible.value = false
     treeRef.value?.setCheckedKeys([])
+    isSelectAll.value = false
   }
 
-  /**
-   * 保存权限配置
-   */
-  const savePermission = () => {
-    // TODO: 调用保存权限接口
-    ElMessage.success('权限保存成功')
-    emit('success')
-    handleClose()
+  const savePermission = async () => {
+    if (!props.roleData?.roleId || saving.value) return
+
+    const tree = treeRef.value
+    if (!tree) return
+
+    saving.value = true
+    try {
+      const checkedKeys = tree.getCheckedKeys(false) as string[]
+      const halfCheckedKeys = tree.getHalfCheckedKeys() as string[]
+      const menuIds = Array.from(new Set([...checkedKeys, ...halfCheckedKeys].map(String)))
+
+      await fetchUpdateRoleMenuPermissions(props.roleData.roleId, { menuIds: menuIds })
+      ElMessage.success('权限保存成功')
+      emit('success')
+      handleClose()
+    } finally {
+      saving.value = false
+    }
   }
 
   /**
@@ -209,7 +226,7 @@
     const keys: string[] = []
     const traverse = (nodeList: MenuNode[]): void => {
       nodeList.forEach((node) => {
-        if (node.name) keys.push(node.name)
+        if (node.id !== undefined && node.id !== null) keys.push(String(node.id))
         if (node.children?.length) traverse(node.children)
       })
     }
@@ -250,5 +267,25 @@
 
     console.log('=== 选中的权限数据 ===', selectedData)
     ElMessage.success(`已输出选中数据到控制台，共选中 ${selectedData.totalChecked} 个节点`)
+  }
+
+  const initPermissionData = async () => {
+    if (!props.roleData?.roleId) return
+
+    const [menus, permissionIds] = await Promise.all([
+      fetchGetMenuList(),
+      fetchGetRoleMenuPermissions(props.roleData.roleId)
+    ])
+
+    menuList.value = menus
+
+    // 等待 DOM 更新和树渲染完成
+    await nextTick()
+    setTimeout(() => {
+      if (permissionIds?.length) {
+        treeRef.value?.setCheckedKeys(permissionIds)
+      }
+      handleTreeCheck()
+    }, 100)
   }
 </script>

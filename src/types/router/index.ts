@@ -47,9 +47,17 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
   keepAlive?: boolean
   /** 操作权限 */
   authList?: Array<{
+    id?: string
     title: string
     authMark: string
+    sort?: number
   }>
+  /** 当前菜单权限码 */
+  authMark?: string
+  /** 是否启用 */
+  isEnable?: boolean
+  /** 排序 */
+  sort?: number
   /** 是否为一级菜单 */
   isFirstLevel?: boolean
   /** 角色权限 */
@@ -62,8 +70,6 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
   isFullPage?: boolean
   /** 是否为权限按钮行 */
   isAuthButton?: boolean
-  /** 权限标识 */
-  authMark?: string
   /** 父级路径 */
   parentPath?: string
 }
@@ -73,7 +79,8 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
  * 扩展 Vue Router 的路由记录类型
  */
 export interface AppRouteRecord extends Omit<RouteRecordRaw, 'meta' | 'children' | 'component'> {
-  id?: number
+  id?: string
+  parentId?: string
   meta: RouteMeta
   children?: AppRouteRecord[]
   component?: string | (() => Promise<any>)

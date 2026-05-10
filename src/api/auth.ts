@@ -27,3 +27,45 @@ export function fetchGetUserInfo() {
     // }
   })
 }
+
+/**
+ * 更新当前用户资料
+ */
+export function fetchUpdateUserProfile(data: Api.Auth.UserProfileUpdateCommand) {
+  return request.put<boolean>({
+    url: '/api/user/profile',
+    data
+  })
+}
+
+/**
+ * 修改当前用户密码
+ */
+export function fetchUpdateUserPassword(data: Api.Auth.UserPasswordUpdateCommand) {
+  return request.put<boolean>({
+    url: '/api/user/password',
+    data
+  })
+}
+
+/**
+ * 更新当前用户头像
+ */
+export function fetchUpdateUserAvatar(data: Api.Auth.AvatarUpdateCommand) {
+  return request.put<Api.Auth.UserInfo>({
+    url: '/api/user/avatar',
+    data
+  })
+}
+
+/**
+ * 注册
+ * @param params 注册参数
+ * @returns 注册响应
+ */
+export function fetchRegister(params: Api.Auth.RegisterParams) {
+  return request.post<void>({
+    url: '/api/auth/register',
+    params
+  })
+}

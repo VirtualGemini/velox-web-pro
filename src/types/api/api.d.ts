@@ -74,25 +74,69 @@ declare namespace Api {
       refreshToken: string
     }
 
+    /** 注册参数 */
+    interface RegisterParams {
+      username: string
+      password: string
+      confirmPassword: string
+    }
+
     /** 用户信息 */
     interface UserInfo {
       buttons: string[]
       roles: string[]
-      userId: number
+      tags?: string[]
+      userId: string
       userName: string
       email: string
+      phone?: string
       avatar?: string
+      nickname?: string
+      gender?: number
+      realName?: string
+      address?: string
+      introduction?: string
+      signature?: string
+      position?: string
+      company?: string
+    }
+
+    interface UserProfileUpdateCommand {
+      realName: string
+      nickname: string
+      email?: string
+      phone: string
+      address?: string
+      gender: number
+      introduction?: string
+    }
+
+    interface UserPasswordUpdateCommand {
+      currentPassword: string
+      newPassword: string
+      confirmPassword: string
+    }
+
+    interface AvatarUpdateCommand {
+      avatarUrl: string
     }
   }
 
   /** 系统管理类型 */
   namespace SystemManage {
+    interface RoleOption {
+      roleId: string
+      roleCode: string
+      roleName: string
+    }
+
     /** 用户列表 */
     type UserList = Api.Common.PaginatedResponse<UserListItem>
 
     /** 用户列表项 */
     interface UserListItem {
-      id: number
+      id: string
+      userId: string
       avatar: string
       status: string
       userName: string
@@ -113,12 +157,22 @@ declare namespace Api {
         Api.Common.CommonSearchParams
     >
 
+    interface UserSaveCommand {
+      username: string
+      password?: string
+      nickname: string
+      phone: string
+      email?: string
+      gender: number
+      roleCodes: string[]
+    }
+
     /** 角色列表 */
     type RoleList = Api.Common.PaginatedResponse<RoleListItem>
 
     /** 角色列表项 */
     interface RoleListItem {
-      roleId: number
+      roleId: string
       roleName: string
       roleCode: string
       description: string
@@ -134,5 +188,40 @@ declare namespace Api {
           endTime: string | null
         }
     >
+
+    interface RoleSaveCommand {
+      roleName: string
+      roleCode: string
+      description: string
+      enabled: boolean
+    }
+
+    interface MenuSaveCommand {
+      parentId?: string
+      menuType: 'menu' | 'button'
+      name: string
+      title: string
+      path?: string
+      component?: string
+      redirect?: string
+      icon?: string
+      authMark: string
+      isEnable: boolean
+      sort: number
+      keepAlive?: boolean
+      isHide?: boolean
+      isHideTab?: boolean
+      link?: string
+      isIframe?: boolean
+      showBadge?: boolean
+      showTextBadge?: string
+      fixedTab?: boolean
+      activePath?: string
+      isFullPage?: boolean
+    }
+
+    interface RoleMenuPermissionUpdateCommand {
+      menuIds: string[]
+    }
   }
 }
