@@ -130,7 +130,17 @@
       0
     )
 
-  const canOperateUser = (row?: Partial<UserListItem>) => {
+  const canEditUser = (row?: Partial<UserListItem>) => {
+    if (!row) {
+      return false
+    }
+    if (isCurrentLoginUser(row)) {
+      return true
+    }
+    return getHighestRoleLevel(userStore.info.roles) > getHighestRoleLevel(row.userRoles)
+  }
+
+  const canDeleteUser = (row?: Partial<UserListItem>) => {
     if (!row || isCurrentLoginUser(row)) {
       return false
     }
@@ -216,13 +226,13 @@
             h(
               'div',
               [
-                hasAuth('system:user:update') && canOperateUser(row)
+                hasAuth('system:user:update') && canEditUser(row)
                   ? h(ArtButtonTable, {
                       type: 'edit',
                       onClick: () => showDialog('edit', row)
                     })
                   : null,
-                hasAuth('system:user:delete') && canOperateUser(row)
+                hasAuth('system:user:delete') && canDeleteUser(row)
                   ? h(ArtButtonTable, {
                       type: 'delete',
                       onClick: () => deleteUser(row)
@@ -258,7 +268,7 @@
     if (type === 'edit' && !resolveUserId(row)) {
       return
     }
-    if (type === 'edit' && !canOperateUser(row)) {
+    if (type === 'edit' && !canEditUser(row)) {
       ElMessage.warning(isCurrentLoginUser(row) ? '不可操作当前登录用户' : '无权限修改该用户')
       return
     }
@@ -278,7 +288,7 @@
       ElMessage.warning('当前登录用户不能删除自己')
       return
     }
-    if (!canOperateUser(row)) {
+    if (!canDeleteUser(row)) {
       ElMessage.warning('无权限删除该用户')
       return
     }
