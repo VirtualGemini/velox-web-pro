@@ -53,6 +53,7 @@
     fetchUpdateUser
   } from '@/api/system-manage'
   import { useAuth } from '@/hooks/core/useAuth'
+  import { useUserStore } from '@/store/modules/user'
   import UserSearch from './modules/user-search.vue'
   import UserDialog from './modules/user-dialog.vue'
   import { ElTag, ElMessageBox, ElImage } from 'element-plus'
@@ -63,6 +64,7 @@
   type UserListItem = Api.SystemManage.UserListItem
 
   const { hasAuth } = useAuth()
+  const userStore = useUserStore()
 
   // 弹窗相关
   const dialogType = ref<DialogType>('add')
@@ -108,6 +110,12 @@
       return null
     }
     return userId
+  }
+
+  const isCurrentLoginUser = (row?: Partial<UserListItem>) => {
+    const targetUserId = row?.userId?.trim()
+    const currentUserId = userStore.info.userId?.trim()
+    return Boolean(targetUserId && currentUserId && targetUserId === currentUserId)
   }
 
   const {
@@ -195,7 +203,7 @@
                       onClick: () => showDialog('edit', row)
                     })
                   : null,
-                hasAuth('system:user:delete')
+                hasAuth('system:user:delete') && !isCurrentLoginUser(row)
                   ? h(ArtButtonTable, {
                       type: 'delete',
                       onClick: () => deleteUser(row)
@@ -243,6 +251,10 @@
    * 删除用户
    */
   const deleteUser = (row: UserListItem): void => {
+    if (isCurrentLoginUser(row)) {
+      ElMessage.warning('当前登录用户不能删除自己')
+      return
+    }
     ElMessageBox.confirm(`确定要注销该用户吗？`, '注销用户', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
