@@ -139,6 +139,7 @@ declare namespace Api {
       roleId: string
       roleCode: string
       roleName: string
+      roleLevel?: number
     }
 
     /** 用户列表 */
@@ -187,6 +188,8 @@ declare namespace Api {
       roleName: string
       roleCode: string
       description: string
+      type: number
+      typeName: string
       enabled: boolean
       createTime: string
     }
@@ -195,6 +198,7 @@ declare namespace Api {
     type RoleSearchParams = Partial<
       Pick<RoleListItem, 'roleId' | 'roleName' | 'roleCode' | 'description' | 'enabled'> &
         Api.Common.CommonSearchParams & {
+          type: number
           startTime: string | null
           endTime: string | null
         }

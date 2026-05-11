@@ -93,6 +93,10 @@
   const permissionDialog = ref(false)
   const currentRoleData = ref<RoleListItem | undefined>(undefined)
 
+  const isSystemRole = (row?: RoleListItem) => row?.type === 0
+  const isSuperRole = (row?: RoleListItem) => row?.roleCode === 'R_SUPER'
+  const getRoleTypeTagType = (type?: number) => (type === 0 ? 'danger' : 'info')
+
   const {
     columns,
     columnChecks,
@@ -132,6 +136,15 @@
           minWidth: 120
         },
         {
+          prop: 'type',
+          label: '角色类型',
+          width: 100,
+          formatter: (row) =>
+            h(ElTag, { type: getRoleTypeTagType(row.type) }, () =>
+              row.type === 0 ? '内置' : '自定义'
+            )
+        },
+        {
           prop: 'description',
           label: '角色描述',
           minWidth: 150,
@@ -166,27 +179,7 @@
           formatter: (row) =>
             h('div', [
               h(ArtButtonMore, {
-                list: [
-                  {
-                    key: 'permission',
-                    label: '菜单权限',
-                    icon: 'ri:user-3-line',
-                    auth: 'system:role:permission'
-                  },
-                  {
-                    key: 'edit',
-                    label: '编辑角色',
-                    icon: 'ri:edit-2-line',
-                    auth: 'system:role:update'
-                  },
-                  {
-                    key: 'delete',
-                    label: '删除角色',
-                    icon: 'ri:delete-bin-4-line',
-                    color: '#f56c6c',
-                    auth: 'system:role:delete'
-                  }
-                ],
+                list: buildActionList(row),
                 onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row)
               })
             ])
@@ -208,6 +201,10 @@
 
   const showDialog = (type: 'add' | 'edit', row?: RoleListItem) => {
     if (type === 'edit' && !resolveRoleId(row)) {
+      return
+    }
+    if (type === 'edit' && isSuperRole(row)) {
+      ElMessage.warning('最高权限角色不可编辑')
       return
     }
     dialogVisible.value = true
@@ -261,7 +258,43 @@
     currentRoleData.value = row
   }
 
+  const buildActionList = (row: RoleListItem): ButtonMoreItem[] => {
+    const items: ButtonMoreItem[] = [
+      {
+        key: 'permission',
+        label: '菜单权限',
+        icon: 'ri:user-3-line',
+        auth: 'system:role:permission'
+      }
+    ]
+
+    if (!isSuperRole(row)) {
+      items.push({
+        key: 'edit',
+        label: '编辑角色',
+        icon: 'ri:edit-2-line',
+        auth: 'system:role:update'
+      })
+    }
+
+    if (!isSystemRole(row)) {
+      items.push({
+        key: 'delete',
+        label: '删除角色',
+        icon: 'ri:delete-bin-4-line',
+        color: '#f56c6c',
+        auth: 'system:role:delete'
+      })
+    }
+
+    return items
+  }
+
   const deleteRole = (row: RoleListItem) => {
+    if (isSystemRole(row)) {
+      ElMessage.warning('系统角色不可删除')
+      return
+    }
     ElMessageBox.confirm(`确定删除角色"${row.roleName}"吗？此操作不可恢复！`, '删除确认', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',

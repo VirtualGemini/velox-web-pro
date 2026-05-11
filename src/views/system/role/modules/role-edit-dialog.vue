@@ -7,11 +7,17 @@
     @close="handleClose"
   >
     <ElForm ref="formRef" :model="form" :rules="rules" label-width="120px">
+      <ElFormItem v-if="dialogType === 'edit'" label="角色类型">
+        <ElInput
+          :model-value="form.typeName || (isSystemRole ? '系统角色' : '自定义角色')"
+          disabled
+        />
+      </ElFormItem>
       <ElFormItem label="角色名称" prop="roleName">
         <ElInput v-model="form.roleName" placeholder="请输入角色名称" />
       </ElFormItem>
       <ElFormItem label="角色编码" prop="roleCode">
-        <ElInput v-model="form.roleCode" placeholder="请输入角色编码" />
+        <ElInput v-model="form.roleCode" :disabled="isSystemRole" placeholder="请输入角色编码" />
       </ElFormItem>
       <ElFormItem label="描述" prop="description">
         <ElInput
@@ -57,6 +63,7 @@
   const emit = defineEmits<Emits>()
 
   const formRef = ref<FormInstance>()
+  const isSystemRole = computed(() => props.dialogType === 'edit' && props.roleData?.type === 0)
 
   /**
    * 弹窗显示状态双向绑定
@@ -89,6 +96,8 @@
     roleName: '',
     roleCode: '',
     description: '',
+    type: 1,
+    typeName: '',
     createTime: '',
     enabled: true
   })
@@ -127,6 +136,8 @@
         roleName: '',
         roleCode: '',
         description: '',
+        type: 1,
+        typeName: '',
         createTime: '',
         enabled: true
       })

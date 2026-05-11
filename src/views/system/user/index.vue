@@ -118,6 +118,25 @@
     return Boolean(targetUserId && currentUserId && targetUserId === currentUserId)
   }
 
+  const ROLE_LEVEL_MAP: Record<string, number> = {
+    R_SUPER: 3,
+    R_ADMIN: 2,
+    R_USER: 1
+  }
+
+  const getHighestRoleLevel = (roleCodes?: string[]) =>
+    (roleCodes || []).reduce(
+      (highest, roleCode) => Math.max(highest, ROLE_LEVEL_MAP[roleCode] ?? 0),
+      0
+    )
+
+  const canOperateUser = (row?: Partial<UserListItem>) => {
+    if (!row || isCurrentLoginUser(row)) {
+      return false
+    }
+    return getHighestRoleLevel(userStore.info.roles) > getHighestRoleLevel(row.userRoles)
+  }
+
   const {
     columns,
     columnChecks,
@@ -197,13 +216,13 @@
             h(
               'div',
               [
-                hasAuth('system:user:update')
+                hasAuth('system:user:update') && canOperateUser(row)
                   ? h(ArtButtonTable, {
                       type: 'edit',
                       onClick: () => showDialog('edit', row)
                     })
                   : null,
-                hasAuth('system:user:delete') && !isCurrentLoginUser(row)
+                hasAuth('system:user:delete') && canOperateUser(row)
                   ? h(ArtButtonTable, {
                       type: 'delete',
                       onClick: () => deleteUser(row)
@@ -239,6 +258,10 @@
     if (type === 'edit' && !resolveUserId(row)) {
       return
     }
+    if (type === 'edit' && !canOperateUser(row)) {
+      ElMessage.warning(isCurrentLoginUser(row) ? '不可操作当前登录用户' : '无权限修改该用户')
+      return
+    }
     console.log('打开弹窗:', { type, row })
     dialogType.value = type
     currentUserData.value = row || {}
@@ -253,6 +276,10 @@
   const deleteUser = (row: UserListItem): void => {
     if (isCurrentLoginUser(row)) {
       ElMessage.warning('当前登录用户不能删除自己')
+      return
+    }
+    if (!canOperateUser(row)) {
+      ElMessage.warning('无权限删除该用户')
       return
     }
     ElMessageBox.confirm(`确定要注销该用户吗？`, '注销用户', {
