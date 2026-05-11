@@ -227,6 +227,7 @@
       prop: 'operation',
       label: '操作',
       width: 160,
+      fixed: 'right',
       align: 'left',
       formatter: (row: AppRouteRecord) => {
         const buttonStyle = { style: 'text-align: left' }
