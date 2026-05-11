@@ -123,7 +123,7 @@
         {
           prop: 'roleId',
           label: '角色ID',
-          width: 100
+          minWidth: 100
         },
         {
           prop: 'roleName',
@@ -138,7 +138,7 @@
         {
           prop: 'type',
           label: '角色类型',
-          width: 100,
+          minWidth: 100,
           formatter: (row) =>
             h(ElTag, { type: getRoleTypeTagType(row.type) }, () =>
               row.type === 0 ? '内置' : '自定义'
@@ -153,7 +153,7 @@
         {
           prop: 'enabled',
           label: '角色状态',
-          width: 100,
+          minWidth: 100,
           formatter: (row) => {
             const statusConfig = row.enabled
               ? { type: 'success', text: '启用' }
@@ -168,7 +168,7 @@
         {
           prop: 'createTime',
           label: '创建日期',
-          width: 180,
+          minWidth: 180,
           sortable: true
         },
         {

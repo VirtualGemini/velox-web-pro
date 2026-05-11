@@ -177,6 +177,7 @@
     {
       prop: 'type',
       label: '菜单类型',
+      minWidth: 120,
       formatter: (row: AppRouteRecord) => {
         return h(ElTag, { type: getMenuTypeTag(row) }, () => getMenuTypeText(row))
       }
@@ -184,6 +185,7 @@
     {
       prop: 'path',
       label: '路由',
+      minWidth: 180,
       formatter: (row: AppRouteRecord) => {
         if (row.meta?.isAuthButton) return ''
         return row.meta?.link || row.path || ''
@@ -192,6 +194,7 @@
     {
       prop: 'meta.authList',
       label: '权限标识',
+      minWidth: 180,
       formatter: (row: AppRouteRecord) => {
         if (row.meta?.isAuthButton) {
           return row.meta?.authMark || ''
@@ -206,11 +209,13 @@
     {
       prop: 'date',
       label: '编辑时间',
+      minWidth: 180,
       formatter: (row: AppRouteRecord) => row.meta?.updateTime || '-'
     },
     {
       prop: 'status',
       label: '状态',
+      minWidth: 100,
       formatter: (row: AppRouteRecord) => {
         const isEnabled = row.meta?.isEnable !== false
         return h(ElTag, { type: isEnabled ? 'success' : 'info' }, () =>
@@ -221,10 +226,10 @@
     {
       prop: 'operation',
       label: '操作',
-      width: 180,
-      align: 'right',
+      width: 160,
+      align: 'left',
       formatter: (row: AppRouteRecord) => {
-        const buttonStyle = { style: 'text-align: right' }
+        const buttonStyle = { style: 'text-align: left' }
 
         if (row.meta?.isAuthButton) {
           return h('div', buttonStyle, [

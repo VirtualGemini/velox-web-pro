@@ -175,11 +175,11 @@
       // },
       columnsFactory: () => [
         { type: 'selection' }, // 勾选列
-        { type: 'index', width: 60, label: '序号' }, // 序号
+        { type: 'index', minWidth: 60, label: '序号' }, // 序号
         {
           prop: 'userInfo',
           label: '用户信息',
-          width: 280,
+          minWidth: 280,
           // visible: false, // 默认是否显示列
           formatter: (row) => {
             return h('div', { class: 'user flex-c' }, [
@@ -200,13 +200,15 @@
         {
           prop: 'userGender',
           label: '性别',
+          minWidth: 80,
           sortable: true,
           formatter: (row) => row.userGender
         },
-        { prop: 'userPhone', label: '手机号' },
+        { prop: 'userPhone', label: '手机号', minWidth: 180 },
         {
           prop: 'status',
           label: '状态',
+          minWidth: 100,
           formatter: (row) => {
             const statusConfig = getUserStatusConfig(row.status)
             return h(ElTag, { type: statusConfig.type }, () => statusConfig.text)
@@ -215,6 +217,7 @@
         {
           prop: 'createTime',
           label: '创建日期',
+          minWidth: 180,
           sortable: true
         },
         {

@@ -157,7 +157,7 @@
         {
           prop: 'type',
           label: '类型',
-          width: 140,
+          minWidth: 140,
           formatter: (row: FileRecord) =>
             h(
               ElTag,
@@ -168,7 +168,7 @@
         {
           prop: 'size',
           label: '大小',
-          width: 100,
+          minWidth: 100,
           formatter: (row: FileRecord) => formatFileSize(row.size)
         },
         {
@@ -198,13 +198,14 @@
         {
           prop: 'createTime',
           label: '上传时间',
-          width: 180
+          minWidth: 180
         },
         {
           prop: 'operation',
           label: '操作',
-          width: 160,
+          width: 120,
           fixed: 'right',
+          align: 'left',
           formatter: (row: FileRecord) => renderOperationButtons(row)
         }
       ]
@@ -231,18 +232,14 @@
   function renderOperationButtons(row: FileRecord) {
     return h(
       'div',
-      { class: 'flex items-center justify-end gap-2' },
+      { class: 'flex items-center justify-start' },
       [
         canAccess('system:file:download')
-          ? h(
-              ElButton,
-              {
-                link: true,
-                type: 'primary',
-                onClick: () => handleDownload(row)
-              },
-              () => '下载'
-            )
+          ? h(ArtButtonTable, {
+              type: 'view',
+              icon: 'ri:download-2-line',
+              onClick: () => handleDownload(row)
+            })
           : null,
         canAccess('system:file:delete')
           ? h(ArtButtonTable, {

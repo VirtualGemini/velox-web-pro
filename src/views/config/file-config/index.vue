@@ -690,21 +690,21 @@
         {
           prop: 'storage',
           label: '存储类型',
-          width: 120,
+          minWidth: 120,
           formatter: (row: FileConfig) =>
             h(ElTag, { type: getStorageTagType(row.storage) }, () => getStorageLabel(row.storage))
         },
         {
           prop: 'master',
           label: '主配置',
-          width: 100,
+          minWidth: 100,
           formatter: (row: FileConfig) =>
             h(ElTag, { type: row.master ? 'success' : 'info' }, () => (row.master ? '是' : '否'))
         },
         {
           prop: 'enabled',
           label: '状态',
-          width: 100,
+          minWidth: 100,
           formatter: (row: FileConfig) =>
             h(ElSwitch, {
               modelValue: row.enabled === 1,
@@ -722,12 +722,12 @@
         {
           prop: 'updateTime',
           label: '更新时间',
-          width: 180
+          minWidth: 180
         },
         {
           prop: 'operation',
           label: '操作',
-          width: 200,
+          width: 150,
           fixed: 'right',
           align: 'left',
           formatter: (row: FileConfig) => renderOperationButtons(row)
@@ -809,6 +809,7 @@
 
     return h(
       'div',
+      { class: 'file-config-operation-buttons flex items-center' },
       [
         canAccess('system:file-config:update')
           ? h(ArtButtonTable, { type: 'edit', onClick: () => openEditDialog(row) })
@@ -1192,5 +1193,11 @@
   .file-config-form {
     max-width: 820px;
     margin: 0 auto;
+  }
+
+  .file-config-operation-buttons {
+    :deep(> *:last-child) {
+      margin-right: 0;
+    }
   }
 </style>
