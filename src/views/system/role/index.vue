@@ -176,7 +176,7 @@
         {
           prop: 'operation',
           label: 'pages.system.role.columns.operation',
-          width: 80,
+          width: 100,
           fixed: 'right',
           formatter: (row) =>
             h('div', [
