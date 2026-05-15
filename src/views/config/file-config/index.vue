@@ -41,7 +41,11 @@
 
     <ElDialog
       v-model="dialogVisible"
-      :title="dialogMode === 'create' ? '新增文件配置' : '编辑文件配置'"
+      :title="
+        dialogMode === 'create'
+          ? t('pages.config.fileConfig.form.titles.create')
+          : t('pages.config.fileConfig.form.titles.edit')
+      "
       :width="dialogWidth"
       align-center
       class="file-config-dialog"
@@ -57,16 +61,20 @@
       >
         <ElRow :gutter="16">
           <ElCol :span="formHalfSpan">
-            <ElFormItem label="配置名称" prop="name">
-              <ElInput v-model="formModel.name" maxlength="100" placeholder="请输入配置名称" />
+            <ElFormItem :label="t('pages.config.fileConfig.form.fields.name')" prop="name">
+              <ElInput
+                v-model="formModel.name"
+                maxlength="100"
+                :placeholder="t('pages.config.fileConfig.form.placeholders.name')"
+              />
             </ElFormItem>
           </ElCol>
           <ElCol :span="formHalfSpan">
-            <ElFormItem label="存储类型" prop="storage">
+            <ElFormItem :label="t('pages.config.fileConfig.form.fields.storage')" prop="storage">
               <ElSelect
                 v-model="formModel.storage"
                 :disabled="dialogMode === 'edit' && !isSupportedStorage(formModel.storage)"
-                placeholder="请选择存储类型"
+                :placeholder="t('pages.config.fileConfig.form.placeholders.storage')"
                 @change="handleStorageChange"
               >
                 <ElOption
@@ -80,14 +88,14 @@
           </ElCol>
         </ElRow>
 
-        <ElFormItem label="备注">
+        <ElFormItem :label="t('pages.config.fileConfig.form.fields.remark')">
           <ElInput
             v-model="formModel.remark"
             type="textarea"
             :rows="3"
             maxlength="500"
             show-word-limit
-            placeholder="请输入备注信息"
+            :placeholder="t('pages.config.fileConfig.form.placeholders.remark')"
           />
         </ElFormItem>
 
@@ -97,13 +105,13 @@
               <ElFormItem>
                 <template #label>
                   <LabelTooltip
-                    label="访问域名"
-                    tooltip="可选。数据库存储时用于拼接访问地址，不填时通常走系统默认下载接口。"
+                    :label="t('pages.config.fileConfig.form.fields.domain')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.dbDomain')"
                   />
                 </template>
                 <ElInput
                   v-model="formModel.domain"
-                  placeholder="为空时使用相对路径 /api/file/db/..."
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.dbDomain')"
                 />
               </ElFormItem>
             </ElCol>
@@ -116,22 +124,28 @@
               <ElFormItem prop="basePath">
                 <template #label>
                   <LabelTooltip
-                    label="基础目录"
-                    tooltip="文件会写入服务器本地磁盘目录，请确保服务进程有读写权限。"
+                    :label="t('pages.config.fileConfig.form.fields.basePath')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.localBasePath')"
                   />
                 </template>
-                <ElInput v-model="formModel.basePath" placeholder="例如 /tmp/uploads" />
+                <ElInput
+                  v-model="formModel.basePath"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.localBasePath')"
+                />
               </ElFormItem>
             </ElCol>
             <ElCol :span="24">
               <ElFormItem>
                 <template #label>
                   <LabelTooltip
-                    label="访问域名"
-                    tooltip="用于拼接文件访问地址，不填时通常返回相对路径或使用系统默认地址。"
+                    :label="t('pages.config.fileConfig.form.fields.domain')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.localDomain')"
                   />
                 </template>
-                <ElInput v-model="formModel.domain" placeholder="例如 http://127.0.0.1:8080" />
+                <ElInput
+                  v-model="formModel.domain"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.localDomain')"
+                />
               </ElFormItem>
             </ElCol>
           </ElRow>
@@ -142,15 +156,24 @@
             <ElCol :span="24">
               <ElFormItem prop="host">
                 <template #label>
-                  <LabelTooltip label="Host" tooltip="FTP 服务器地址或域名。" />
+                  <LabelTooltip
+                    :label="t('pages.config.fileConfig.form.fields.host')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.ftpHost')"
+                  />
                 </template>
-                <ElInput v-model="formModel.host" placeholder="例如 127.0.0.1" />
+                <ElInput
+                  v-model="formModel.host"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.hostExample')"
+                />
               </ElFormItem>
             </ElCol>
             <ElCol :span="24">
               <ElFormItem prop="port">
                 <template #label>
-                  <LabelTooltip label="Port" tooltip="FTP 端口，默认一般是 21。" />
+                  <LabelTooltip
+                    :label="t('pages.config.fileConfig.form.fields.port')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.ftpPort')"
+                  />
                 </template>
                 <ElInputNumber v-model="formModel.port" class="w-full" :min="1" :max="65535" />
               </ElFormItem>
@@ -158,32 +181,53 @@
             <ElCol :span="24">
               <ElFormItem prop="username">
                 <template #label>
-                  <LabelTooltip label="Username" tooltip="FTP 登录用户名。" />
+                  <LabelTooltip
+                    :label="t('pages.config.fileConfig.form.fields.username')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.ftpUsername')"
+                  />
                 </template>
-                <ElInput v-model="formModel.username" placeholder="请输入用户名" />
+                <ElInput
+                  v-model="formModel.username"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.username')"
+                />
               </ElFormItem>
             </ElCol>
             <ElCol :span="24">
               <ElFormItem prop="password">
                 <template #label>
-                  <LabelTooltip label="Password" tooltip="FTP 登录密码。" />
+                  <LabelTooltip
+                    :label="t('pages.config.fileConfig.form.fields.password')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.ftpPassword')"
+                  />
                 </template>
                 <ElInput
                   v-model="formModel.password"
                   type="password"
                   show-password
-                  placeholder="请输入密码"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.password')"
                 />
               </ElFormItem>
             </ElCol>
             <ElCol :span="24">
               <ElFormItem>
                 <template #label>
-                  <LabelTooltip label="Mode" tooltip="FTP 传输模式，Active 或 Passive。" />
+                  <LabelTooltip
+                    :label="t('pages.config.fileConfig.form.fields.ftpMode')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.ftpMode')"
+                  />
                 </template>
-                <ElSelect v-model="formModel.ftpMode" placeholder="请选择模式">
-                  <ElOption label="Active" value="Active" />
-                  <ElOption label="Passive" value="Passive" />
+                <ElSelect
+                  v-model="formModel.ftpMode"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.ftpMode')"
+                >
+                  <ElOption
+                    :label="t('pages.config.fileConfig.form.options.ftpMode.active')"
+                    value="Active"
+                  />
+                  <ElOption
+                    :label="t('pages.config.fileConfig.form.options.ftpMode.passive')"
+                    value="Passive"
+                  />
                 </ElSelect>
               </ElFormItem>
             </ElCol>
@@ -191,24 +235,27 @@
               <ElFormItem prop="basePath">
                 <template #label>
                   <LabelTooltip
-                    label="基础目录"
-                    tooltip="FTP 远端根目录，文件会按该目录继续分层存放。"
+                    :label="t('pages.config.fileConfig.form.fields.basePath')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.ftpBasePath')"
                   />
                 </template>
-                <ElInput v-model="formModel.basePath" placeholder="例如 /uploads" />
+                <ElInput
+                  v-model="formModel.basePath"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.remoteBasePath')"
+                />
               </ElFormItem>
             </ElCol>
             <ElCol :span="24">
               <ElFormItem prop="domain">
                 <template #label>
                   <LabelTooltip
-                    label="访问域名"
-                    tooltip="可选，用于拼接文件访问地址；不填时返回相对路径 /api/file/{configId}/get/{path}。"
+                    :label="t('pages.config.fileConfig.form.fields.domain')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.remoteDomain')"
                   />
                 </template>
                 <ElInput
                   v-model="formModel.domain"
-                  placeholder="选填，例如 http://127.0.0.1:8080"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.optionalDomain')"
                 />
               </ElFormItem>
             </ElCol>
@@ -220,15 +267,24 @@
             <ElCol :span="24">
               <ElFormItem prop="host">
                 <template #label>
-                  <LabelTooltip label="Host" tooltip="SFTP 服务器地址或域名。" />
+                  <LabelTooltip
+                    :label="t('pages.config.fileConfig.form.fields.host')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.sftpHost')"
+                  />
                 </template>
-                <ElInput v-model="formModel.host" placeholder="例如 127.0.0.1" />
+                <ElInput
+                  v-model="formModel.host"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.hostExample')"
+                />
               </ElFormItem>
             </ElCol>
             <ElCol :span="24">
               <ElFormItem prop="port">
                 <template #label>
-                  <LabelTooltip label="Port" tooltip="SFTP 端口，默认一般是 22。" />
+                  <LabelTooltip
+                    :label="t('pages.config.fileConfig.form.fields.port')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.sftpPort')"
+                  />
                 </template>
                 <ElInputNumber v-model="formModel.port" class="w-full" :min="1" :max="65535" />
               </ElFormItem>
@@ -236,21 +292,30 @@
             <ElCol :span="24">
               <ElFormItem prop="username">
                 <template #label>
-                  <LabelTooltip label="Username" tooltip="SFTP 登录用户名。" />
+                  <LabelTooltip
+                    :label="t('pages.config.fileConfig.form.fields.username')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.sftpUsername')"
+                  />
                 </template>
-                <ElInput v-model="formModel.username" placeholder="请输入用户名" />
+                <ElInput
+                  v-model="formModel.username"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.username')"
+                />
               </ElFormItem>
             </ElCol>
             <ElCol :span="24">
               <ElFormItem prop="password">
                 <template #label>
-                  <LabelTooltip label="Password" tooltip="SFTP 登录密码。" />
+                  <LabelTooltip
+                    :label="t('pages.config.fileConfig.form.fields.password')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.sftpPassword')"
+                  />
                 </template>
                 <ElInput
                   v-model="formModel.password"
                   type="password"
                   show-password
-                  placeholder="请输入密码"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.password')"
                 />
               </ElFormItem>
             </ElCol>
@@ -258,24 +323,27 @@
               <ElFormItem prop="basePath">
                 <template #label>
                   <LabelTooltip
-                    label="基础目录"
-                    tooltip="SFTP 远端根目录，文件会按该目录继续分层存放。"
+                    :label="t('pages.config.fileConfig.form.fields.basePath')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.sftpBasePath')"
                   />
                 </template>
-                <ElInput v-model="formModel.basePath" placeholder="例如 /uploads" />
+                <ElInput
+                  v-model="formModel.basePath"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.remoteBasePath')"
+                />
               </ElFormItem>
             </ElCol>
             <ElCol :span="24">
               <ElFormItem prop="domain">
                 <template #label>
                   <LabelTooltip
-                    label="访问域名"
-                    tooltip="可选，用于拼接文件访问地址；不填时返回相对路径 /api/file/{configId}/get/{path}。"
+                    :label="t('pages.config.fileConfig.form.fields.domain')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.remoteDomain')"
                   />
                 </template>
                 <ElInput
                   v-model="formModel.domain"
-                  placeholder="选填，例如 http://127.0.0.1:8080"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.optionalDomain')"
                 />
               </ElFormItem>
             </ElCol>
@@ -288,37 +356,43 @@
               <ElFormItem prop="endpoint">
                 <template #label>
                   <LabelTooltip
-                    label="Endpoint"
-                    tooltip="对象存储服务地址，例如 OSS、MinIO、COS 提供的访问域名。"
+                    :label="t('pages.config.fileConfig.form.fields.endpoint')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.endpoint')"
                   />
                 </template>
                 <ElInput
                   v-model="formModel.endpoint"
-                  placeholder="例如 oss-cn-beijing.aliyuncs.com"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.endpoint')"
                 />
               </ElFormItem>
             </ElCol>
             <ElCol :span="24">
               <ElFormItem prop="bucket">
                 <template #label>
-                  <LabelTooltip label="Bucket" tooltip="存储桶名称，对象会上传到这个 bucket。" />
+                  <LabelTooltip
+                    :label="t('pages.config.fileConfig.form.fields.bucket')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.bucket')"
+                  />
                 </template>
-                <ElInput v-model="formModel.bucket" placeholder="请输入 Bucket" />
+                <ElInput
+                  v-model="formModel.bucket"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.bucket')"
+                />
               </ElFormItem>
             </ElCol>
             <ElCol :span="24">
               <ElFormItem prop="accessKey">
                 <template #label>
                   <LabelTooltip
-                    label="Access Key"
-                    tooltip="访问密钥 ID，和 Access Secret 成对使用。"
+                    :label="t('pages.config.fileConfig.form.fields.accessKey')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.accessKey')"
                   />
                 </template>
                 <ElInput
                   v-model="formModel.accessKey"
                   type="password"
                   show-password
-                  placeholder="请输入 Access Key"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.accessKey')"
                 />
               </ElFormItem>
             </ElCol>
@@ -326,15 +400,15 @@
               <ElFormItem prop="accessSecret">
                 <template #label>
                   <LabelTooltip
-                    label="Access Secret"
-                    tooltip="访问密钥密码，和 Access Key 成对使用。"
+                    :label="t('pages.config.fileConfig.form.fields.accessSecret')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.accessSecret')"
                   />
                 </template>
                 <ElInput
                   v-model="formModel.accessSecret"
                   type="password"
                   show-password
-                  placeholder="请输入 Access Secret"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.accessSecret')"
                 />
               </ElFormItem>
             </ElCol>
@@ -342,13 +416,13 @@
               <ElFormItem>
                 <template #label>
                   <LabelTooltip
-                    label="对象前缀"
-                    tooltip="可选。会作为所有对象 key 的统一前缀，例如 corp-a/uploads。"
+                    :label="t('pages.config.fileConfig.form.fields.objectPrefix')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.objectPrefix')"
                   />
                 </template>
                 <ElInput
                   v-model="formModel.basePath"
-                  placeholder="可选，例如 corp-a 或 app/uploads"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.objectPrefix')"
                 />
               </ElFormItem>
             </ElCol>
@@ -356,15 +430,15 @@
               <ElFormItem>
                 <template #label>
                   <LabelTooltip
-                    label="Session Token"
-                    tooltip="可选。仅在使用 STS 临时凭证时填写，长期 AK/SK 场景留空。"
+                    :label="t('pages.config.fileConfig.form.fields.sessionToken')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.sessionToken')"
                   />
                 </template>
                 <ElInput
                   v-model="formModel.sessionToken"
                   type="password"
                   show-password
-                  placeholder="可选，使用 STS 临时凭证时填写"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.sessionToken')"
                 />
               </ElFormItem>
             </ElCol>
@@ -372,30 +446,36 @@
               <ElFormItem>
                 <template #label>
                   <LabelTooltip
-                    label="访问域名"
-                    tooltip="可选。用于覆盖默认访问地址，例如 CDN 域名或自定义域名。"
+                    :label="t('pages.config.fileConfig.form.fields.domain')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.s3Domain')"
                   />
                 </template>
-                <ElInput v-model="formModel.domain" placeholder="为空时自动拼接默认域名" />
+                <ElInput
+                  v-model="formModel.domain"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.s3Domain')"
+                />
               </ElFormItem>
             </ElCol>
             <ElCol :span="24">
               <ElFormItem>
                 <template #label>
                   <LabelTooltip
-                    label="Region"
-                    tooltip="可选。对象存储所在地域，如 cn-beijing、ap-guangzhou；不填时后端会尝试从 endpoint 推断。"
+                    :label="t('pages.config.fileConfig.form.fields.region')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.region')"
                   />
                 </template>
-                <ElInput v-model="formModel.region" placeholder="为空时自动推断" />
+                <ElInput
+                  v-model="formModel.region"
+                  :placeholder="t('pages.config.fileConfig.form.placeholders.region')"
+                />
               </ElFormItem>
             </ElCol>
             <ElCol :span="formHalfSpan">
               <ElFormItem>
                 <template #label>
                   <LabelTooltip
-                    label="Path Style"
-                    tooltip="开启后使用 endpoint/bucket/key 形式；关闭时通常使用 bucket.endpoint/key 形式。MinIO 等场景常需开启。"
+                    :label="t('pages.config.fileConfig.form.fields.enablePathStyleAccess')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.enablePathStyleAccess')"
                   />
                 </template>
                 <ElSwitch v-model="formModel.enablePathStyleAccess" />
@@ -405,8 +485,8 @@
               <ElFormItem>
                 <template #label>
                   <LabelTooltip
-                    label="公开访问"
-                    tooltip="开启后返回公开访问地址；关闭后会生成带签名的访问地址。"
+                    :label="t('pages.config.fileConfig.form.fields.enablePublicAccess')"
+                    :tooltip="t('pages.config.fileConfig.form.tooltips.enablePublicAccess')"
                   />
                 </template>
                 <ElSwitch v-model="formModel.enablePublicAccess" />
@@ -419,23 +499,25 @@
           <ElFormItem prop="configJson">
             <template #label>
               <LabelTooltip
-                label="配置 JSON"
-                tooltip="当前存储类型未提供结构化表单，请直接输入完整 JSON 配置。"
+                :label="t('pages.config.fileConfig.form.fields.configJson')"
+                :tooltip="t('pages.config.fileConfig.form.tooltips.configJson')"
               />
             </template>
             <ElInput
               v-model="formModel.configJson"
               type="textarea"
               :rows="10"
-              placeholder='请输入 JSON，例如 {"domain":"http://127.0.0.1:8080"}'
+              :placeholder="t('pages.config.fileConfig.form.placeholders.configJson')"
             />
           </ElFormItem>
         </template>
       </ElForm>
 
       <template #footer>
-        <ElButton @click="handleDialogClose">取消</ElButton>
-        <ElButton type="primary" :loading="submitLoading" @click="handleSubmit">提交</ElButton>
+        <ElButton @click="handleDialogClose">{{ t('common.cancel') }}</ElButton>
+        <ElButton type="primary" :loading="submitLoading" @click="handleSubmit">
+          {{ t('table.form.submit') }}
+        </ElButton>
       </template>
     </ElDialog>
   </div>
@@ -519,7 +601,7 @@
   const isMobile = computed(() => width.value <= 640)
   const dialogWidth = computed(() => (isMobile.value ? 'calc(100vw - 24px)' : '920px'))
   const formHalfSpan = computed(() => (isMobile.value ? 24 : 12))
-  const formLabelWidth = computed(() => (isMobile.value ? '140px' : '140px'))
+  const formLabelWidth = computed(() => (isMobile.value ? '140px' : 'auto'))
 
   const allStorageOptions = computed(() => [
     { label: t('pages.config.fileConfig.storage.db'), value: STORAGE_TYPES.DB },

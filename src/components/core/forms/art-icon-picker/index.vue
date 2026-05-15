@@ -3,7 +3,7 @@
     v-model="inputValue"
     class="art-icon-picker"
     :clearable="clearable"
-    :placeholder="placeholder"
+    :placeholder="resolvedPlaceholder"
     :disabled="disabled"
     v-bind="$attrs"
     @clear="handleClear"
@@ -26,8 +26,8 @@
         <div class="art-icon-picker__panel">
           <div class="art-icon-picker__header">
             <div>
-              <div class="art-icon-picker__title">{{ title }}</div>
-              <div class="art-icon-picker__subtitle">{{ subtitle }}</div>
+              <div class="art-icon-picker__title">{{ resolvedTitle }}</div>
+              <div class="art-icon-picker__subtitle">{{ resolvedSubtitle }}</div>
             </div>
             <div class="art-icon-picker__preview">
               <ArtSvgIcon :icon="selectedIcon" class="art-icon-picker__preview-icon" />
@@ -35,7 +35,11 @@
           </div>
 
           <div class="art-icon-picker__toolbar">
-            <ElInput v-model="keyword" clearable placeholder="输入图标名称筛选">
+            <ElInput
+              v-model="keyword"
+              clearable
+              :placeholder="t('common.iconPicker.searchPlaceholder')"
+            >
               <template #prefix>
                 <ArtSvgIcon icon="ri:search-line" class="text-base text-g-500" />
               </template>
@@ -43,8 +47,8 @@
           </div>
 
           <div class="art-icon-picker__meta">
-            <span>共 {{ filteredIcons.length }} 个图标</span>
-            <span v-if="inputValue && !isPresetIcon">未匹配到预设图标</span>
+            <span>{{ t('common.iconPicker.count', { count: filteredIcons.length }) }}</span>
+            <span v-if="inputValue && !isPresetIcon">{{ t('common.iconPicker.unmatched') }}</span>
           </div>
 
           <ElScrollbar
@@ -86,6 +90,7 @@
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { REMIX_ICON_OPTIONS } from './icons'
   import { useWindowSize } from '@vueuse/core'
+  import { useI18n } from 'vue-i18n'
 
   defineOptions({
     name: 'ArtIconPicker',
@@ -111,10 +116,11 @@
 
   const props = withDefaults(defineProps<Props>(), {
     modelValue: '',
-    placeholder: '请选择图标',
+    placeholder: '',
     disabled: false,
     clearable: true,
-    title: '选择图标',
+    title: '',
+    subtitle: '',
     defaultIcon: 'ri:apps-2-line',
     popperClass: 'art-icon-picker-popover',
     pageSize: 20,
@@ -123,6 +129,7 @@
 
   const emit = defineEmits<Emits>()
   const { width: windowWidth } = useWindowSize()
+  const { t } = useI18n()
 
   const popoverVisible = ref(false)
   const currentPage = ref(1)
@@ -132,6 +139,12 @@
     get: () => props.modelValue,
     set: (value: string) => emit('update:modelValue', value)
   })
+
+  const resolvedPlaceholder = computed(
+    () => props.placeholder || t('common.iconPicker.placeholder')
+  )
+  const resolvedTitle = computed(() => props.title || t('common.iconPicker.title'))
+  const resolvedSubtitle = computed(() => props.subtitle || t('common.iconPicker.subtitle'))
 
   const selectedIcon = computed(() => {
     if (!inputValue.value) return props.defaultIcon

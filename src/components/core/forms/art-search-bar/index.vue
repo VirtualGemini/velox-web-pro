@@ -234,7 +234,7 @@
     gutter: 12,
     isExpand: false,
     labelPosition: 'right',
-    labelWidth: '70px',
+    labelWidth: 'auto',
     showExpand: true,
     defaultExpanded: false,
     buttonLeftLimit: 2,
@@ -571,6 +571,10 @@
 <style lang="scss" scoped>
   .art-search-bar {
     padding: 15px 20px 0;
+
+    :deep(.el-form-item__label) {
+      white-space: nowrap;
+    }
 
     .action-column {
       flex: 1;

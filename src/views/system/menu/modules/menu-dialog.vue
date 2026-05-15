@@ -15,14 +15,18 @@
       :rules="rules"
       :span="width > 640 ? 12 : 24"
       :gutter="20"
-      label-width="100px"
+      label-width="auto"
       :show-reset="false"
       :show-submit="false"
     >
       <template #menuType>
         <ElRadioGroup v-model="form.menuType" :disabled="disableMenuType">
-          <ElRadioButton value="menu" label="menu">菜单</ElRadioButton>
-          <ElRadioButton value="button" label="button">按钮</ElRadioButton>
+          <ElRadioButton value="menu" label="menu">
+            {{ t('pages.system.menu.dialog.types.menu') }}
+          </ElRadioButton>
+          <ElRadioButton value="button" label="button">
+            {{ t('pages.system.menu.dialog.types.button') }}
+          </ElRadioButton>
         </ElRadioGroup>
       </template>
 
@@ -34,8 +38,8 @@
 
     <template #footer>
       <span class="dialog-footer">
-        <ElButton @click="handleCancel">取 消</ElButton>
-        <ElButton type="primary" @click="handleSubmit">确 定</ElButton>
+        <ElButton @click="handleCancel">{{ t('common.cancel') }}</ElButton>
+        <ElButton type="primary" @click="handleSubmit">{{ t('common.confirm') }}</ElButton>
       </span>
     </template>
   </ElDialog>
@@ -51,8 +55,10 @@
   import ArtForm from '@/components/core/forms/art-form/index.vue'
   import ArtIconPicker from '@/components/core/forms/art-icon-picker/index.vue'
   import { useWindowSize } from '@vueuse/core'
+  import { useI18n } from 'vue-i18n'
 
   const { width } = useWindowSize()
+  const { t } = useI18n()
 
   /**
    * 创建带 tooltip 的表单标签
@@ -153,22 +159,57 @@
     authSort: 1
   })
 
-  const rules = reactive<FormRules>({
+  const rules = computed<FormRules>(() => ({
     name: [
-      { required: true, message: '请输入菜单名称', trigger: 'blur' },
-      { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
+      {
+        required: true,
+        message: t('pages.system.menu.dialog.validation.nameRequired'),
+        trigger: 'blur'
+      },
+      {
+        min: 2,
+        max: 20,
+        message: t('pages.system.menu.dialog.validation.nameLength'),
+        trigger: 'blur'
+      }
     ],
-    path: [{ required: true, message: '请输入路由地址', trigger: 'blur' }],
-    label: [{ required: true, message: '输入权限标识', trigger: 'blur' }],
-    authName: [{ required: true, message: '请输入权限名称', trigger: 'blur' }],
-    authLabel: [{ required: true, message: '请输入权限标识', trigger: 'blur' }]
-  })
+    path: [
+      {
+        required: true,
+        message: t('pages.system.menu.dialog.validation.pathRequired'),
+        trigger: 'blur'
+      }
+    ],
+    label: [
+      {
+        required: true,
+        message: t('pages.system.menu.dialog.validation.labelRequired'),
+        trigger: 'blur'
+      }
+    ],
+    authName: [
+      {
+        required: true,
+        message: t('pages.system.menu.dialog.validation.authNameRequired'),
+        trigger: 'blur'
+      }
+    ],
+    authLabel: [
+      {
+        required: true,
+        message: t('pages.system.menu.dialog.validation.authLabelRequired'),
+        trigger: 'blur'
+      }
+    ]
+  }))
 
   /**
    * 表单项配置
    */
   const formItems = computed<FormItem[]>(() => {
-    const baseItems: FormItem[] = [{ label: '菜单类型', key: 'menuType', span: 24 }]
+    const baseItems: FormItem[] = [
+      { label: t('pages.system.menu.dialog.fields.menuType'), key: 'menuType', span: 24 }
+    ]
 
     // Switch 组件的 span：小屏幕 12，大屏幕 6
     const switchSpan = width.value < 640 ? 12 : 6
@@ -176,97 +217,147 @@
     if (form.menuType === 'menu') {
       return [
         ...baseItems,
-        { label: '菜单名称', key: 'name', type: 'input', props: { placeholder: '菜单名称' } },
+        {
+          label: t('pages.system.menu.dialog.fields.name'),
+          key: 'name',
+          type: 'input',
+          props: { placeholder: t('pages.system.menu.dialog.placeholders.name') }
+        },
         {
           label: createLabelTooltip(
-            '路由地址',
-            '一级菜单：以 / 开头的绝对路径（如 /dashboard）\n二级及以下：相对路径（如 console、user）'
+            t('pages.system.menu.dialog.fields.path'),
+            t('pages.system.menu.dialog.tooltips.path')
           ),
           key: 'path',
           type: 'input',
-          props: { placeholder: '如：/dashboard 或 console' }
+          props: { placeholder: t('pages.system.menu.dialog.placeholders.path') }
         },
-        { label: '权限标识', key: 'label', type: 'input', props: { placeholder: '如：User' } },
+        {
+          label: t('pages.system.menu.dialog.fields.label'),
+          key: 'label',
+          type: 'input',
+          props: { placeholder: t('pages.system.menu.dialog.placeholders.label') }
+        },
         {
           label: createLabelTooltip(
-            '组件路径',
-            '一级父级菜单：填写 /index/index\n具体页面：填写组件路径（如 /system/user）\n目录菜单：留空'
+            t('pages.system.menu.dialog.fields.component'),
+            t('pages.system.menu.dialog.tooltips.component')
           ),
           key: 'component',
           type: 'input',
-          props: { placeholder: '如：/system/user 或留空' }
+          props: { placeholder: t('pages.system.menu.dialog.placeholders.component') }
         },
         {
           label: createLabelTooltip(
-            '图标',
-            '可选择项目内支持的图标，选择后会自动写入 ri: 图标代码'
+            t('pages.system.menu.dialog.fields.icon'),
+            t('pages.system.menu.dialog.tooltips.icon')
           ),
           key: 'icon',
           type: 'input',
-          props: { placeholder: '请选择图标' }
+          props: { placeholder: t('pages.system.menu.dialog.placeholders.icon') }
         },
         {
           label: createLabelTooltip(
-            '角色权限',
-            '仅用于前端权限模式：配置角色标识（如 R_SUPER、R_ADMIN）\n后端权限模式：无需配置'
+            t('pages.system.menu.dialog.fields.roles'),
+            t('pages.system.menu.dialog.tooltips.roles')
           ),
           key: 'roles',
           type: 'inputtag',
-          props: { placeholder: '输入角色标识后按回车，如：R_SUPER' }
+          props: { placeholder: t('pages.system.menu.dialog.placeholders.roles') }
         },
         {
-          label: '菜单排序',
+          label: t('pages.system.menu.dialog.fields.sort'),
           key: 'sort',
           type: 'number',
           props: { min: 1, controlsPosition: 'right', style: { width: '100%' } }
         },
         {
-          label: '外部链接',
+          label: t('pages.system.menu.dialog.fields.link'),
           key: 'link',
           type: 'input',
-          props: { placeholder: '如：https://www.example.com' }
+          props: { placeholder: t('pages.system.menu.dialog.placeholders.link') }
         },
         {
-          label: '文本徽章',
+          label: t('pages.system.menu.dialog.fields.showTextBadge'),
           key: 'showTextBadge',
           type: 'input',
-          props: { placeholder: '如：New、Hot' }
+          props: { placeholder: t('pages.system.menu.dialog.placeholders.showTextBadge') }
         },
         {
           label: createLabelTooltip(
-            '激活路径',
-            '用于详情页等隐藏菜单，指定高亮显示的父级菜单路径\n例如：用户详情页高亮显示"用户管理"菜单'
+            t('pages.system.menu.dialog.fields.activePath'),
+            t('pages.system.menu.dialog.tooltips.activePath')
           ),
           key: 'activePath',
           type: 'input',
-          props: { placeholder: '如：/system/user' }
+          props: { placeholder: t('pages.system.menu.dialog.placeholders.activePath') }
         },
-        { label: '是否启用', key: 'isEnable', type: 'switch', span: switchSpan },
-        { label: '页面缓存', key: 'keepAlive', type: 'switch', span: switchSpan },
-        { label: '隐藏菜单', key: 'isHide', type: 'switch', span: switchSpan },
-        { label: '是否内嵌', key: 'isIframe', type: 'switch', span: switchSpan },
-        { label: '显示徽章', key: 'showBadge', type: 'switch', span: switchSpan },
-        { label: '固定标签', key: 'fixedTab', type: 'switch', span: switchSpan },
-        { label: '标签隐藏', key: 'isHideTab', type: 'switch', span: switchSpan },
-        { label: '全屏页面', key: 'isFullPage', type: 'switch', span: switchSpan }
+        {
+          label: t('pages.system.menu.dialog.fields.isEnable'),
+          key: 'isEnable',
+          type: 'switch',
+          span: switchSpan
+        },
+        {
+          label: t('pages.system.menu.dialog.fields.keepAlive'),
+          key: 'keepAlive',
+          type: 'switch',
+          span: switchSpan
+        },
+        {
+          label: t('pages.system.menu.dialog.fields.isHide'),
+          key: 'isHide',
+          type: 'switch',
+          span: switchSpan
+        },
+        {
+          label: t('pages.system.menu.dialog.fields.isIframe'),
+          key: 'isIframe',
+          type: 'switch',
+          span: switchSpan
+        },
+        {
+          label: t('pages.system.menu.dialog.fields.showBadge'),
+          key: 'showBadge',
+          type: 'switch',
+          span: switchSpan
+        },
+        {
+          label: t('pages.system.menu.dialog.fields.fixedTab'),
+          key: 'fixedTab',
+          type: 'switch',
+          span: switchSpan
+        },
+        {
+          label: t('pages.system.menu.dialog.fields.isHideTab'),
+          key: 'isHideTab',
+          type: 'switch',
+          span: switchSpan
+        },
+        {
+          label: t('pages.system.menu.dialog.fields.isFullPage'),
+          key: 'isFullPage',
+          type: 'switch',
+          span: switchSpan
+        }
       ]
     } else {
       return [
         ...baseItems,
         {
-          label: '权限名称',
+          label: t('pages.system.menu.dialog.fields.authName'),
           key: 'authName',
           type: 'input',
-          props: { placeholder: '如：新增、编辑、删除' }
+          props: { placeholder: t('pages.system.menu.dialog.placeholders.authName') }
         },
         {
-          label: '权限标识',
+          label: t('pages.system.menu.dialog.fields.authLabel'),
           key: 'authLabel',
           type: 'input',
-          props: { placeholder: '如：add、edit、delete' }
+          props: { placeholder: t('pages.system.menu.dialog.placeholders.authLabel') }
         },
         {
-          label: '权限排序',
+          label: t('pages.system.menu.dialog.fields.authSort'),
           key: 'authSort',
           type: 'number',
           props: { min: 1, controlsPosition: 'right', style: { width: '100%' } }
@@ -276,8 +367,15 @@
   })
 
   const dialogTitle = computed(() => {
-    const type = form.menuType === 'menu' ? '菜单' : '按钮'
-    return isEdit.value ? `编辑${type}` : `新建${type}`
+    if (form.menuType === 'menu') {
+      return isEdit.value
+        ? t('pages.system.menu.dialog.titles.editMenu')
+        : t('pages.system.menu.dialog.titles.createMenu')
+    }
+
+    return isEdit.value
+      ? t('pages.system.menu.dialog.titles.editButton')
+      : t('pages.system.menu.dialog.titles.createButton')
   })
 
   /**
@@ -345,10 +443,14 @@
     try {
       await formRef.value.validate()
       emit('submit', { ...form })
-      ElMessage.success(`${isEdit.value ? '编辑' : '新增'}成功`)
+      ElMessage.success(
+        isEdit.value
+          ? t('pages.system.menu.messages.updateSuccess')
+          : t('pages.system.menu.messages.createSuccess')
+      )
       handleCancel()
     } catch {
-      ElMessage.error('表单校验失败，请检查输入')
+      ElMessage.error(t('pages.system.menu.dialog.validation.submitFailed'))
     }
   }
 

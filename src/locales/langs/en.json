@@ -37,6 +37,14 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "logOutTips": "Do you want to log out?",
+    "iconPicker": {
+      "title": "Select Icon",
+      "subtitle": "Quickly filter preset icons",
+      "placeholder": "Please select an icon",
+      "searchPlaceholder": "Filter by icon name",
+      "count": "{count} icons",
+      "unmatched": "No preset icon matched"
+    },
     "status": {
       "enabled": "Enabled",
       "disabled": "Disabled",
@@ -423,6 +431,71 @@
           "expand": "Expand",
           "collapse": "Collapse"
         },
+        "dialog": {
+          "titles": {
+            "createMenu": "Create Menu",
+            "editMenu": "Edit Menu",
+            "createButton": "Create Button",
+            "editButton": "Edit Button"
+          },
+          "types": {
+            "menu": "Menu",
+            "button": "Button"
+          },
+          "fields": {
+            "menuType": "Menu Type",
+            "name": "Menu Name",
+            "path": "Route Path",
+            "label": "Permission Mark",
+            "component": "Component Path",
+            "icon": "Icon",
+            "roles": "Roles",
+            "sort": "Menu Order",
+            "link": "External Link",
+            "showTextBadge": "Text Badge",
+            "activePath": "Active Path",
+            "isEnable": "Enabled",
+            "keepAlive": "Keep Alive",
+            "isHide": "Hide Menu",
+            "isIframe": "Iframe",
+            "showBadge": "Show Badge",
+            "fixedTab": "Fixed Tab",
+            "isHideTab": "Hide Tab",
+            "isFullPage": "Full Page",
+            "authName": "Permission Name",
+            "authLabel": "Permission Mark",
+            "authSort": "Permission Order"
+          },
+          "placeholders": {
+            "name": "Please enter menu name",
+            "path": "For example: /dashboard or console",
+            "label": "For example: User",
+            "component": "For example: /system/user or leave blank",
+            "icon": "Please select an icon",
+            "roles": "Enter role mark and press Enter, for example: R_SUPER",
+            "link": "For example: https://www.example.com",
+            "showTextBadge": "For example: New or Hot",
+            "activePath": "For example: /system/user",
+            "authName": "For example: Create, Edit, Delete",
+            "authLabel": "For example: add, edit, delete"
+          },
+          "tooltips": {
+            "path": "Top-level menu: absolute path starting with / (for example /dashboard)\nSecond level and below: relative path (for example console or user)",
+            "component": "Top-level parent menu: use /index/index\nSpecific page: use the component path (for example /system/user)\nDirectory menu: leave blank",
+            "icon": "Select a supported project icon. The ri: icon code will be filled automatically.",
+            "roles": "Used only in frontend permission mode: configure role marks (for example R_SUPER, R_ADMIN)\nBackend permission mode does not require this.",
+            "activePath": "Used for hidden detail pages to highlight the parent menu path.\nFor example, the user detail page highlights the User Management menu."
+          },
+          "validation": {
+            "nameRequired": "Please enter menu name",
+            "nameLength": "Length must be between 2 and 20 characters",
+            "pathRequired": "Please enter route path",
+            "labelRequired": "Please enter permission mark",
+            "authNameRequired": "Please enter permission name",
+            "authLabelRequired": "Please enter permission mark",
+            "submitFailed": "Form validation failed. Please check your input."
+          }
+        },
         "search": {
           "name": "Menu Name",
           "route": "Route Path"
@@ -569,6 +642,91 @@
           "addConfig": "Add Config",
           "setMaster": "Set as Master",
           "test": "Test"
+        },
+        "form": {
+          "titles": {
+            "create": "Create File Config",
+            "edit": "Edit File Config"
+          },
+          "fields": {
+            "name": "Config Name",
+            "storage": "Storage Type",
+            "remark": "Remark",
+            "domain": "Domain",
+            "basePath": "Base Path",
+            "host": "Host",
+            "port": "Port",
+            "username": "Username",
+            "password": "Password",
+            "ftpMode": "Mode",
+            "endpoint": "Endpoint",
+            "bucket": "Bucket",
+            "accessKey": "Access Key",
+            "accessSecret": "Access Secret",
+            "objectPrefix": "Object Prefix",
+            "sessionToken": "Session Token",
+            "region": "Region",
+            "enablePathStyleAccess": "Path Style",
+            "enablePublicAccess": "Public Access",
+            "configJson": "Config JSON"
+          },
+          "placeholders": {
+            "name": "Please enter config name",
+            "storage": "Please select storage type",
+            "remark": "Please enter remark",
+            "dbDomain": "Use relative path /api/file/db/... when empty",
+            "localBasePath": "For example /tmp/uploads",
+            "localDomain": "For example http://127.0.0.1:8080",
+            "hostExample": "For example 127.0.0.1",
+            "username": "Please enter username",
+            "password": "Please enter password",
+            "ftpMode": "Please select mode",
+            "remoteBasePath": "For example /uploads",
+            "optionalDomain": "Optional, for example http://127.0.0.1:8080",
+            "endpoint": "For example oss-cn-beijing.aliyuncs.com",
+            "bucket": "Please enter Bucket",
+            "accessKey": "Please enter Access Key",
+            "accessSecret": "Please enter Access Secret",
+            "objectPrefix": "Optional, for example corp-a or app/uploads",
+            "sessionToken": "Optional, fill in when using STS temporary credentials",
+            "s3Domain": "Use the default domain automatically when empty",
+            "region": "Auto-detect when empty",
+            "configJson": "Please enter JSON, for example {\"domain\":\"http://127.0.0.1:8080\"}"
+          },
+          "options": {
+            "ftpMode": {
+              "active": "Active",
+              "passive": "Passive"
+            }
+          },
+          "tooltips": {
+            "dbDomain": "Optional. Used to compose the access URL for database storage. When empty, the system download API is typically used.",
+            "localBasePath": "Files will be written to the server's local disk directory. Make sure the service process has read and write permissions.",
+            "localDomain": "Used to compose the file access URL. When empty, a relative path or the system default address is typically returned.",
+            "ftpHost": "FTP server address or domain.",
+            "ftpPort": "FTP port, usually 21 by default.",
+            "ftpUsername": "FTP login username.",
+            "ftpPassword": "FTP login password.",
+            "ftpMode": "FTP transfer mode, Active or Passive.",
+            "ftpBasePath": "FTP remote root directory. Files will continue to be stored in subdirectories under this path.",
+            "remoteDomain": "Optional. Used to compose the file access URL. When empty, a relative path /api/file/{configId}/get/{path} is returned.",
+            "sftpHost": "SFTP server address or domain.",
+            "sftpPort": "SFTP port, usually 22 by default.",
+            "sftpUsername": "SFTP login username.",
+            "sftpPassword": "SFTP login password.",
+            "sftpBasePath": "SFTP remote root directory. Files will continue to be stored in subdirectories under this path.",
+            "endpoint": "Object storage service endpoint, such as the access domain provided by OSS, MinIO, or COS.",
+            "bucket": "Bucket name. Objects will be uploaded to this bucket.",
+            "accessKey": "Access key ID. Used together with Access Secret.",
+            "accessSecret": "Access key secret. Used together with Access Key.",
+            "objectPrefix": "Optional. Used as a common prefix for all object keys, for example corp-a/uploads.",
+            "sessionToken": "Optional. Fill in only when using STS temporary credentials. Leave empty for long-term AK/SK scenarios.",
+            "s3Domain": "Optional. Used to override the default access address, such as a CDN domain or custom domain.",
+            "region": "Optional. The region where the object storage is located, such as cn-beijing or ap-guangzhou. When empty, the backend will try to infer it from the endpoint.",
+            "enablePathStyleAccess": "When enabled, uses endpoint/bucket/key. When disabled, typically uses bucket.endpoint/key. This is often required for MinIO and similar services.",
+            "enablePublicAccess": "When enabled, returns a public access URL. When disabled, returns a signed access URL.",
+            "configJson": "A structured form is not provided for the current storage type. Please enter the full JSON config directly."
+          }
         },
         "search": {
           "name": "Config Name",

@@ -10,7 +10,7 @@
     align-center
     @close="handleClose"
   >
-    <ElForm ref="formRef" :model="form" :rules="rules" label-width="120px">
+    <ElForm ref="formRef" :model="form" :rules="rules" label-width="auto">
       <ElFormItem v-if="dialogType === 'edit'" :label="t('pages.system.role.dialog.fields.type')">
         <ElInput
           :model-value="

@@ -9,7 +9,7 @@
     width="30%"
     align-center
   >
-    <ElForm ref="formRef" :model="formData" :rules="rules" label-width="80px">
+    <ElForm ref="formRef" :model="formData" :rules="rules" label-width="auto">
       <ElFormItem :label="t('pages.system.user.dialog.fields.username')" prop="username">
         <ElInput
           v-model="formData.username"

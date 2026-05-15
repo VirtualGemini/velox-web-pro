@@ -37,6 +37,14 @@
     "cancel": "取消",
     "confirm": "确定",
     "logOutTips": "您是否要退出登录?",
+    "iconPicker": {
+      "title": "选择图标",
+      "subtitle": "支持预设图标快速筛选",
+      "placeholder": "请选择图标",
+      "searchPlaceholder": "输入图标名称筛选",
+      "count": "共 {count} 个图标",
+      "unmatched": "未匹配到预设图标"
+    },
     "status": {
       "enabled": "启用",
       "disabled": "禁用",
@@ -423,6 +431,71 @@
           "expand": "展开",
           "collapse": "收起"
         },
+        "dialog": {
+          "titles": {
+            "createMenu": "新建菜单",
+            "editMenu": "编辑菜单",
+            "createButton": "新建按钮",
+            "editButton": "编辑按钮"
+          },
+          "types": {
+            "menu": "菜单",
+            "button": "按钮"
+          },
+          "fields": {
+            "menuType": "菜单类型",
+            "name": "菜单名称",
+            "path": "路由地址",
+            "label": "权限标识",
+            "component": "组件路径",
+            "icon": "图标",
+            "roles": "角色权限",
+            "sort": "菜单排序",
+            "link": "外部链接",
+            "showTextBadge": "文本徽章",
+            "activePath": "激活路径",
+            "isEnable": "是否启用",
+            "keepAlive": "页面缓存",
+            "isHide": "隐藏菜单",
+            "isIframe": "是否内嵌",
+            "showBadge": "显示徽章",
+            "fixedTab": "固定标签",
+            "isHideTab": "标签隐藏",
+            "isFullPage": "全屏页面",
+            "authName": "权限名称",
+            "authLabel": "权限标识",
+            "authSort": "权限排序"
+          },
+          "placeholders": {
+            "name": "请输入菜单名称",
+            "path": "如：/dashboard 或 console",
+            "label": "如：User",
+            "component": "如：/system/user 或留空",
+            "icon": "请选择图标",
+            "roles": "输入角色标识后按回车，如：R_SUPER",
+            "link": "如：https://www.example.com",
+            "showTextBadge": "如：New、Hot",
+            "activePath": "如：/system/user",
+            "authName": "如：新增、编辑、删除",
+            "authLabel": "如：add、edit、delete"
+          },
+          "tooltips": {
+            "path": "一级菜单：以 / 开头的绝对路径（如 /dashboard）\n二级及以下：相对路径（如 console、user）",
+            "component": "一级父级菜单：填写 /index/index\n具体页面：填写组件路径（如 /system/user）\n目录菜单：留空",
+            "icon": "可选择项目内支持的图标，选择后会自动写入 ri: 图标代码",
+            "roles": "仅用于前端权限模式：配置角色标识（如 R_SUPER、R_ADMIN）\n后端权限模式：无需配置",
+            "activePath": "用于详情页等隐藏菜单，指定高亮显示的父级菜单路径\n例如：用户详情页高亮显示“用户管理”菜单"
+          },
+          "validation": {
+            "nameRequired": "请输入菜单名称",
+            "nameLength": "长度在 2 到 20 个字符",
+            "pathRequired": "请输入路由地址",
+            "labelRequired": "请输入权限标识",
+            "authNameRequired": "请输入权限名称",
+            "authLabelRequired": "请输入权限标识",
+            "submitFailed": "表单校验失败，请检查输入"
+          }
+        },
         "search": {
           "name": "菜单名称",
           "route": "路由地址"
@@ -569,6 +642,91 @@
           "addConfig": "新增配置",
           "setMaster": "设为主配置",
           "test": "测试"
+        },
+        "form": {
+          "titles": {
+            "create": "新增文件配置",
+            "edit": "编辑文件配置"
+          },
+          "fields": {
+            "name": "配置名称",
+            "storage": "存储类型",
+            "remark": "备注",
+            "domain": "访问域名",
+            "basePath": "基础目录",
+            "host": "Host",
+            "port": "Port",
+            "username": "Username",
+            "password": "Password",
+            "ftpMode": "Mode",
+            "endpoint": "Endpoint",
+            "bucket": "Bucket",
+            "accessKey": "Access Key",
+            "accessSecret": "Access Secret",
+            "objectPrefix": "对象前缀",
+            "sessionToken": "Session Token",
+            "region": "Region",
+            "enablePathStyleAccess": "Path Style",
+            "enablePublicAccess": "公开访问",
+            "configJson": "配置 JSON"
+          },
+          "placeholders": {
+            "name": "请输入配置名称",
+            "storage": "请选择存储类型",
+            "remark": "请输入备注信息",
+            "dbDomain": "为空时使用相对路径 /api/file/db/...",
+            "localBasePath": "例如 /tmp/uploads",
+            "localDomain": "例如 http://127.0.0.1:8080",
+            "hostExample": "例如 127.0.0.1",
+            "username": "请输入用户名",
+            "password": "请输入密码",
+            "ftpMode": "请选择模式",
+            "remoteBasePath": "例如 /uploads",
+            "optionalDomain": "选填，例如 http://127.0.0.1:8080",
+            "endpoint": "例如 oss-cn-beijing.aliyuncs.com",
+            "bucket": "请输入 Bucket",
+            "accessKey": "请输入 Access Key",
+            "accessSecret": "请输入 Access Secret",
+            "objectPrefix": "可选，例如 corp-a 或 app/uploads",
+            "sessionToken": "可选，使用 STS 临时凭证时填写",
+            "s3Domain": "为空时自动拼接默认域名",
+            "region": "为空时自动推断",
+            "configJson": "请输入 JSON，例如 {\"domain\":\"http://127.0.0.1:8080\"}"
+          },
+          "options": {
+            "ftpMode": {
+              "active": "Active",
+              "passive": "Passive"
+            }
+          },
+          "tooltips": {
+            "dbDomain": "可选。数据库存储时用于拼接访问地址，不填时通常走系统默认下载接口。",
+            "localBasePath": "文件会写入服务器本地磁盘目录，请确保服务进程有读写权限。",
+            "localDomain": "用于拼接文件访问地址，不填时通常返回相对路径或使用系统默认地址。",
+            "ftpHost": "FTP 服务器地址或域名。",
+            "ftpPort": "FTP 端口，默认一般是 21。",
+            "ftpUsername": "FTP 登录用户名。",
+            "ftpPassword": "FTP 登录密码。",
+            "ftpMode": "FTP 传输模式，Active 或 Passive。",
+            "ftpBasePath": "FTP 远端根目录，文件会按该目录继续分层存放。",
+            "remoteDomain": "可选，用于拼接文件访问地址；不填时返回相对路径 /api/file/{configId}/get/{path}。",
+            "sftpHost": "SFTP 服务器地址或域名。",
+            "sftpPort": "SFTP 端口，默认一般是 22。",
+            "sftpUsername": "SFTP 登录用户名。",
+            "sftpPassword": "SFTP 登录密码。",
+            "sftpBasePath": "SFTP 远端根目录，文件会按该目录继续分层存放。",
+            "endpoint": "对象存储服务地址，例如 OSS、MinIO、COS 提供的访问域名。",
+            "bucket": "存储桶名称，对象会上传到这个 bucket。",
+            "accessKey": "访问密钥 ID，和 Access Secret 成对使用。",
+            "accessSecret": "访问密钥密码，和 Access Key 成对使用。",
+            "objectPrefix": "可选。会作为所有对象 key 的统一前缀，例如 corp-a/uploads。",
+            "sessionToken": "可选。仅在使用 STS 临时凭证时填写，长期 AK/SK 场景留空。",
+            "s3Domain": "可选。用于覆盖默认访问地址，例如 CDN 域名或自定义域名。",
+            "region": "可选。对象存储所在地域，如 cn-beijing、ap-guangzhou；不填时后端会尝试从 endpoint 推断。",
+            "enablePathStyleAccess": "开启后使用 endpoint/bucket/key 形式；关闭时通常使用 bucket.endpoint/key 形式。MinIO 等场景常需开启。",
+            "enablePublicAccess": "开启后返回公开访问地址；关闭后会生成带签名的访问地址。",
+            "configJson": "当前存储类型未提供结构化表单，请直接输入完整 JSON 配置。"
+          }
         },
         "search": {
           "name": "配置名称",

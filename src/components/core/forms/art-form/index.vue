@@ -7,6 +7,7 @@
       ref="formRef"
       :model="modelValue"
       :label-position="labelPosition"
+      :label-width="labelWidth"
       v-bind="{ ...$attrs }"
     >
       <ElRow class="flex flex-wrap" :gutter="gutter">
@@ -19,10 +20,7 @@
           :lg="getColSpan(item.span, 'lg')"
           :xl="getColSpan(item.span, 'xl')"
         >
-          <ElFormItem
-            :prop="item.key"
-            :label-width="item.label ? item.labelWidth || labelWidth : undefined"
-          >
+          <ElFormItem :prop="item.key" :label-width="item.label ? item.labelWidth : undefined">
             <template #label v-if="item.label">
               <component v-if="typeof item.label !== 'string'" :is="item.label" />
               <span v-else>{{ item.label }}</span>
@@ -220,7 +218,7 @@
     span: 6,
     gutter: 12,
     labelPosition: 'right',
-    labelWidth: '70px',
+    labelWidth: 'auto',
     buttonLeftLimit: 2,
     showReset: true,
     showSubmit: true,
@@ -505,3 +503,11 @@
   // 解构 props 以便在模板中直接使用
   const { span, gutter, labelPosition, labelWidth } = toRefs(props)
 </script>
+
+<style lang="scss" scoped>
+  :deep(.el-form-item__label) {
+    justify-content: flex-end;
+    text-align: right;
+    white-space: nowrap;
+  }
+</style>
