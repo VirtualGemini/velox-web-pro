@@ -354,17 +354,13 @@ export const systemRoutes: AppRouteRecord = {
     const indexContent = `import { AppRouteRecord } from '@/types/router'
 import { dashboardRoutes } from './dashboard'
 import { systemRoutes } from './system'
-import { resultRoutes } from './result'
-import { exceptionRoutes } from './exception'
 
 /**
  * 导出所有模块化路由
  */
 export const routeModules: AppRouteRecord[] = [
   dashboardRoutes,
-  systemRoutes,
-  resultRoutes,
-  exceptionRoutes
+  systemRoutes
 ]
 `
     await fs.writeFile(path.join(modulesPath, 'index.ts'), indexContent, 'utf-8')
@@ -652,7 +648,7 @@ async function showCleanupWarning() {
     {
       icon: icons.code,
       name: '路由模块文件',
-      desc: '删除演示路由模块，只保留核心模块（dashboard、system、result、exception）',
+      desc: '删除演示路由模块，只保留核心模块（dashboard、system）',
       color: theme.primary
     },
     {
@@ -698,8 +694,6 @@ async function showCleanupWarning() {
   const preservedModules = [
     { name: 'Dashboard', desc: '工作台页面' },
     { name: 'System', desc: '系统管理模块' },
-    { name: 'Result', desc: '结果页面' },
-    { name: 'Exception', desc: '异常页面' },
     { name: 'Auth', desc: '登录注册功能' },
     { name: 'Core Components', desc: '核心组件库' }
   ]
