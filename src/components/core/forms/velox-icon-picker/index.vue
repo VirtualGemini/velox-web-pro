@@ -1,0 +1,206 @@
+<template>
+  <ElInput
+    v-model="inputValue"
+    class="velox-icon-picker"
+    :clearable="clearable"
+    :placeholder="resolvedPlaceholder"
+    :disabled="disabled"
+    v-bind="$attrs"
+    @clear="handleClear"
+  >
+    <template #prefix>
+      <ElPopover
+        v-model:visible="popoverVisible"
+        placement="bottom-start"
+        :width="dynamicPopoverWidth"
+        trigger="click"
+        :popper-class="popperClass"
+        :fallback-placements="['bottom-start', 'top-start']"
+      >
+        <template #reference>
+          <ElButton link class="velox-icon-picker__trigger" :disabled="disabled" @click.stop>
+            <VeloxSvgIcon :icon="selectedIcon" class="velox-icon-picker__trigger-icon" />
+          </ElButton>
+        </template>
+
+        <div class="velox-icon-picker__panel">
+          <div class="velox-icon-picker__header">
+            <div>
+              <div class="velox-icon-picker__title">{{ resolvedTitle }}</div>
+              <div class="velox-icon-picker__subtitle">{{ resolvedSubtitle }}</div>
+            </div>
+            <div class="velox-icon-picker__preview">
+              <VeloxSvgIcon :icon="selectedIcon" class="velox-icon-picker__preview-icon" />
+            </div>
+          </div>
+
+          <div class="velox-icon-picker__toolbar">
+            <ElInput
+              v-model="keyword"
+              clearable
+              :placeholder="t('common.iconPicker.searchPlaceholder')"
+            >
+              <template #prefix>
+                <VeloxSvgIcon icon="ri:search-line" class="text-base text-g-500" />
+              </template>
+            </ElInput>
+          </div>
+
+          <div class="velox-icon-picker__meta">
+            <span>{{ t('common.iconPicker.count', { count: filteredIcons.length }) }}</span>
+            <span v-if="inputValue && !isPresetIcon">{{ t('common.iconPicker.unmatched') }}</span>
+          </div>
+
+          <ElScrollbar
+            :max-height="windowWidth <= 768 ? 240 : 320"
+            class="velox-icon-picker__scrollbar"
+          >
+            <div class="velox-icon-picker__grid">
+              <button
+                v-for="icon in pagedIcons"
+                :key="icon"
+                type="button"
+                class="velox-icon-picker__item"
+                :class="{ 'is-active': icon === inputValue }"
+                @click="handleSelect(icon)"
+              >
+                <VeloxSvgIcon :icon="icon" class="velox-icon-picker__item-icon" />
+              </button>
+            </div>
+          </ElScrollbar>
+
+          <div class="velox-icon-picker__footer">
+            <ElPagination
+              v-model:current-page="currentPage"
+              :page-size="pageSize"
+              :pager-count="5"
+              layout="prev, pager, next"
+              :total="filteredIcons.length"
+              :hide-on-single-page="filteredIcons.length <= pageSize"
+              small
+            />
+          </div>
+        </div>
+      </ElPopover>
+    </template>
+  </ElInput>
+</template>
+
+<script setup lang="ts">
+  import VeloxSvgIcon from '@/components/core/base/velox-svg-icon/index.vue'
+  import { REMIX_ICON_OPTIONS } from './icons'
+  import { useWindowSize } from '@vueuse/core'
+  import { useI18n } from 'vue-i18n'
+
+  defineOptions({
+    name: 'VeloxIconPicker',
+    inheritAttrs: false
+  })
+
+  interface Props {
+    modelValue?: string
+    placeholder?: string
+    disabled?: boolean
+    clearable?: boolean
+    title?: string
+    subtitle?: string
+    defaultIcon?: string
+    popperClass?: string
+    pageSize?: number
+    icons?: readonly string[]
+  }
+
+  interface Emits {
+    (e: 'update:modelValue', value: string): void
+  }
+
+  const props = withDefaults(defineProps<Props>(), {
+    modelValue: '',
+    placeholder: '',
+    disabled: false,
+    clearable: true,
+    title: '',
+    subtitle: '',
+    defaultIcon: 'ri:apps-2-line',
+    popperClass: 'velox-icon-picker-popover',
+    pageSize: 20,
+    icons: () => REMIX_ICON_OPTIONS
+  })
+
+  const emit = defineEmits<Emits>()
+  const { width: windowWidth } = useWindowSize()
+  const { t } = useI18n()
+
+  const popoverVisible = ref(false)
+  const currentPage = ref(1)
+  const keyword = ref('')
+
+  const inputValue = computed({
+    get: () => props.modelValue,
+    set: (value: string) => emit('update:modelValue', value)
+  })
+
+  const resolvedPlaceholder = computed(
+    () => props.placeholder || t('common.iconPicker.placeholder')
+  )
+  const resolvedTitle = computed(() => props.title || t('common.iconPicker.title'))
+  const resolvedSubtitle = computed(() => props.subtitle || t('common.iconPicker.subtitle'))
+
+  const selectedIcon = computed(() => {
+    if (!inputValue.value) return props.defaultIcon
+    return inputValue.value.startsWith('ri:') ? inputValue.value : props.defaultIcon
+  })
+
+  const isPresetIcon = computed(() => props.icons.includes(inputValue.value))
+
+  const filteredIcons = computed(() => {
+    const currentKeyword = keyword.value.trim().toLowerCase()
+
+    if (!currentKeyword) return props.icons
+
+    return props.icons.filter((icon) => icon.toLowerCase().includes(currentKeyword))
+  })
+
+  const pagedIcons = computed(() => {
+    const start = (currentPage.value - 1) * props.pageSize
+    const end = start + props.pageSize
+    return filteredIcons.value.slice(start, end)
+  })
+
+  const dynamicPopoverWidth = computed(() => {
+    if (windowWidth.value <= 768) {
+      return Math.min(windowWidth.value, 240)
+    }
+    return 340
+  })
+
+  const handleSelect = (icon: string) => {
+    inputValue.value = icon
+    popoverVisible.value = false
+  }
+
+  const handleClear = () => {
+    inputValue.value = ''
+  }
+
+  watch(
+    () => popoverVisible.value,
+    (visible) => {
+      if (!visible) {
+        keyword.value = ''
+        currentPage.value = 1
+      }
+    }
+  )
+
+  watch(
+    () => keyword.value,
+    () => {
+      currentPage.value = 1
+    }
+  )
+</script>
+
+<style lang="scss" scoped>
+  @use './style';
+</style>

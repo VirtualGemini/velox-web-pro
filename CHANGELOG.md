@@ -24,7 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Added
 
-- ArtForm and ArtSearchBar component labels support custom render functions, enabling complex labels with tooltips
+- VeloxForm and VeloxSearchBar component labels support custom render functions, enabling complex labels with tooltips
 - Menu management form key fields added Tooltip hints, lowering user configuration threshold
 - Iconify added offline icon loading mode
 - Logout added redirect property for redirecting to corresponding page after re-login
@@ -48,7 +48,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Style system refactored: Sass fully migrated to Tailwind CSS, improving development efficiency and style consistency
 - Icon solution upgraded: Iconfont replaced with Iconify, supporting richer icon libraries and on-demand loading
 - Route registration refactored: Comprehensive refactoring of route registration system with object-oriented design, improving code maintainability, testability and extensibility
-- Refactored ArtTextScroll component, improving performance and maintainability
+- Refactored VeloxTextScroll component, improving performance and maintainability
 - Refactored color system, unified UI visual specifications, improving interface consistency
 
 #### Optimized
@@ -58,16 +58,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Comment optimization: Unified module comment standards, improved component descriptions, feature explanations and usage examples, reducing user understanding cost and onboarding difficulty
 - Performance improvement: Optimized core code logic, improving system runtime efficiency
 - Menu optimization: Refined menu styles, optimized interaction experience and visual presentation
-- Responsive optimization: Optimized ArtForm and ArtSearchBar grid layout, adapting to various screen sizes
+- Responsive optimization: Optimized VeloxForm and VeloxSearchBar grid layout, adapting to various screen sizes
 - Configuration management optimization: Added setting.ts configuration file, supporting one-click copy and reset of system default settings
 
 #### Fixed
 
-- Fixed ArtForm and ArtSearchBar custom component rendering issues
+- Fixed VeloxForm and VeloxSearchBar custom component rendering issues
 
 #### Added
 
-- ArtForm and ArtSearchBar added render property, supporting custom component rendering
+- VeloxForm and VeloxSearchBar added render property, supporting custom component rendering
 - Festival feature enhancement: Fireworks configuration supports cross-date range settings and custom playback counts
 
 #### Upgraded
@@ -168,7 +168,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Added
 
-- Added ArtForm component
+- Added VeloxForm component
 
 #### Fixed
 
@@ -185,7 +185,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Added
 
-- ArtTableHeader added search button to control top search bar visibility
+- VeloxTableHeader added search button to control top search bar visibility
 - Added permission demonstration examples
 - Added global error handling framework
 
@@ -196,11 +196,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - useTable auto-recognizes response body with custom configuration (src/utils/table/tableConfig.ts)
 - useTable empty data browser warning optimization
 - API request code optimization, api.d.ts type optimization
-- Optimized ArtTable top button wrapping adaptive issue
-- ArtTable pagination component selection style optimization
-- ArtTable empty state height fills by default
-- ArtButtonMore component added icon and color configuration
-- ArtSearchBar label doesn't occupy space when empty
+- Optimized VeloxTable top button wrapping adaptive issue
+- VeloxTable pagination component selection style optimization
+- VeloxTable empty state height fills by default
+- VeloxButtonMore component added icon and color configuration
+- VeloxSearchBar label doesn't occupy space when empty
 - Table operation column drag prohibits fixed column dragging
 - Role management page API integration and code optimization
 - Menu management page optimization
@@ -225,19 +225,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Added
 
-- Added ArtSearchBar component examples
+- Added VeloxSearchBar component examples
 - useTable added excludeParams to exclude certain parameters from requests
 
 #### Refactored
 
-- Refactored ArtSearchBar component, supports more components and form validation
+- Refactored VeloxSearchBar component, supports more components and form validation
 
 #### Optimized
 
 - useTable column configuration: supports dynamic update capability
 - Optimized color picker border radius
 - Unified el-radio and el-checkbox sizes
-- art-stats-card added decimal places and separator configuration
+- velox-stats-card added decimal places and separator configuration
 - Route configuration example optimization
 - Advanced table added custom data fetching example
 - Optimized path alias type issues
@@ -256,7 +256,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Removed
 
-- Removed art-chart-empty component
+- Removed velox-chart-empty component
 
 ---
 
@@ -276,7 +276,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed user info API timing issue causing route registration menu rendering error
 - Fixed dynamic route validation issue causing iframe not to display
 - Fixed reset file syntax error
-- Fixed ArtTable data type error
+- Fixed VeloxTable data type error
 - Fixed map scroll wheel zoom issue
 
 ---
@@ -289,7 +289,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Refactored
 
-- ArtTable component refactored
+- VeloxTable component refactored
 
 #### Upgraded
 
@@ -308,7 +308,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Fixed
 
-- Fixed ArtTable switching page size executing two requests bug
+- Fixed VeloxTable switching page size executing two requests bug
 
 ---
 
@@ -363,7 +363,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Refactored
 
-- Refactored ArtTable, ArtTableHeader, ArtNotification components
+- Refactored VeloxTable, VeloxTableHeader, VeloxNotification components
 
 #### Upgraded
 
@@ -371,7 +371,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Removed
 
-- Removed CountTo plugin, replaced with ArtCountTo component
+- Removed CountTo plugin, replaced with VeloxCountTo component
 
 #### Fixed
 
@@ -431,7 +431,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Fixed
 
-- Fixed login page drag component ArtDragVerify width and color abnormal bug
+- Fixed login page drag component VeloxDragVerify width and color abnormal bug
 - Fixed iframe page mixed mode and double column mode abnormal bug
 - Optimized lock screen page being penetrated by el-loading bug
 
@@ -442,12 +442,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 #### Refactored
 
 - Refactored form-related components in components/core/forms folder, improved maintainability and consistency
-- Refactored ArtBreadcrumb breadcrumb navigation component, optimized logic structure and styles
-- Refactored ArtFireworksEffect fireworks effect component, significantly improved rendering performance and animation smoothness
+- Refactored VeloxBreadcrumb breadcrumb navigation component, optimized logic structure and styles
+- Refactored VeloxFireworksEffect fireworks effect component, significantly improved rendering performance and animation smoothness
 
 #### Optimized
 
-- Optimized ArtChatWindow and ArtFastEnter component code, improved readability and performance
+- Optimized VeloxChatWindow and VeloxFastEnter component code, improved readability and performance
 
 #### Added
 
@@ -468,12 +468,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Refactored
 
-- ArtMenuRight component refactored
+- VeloxMenuRight component refactored
 - Components under components/core/cards refactored, code optimized
 
 #### Optimized
 
-- ArtWatermark added type annotations
+- VeloxWatermark added type annotations
 
 ---
 
@@ -481,14 +481,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 #### Refactored
 
-- ArtResultPage component refactored
+- VeloxResultPage component refactored
 
 #### Optimized
 
-- ArtTextScroll component code optimization
-- ArtException component added type hints
-- ArtCutterImg component style optimization, added type definitions
-- ArtVideoPlayer component added type definitions
+- VeloxTextScroll component code optimization
+- VeloxException component added type hints
+- VeloxCutterImg component style optimization, added type definitions
+- VeloxVideoPlayer component added type definitions
 
 ---
 

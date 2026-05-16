@@ -2,7 +2,7 @@
 <template>
   <div class="login-left-view">
     <div class="logo">
-      <ArtLogo class="icon" size="46" />
+      <VeloxLogo class="icon" size="46" />
       <h1 class="title">{{ AppConfig.systemInfo.name }}</h1>
     </div>
 
@@ -135,13 +135,13 @@
       h1 {
         font-size: 24px;
         font-weight: 400;
-        color: var(--art-gray-900) !important;
+        color: var(--velox-gray-900) !important;
       }
 
       p {
         margin-top: 10px;
         font-size: 14px;
-        color: var(--art-gray-600) !important;
+        color: var(--velox-gray-600) !important;
       }
     }
 

@@ -3,7 +3,7 @@
   <div class="w-full h-full p-0 bg-transparent border-none shadow-none">
     <div class="relative flex-b mt-2.5 max-md:block max-md:mt-1">
       <div class="w-112 mr-5 max-md:w-full max-md:mr-0">
-        <div class="art-card-sm relative p-9 pb-6 overflow-hidden text-center">
+        <div class="velox-card-sm relative p-9 pb-6 overflow-hidden text-center">
           <img class="absolute top-0 left-0 w-full h-50 object-cover" src="@imgs/user/bg.webp" />
           <div class="relative z-10 w-20 h-20 mx-auto mt-30">
             <el-upload
@@ -20,7 +20,7 @@
               <div
                 class="absolute bottom-0 right-0 w-6 h-6 bg-g-500 rounded-full flex items-center justify-center cursor-pointer"
               >
-                <ArtSvgIcon icon="ri:upload-line" class="text-white text-xs" />
+                <VeloxSvgIcon icon="ri:upload-line" class="text-white text-xs" />
               </div>
             </el-upload>
           </div>
@@ -29,19 +29,19 @@
 
           <div class="w-75 mx-auto mt-7.5 text-left">
             <div class="mt-2.5">
-              <ArtSvgIcon icon="ri:mail-line" class="text-g-700" />
+              <VeloxSvgIcon icon="ri:mail-line" class="text-g-700" />
               <span class="ml-2 text-sm">{{ displayEmail }}</span>
             </div>
             <div class="mt-2.5">
-              <ArtSvgIcon icon="ri:user-3-line" class="text-g-700" />
+              <VeloxSvgIcon icon="ri:user-3-line" class="text-g-700" />
               <span class="ml-2 text-sm">{{ displayPosition }}</span>
             </div>
             <div class="mt-2.5">
-              <ArtSvgIcon icon="ri:map-pin-line" class="text-g-700" />
+              <VeloxSvgIcon icon="ri:map-pin-line" class="text-g-700" />
               <span class="ml-2 text-sm">{{ displayAddress }}</span>
             </div>
             <div class="mt-2.5">
-              <ArtSvgIcon icon="ri:dribbble-fill" class="text-g-700" />
+              <VeloxSvgIcon icon="ri:dribbble-fill" class="text-g-700" />
               <span class="ml-2 text-sm">{{ displayCompany }}</span>
             </div>
           </div>
@@ -66,7 +66,7 @@
         </div>
       </div>
       <div class="flex-1 overflow-hidden max-md:w-full max-md:mt-3.5">
-        <div class="art-card-sm">
+        <div class="velox-card-sm">
           <h1 class="p-4 text-xl font-normal border-b border-g-300">
             {{ t('pages.system.userCenter.basicSettings.title') }}
           </h1>
@@ -158,7 +158,7 @@
           </ElForm>
         </div>
 
-        <div class="art-card-sm my-5">
+        <div class="velox-card-sm my-5">
           <h1 class="p-4 text-xl font-normal border-b border-g-300">
             {{ t('pages.system.userCenter.password.title') }}
           </h1>

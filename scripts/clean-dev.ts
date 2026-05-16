@@ -171,7 +171,7 @@ const targets = [
   'src/assets/images/cover',
   'src/assets/images/safeguard',
   'src/assets/images/3d',
-  'src/components/core/charts/art-map-chart',
+  'src/components/core/charts/velox-map-chart',
   'src/components/business/comment-widget'
 ]
 
@@ -669,7 +669,7 @@ async function showCleanupWarning() {
       desc: '清理中英文语言包中的演示菜单项',
       color: theme.warning
     },
-    { icon: icons.map, name: '地图组件', desc: '移除art-map-chart地图组件', color: theme.error },
+    { icon: icons.map, name: '地图组件', desc: '移除velox-map-chart地图组件', color: theme.error },
     { icon: icons.chat, name: '评论组件', desc: '移除comment-widget评论组件', color: theme.orange },
     {
       icon: icons.bolt,

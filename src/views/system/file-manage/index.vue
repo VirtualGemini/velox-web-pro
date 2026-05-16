@@ -1,6 +1,6 @@
 <template>
-  <div class="art-full-height">
-    <ArtSearchBar
+  <div class="velox-full-height">
+    <VeloxSearchBar
       v-show="showSearchBar"
       v-model="searchForm"
       :items="searchItems"
@@ -9,8 +9,8 @@
       @reset="handleReset"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+    <ElCard class="velox-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <VeloxTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
@@ -23,9 +23,9 @@
             </ElButton>
           </ElSpace>
         </template>
-      </ArtTableHeader>
+      </VeloxTableHeader>
 
-      <ArtTable
+      <VeloxTable
         :loading="loading"
         :data="data"
         :columns="columns"
@@ -74,7 +74,7 @@
   import { useI18n } from 'vue-i18n'
   import { useTable } from '@/hooks/core/useTable'
   import { useAuth } from '@/hooks/core/useAuth'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import VeloxButtonTable from '@/components/core/forms/velox-button-table/index.vue'
   import {
     type FileRecord,
     type FileQuery,
@@ -251,14 +251,14 @@
       { class: 'flex items-center justify-start' },
       [
         canAccess('system:file:download')
-          ? h(ArtButtonTable, {
+          ? h(VeloxButtonTable, {
               type: 'view',
               icon: 'ri:download-2-line',
               onClick: () => handleDownload(row)
             })
           : null,
         canAccess('system:file:delete')
-          ? h(ArtButtonTable, {
+          ? h(VeloxButtonTable, {
               type: 'delete',
               onClick: () => handleDelete(row)
             })

@@ -12,7 +12,7 @@
  * - 配置查询 - 提供工具函数快速查询组件配置
  *
  * @module config/component
- * @author Art Design Pro Team
+ * @author Velox Team
  */
 
 import { defineAsyncComponent } from 'vue'
@@ -25,7 +25,7 @@ export const globalComponentsConfig: GlobalComponentConfig[] = [
     name: '设置面板',
     key: 'settings-panel',
     component: defineAsyncComponent(
-      () => import('@/components/core/layouts/art-settings-panel/index.vue')
+      () => import('@/components/core/layouts/velox-settings-panel/index.vue')
     ),
     enabled: true
   },
@@ -33,7 +33,7 @@ export const globalComponentsConfig: GlobalComponentConfig[] = [
     name: '全局搜索',
     key: 'global-search',
     component: defineAsyncComponent(
-      () => import('@/components/core/layouts/art-global-search/index.vue')
+      () => import('@/components/core/layouts/velox-global-search/index.vue')
     ),
     enabled: true
   },
@@ -41,7 +41,7 @@ export const globalComponentsConfig: GlobalComponentConfig[] = [
     name: '锁屏',
     key: 'screen-lock',
     component: defineAsyncComponent(
-      () => import('@/components/core/layouts/art-screen-lock/index.vue')
+      () => import('@/components/core/layouts/velox-screen-lock/index.vue')
     ),
     enabled: true
   },
@@ -49,7 +49,7 @@ export const globalComponentsConfig: GlobalComponentConfig[] = [
     name: '聊天窗口',
     key: 'chat-window',
     component: defineAsyncComponent(
-      () => import('@/components/core/layouts/art-chat-window/index.vue')
+      () => import('@/components/core/layouts/velox-chat-window/index.vue')
     ),
     enabled: true
   },
@@ -57,7 +57,7 @@ export const globalComponentsConfig: GlobalComponentConfig[] = [
     name: '礼花效果',
     key: 'fireworks-effect',
     component: defineAsyncComponent(
-      () => import('@/components/core/layouts/art-fireworks-effect/index.vue')
+      () => import('@/components/core/layouts/velox-fireworks-effect/index.vue')
     ),
     enabled: true
   },
@@ -65,7 +65,7 @@ export const globalComponentsConfig: GlobalComponentConfig[] = [
     name: '水印效果',
     key: 'watermark',
     component: defineAsyncComponent(
-      () => import('@/components/core/others/art-watermark/index.vue')
+      () => import('@/components/core/others/velox-watermark/index.vue')
     ),
     enabled: true
   }

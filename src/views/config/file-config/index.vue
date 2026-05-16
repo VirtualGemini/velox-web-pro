@@ -1,6 +1,6 @@
 <template>
-  <div class="art-full-height">
-    <ArtSearchBar
+  <div class="velox-full-height">
+    <VeloxSearchBar
       v-show="showSearchBar"
       v-model="searchForm"
       :items="searchItems"
@@ -9,8 +9,8 @@
       @reset="handleReset"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+    <ElCard class="velox-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <VeloxTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
@@ -27,9 +27,9 @@
             </ElButton>
           </ElSpace>
         </template>
-      </ArtTableHeader>
+      </VeloxTableHeader>
 
-      <ArtTable
+      <VeloxTable
         :loading="loading"
         :data="data"
         :columns="columns"
@@ -543,7 +543,7 @@
   import { useWindowSize } from '@vueuse/core'
   import { useTable } from '@/hooks/core/useTable'
   import { useAuth } from '@/hooks/core/useAuth'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import VeloxButtonTable from '@/components/core/forms/velox-button-table/index.vue'
   import {
     type FileConfig,
     type FileConfigQuery,
@@ -994,17 +994,17 @@
       { class: 'file-config-operation-buttons flex items-center' },
       [
         canAccess('system:file-config:update')
-          ? h(ArtButtonTable, { type: 'edit', onClick: () => openEditDialog(row) })
+          ? h(VeloxButtonTable, { type: 'edit', onClick: () => openEditDialog(row) })
           : null,
         canAccess('system:file-config:delete')
-          ? h(ArtButtonTable, { type: 'delete', onClick: () => handleDelete(row) })
+          ? h(VeloxButtonTable, { type: 'delete', onClick: () => handleDelete(row) })
           : null,
         moreItems.length > 0
           ? h(
               ElDropdown,
               { trigger: 'click' },
               {
-                default: () => h(ArtButtonTable, { type: 'more' }),
+                default: () => h(VeloxButtonTable, { type: 'more' }),
                 dropdown: () => h(ElDropdownMenu, {}, () => moreItems)
               }
             )

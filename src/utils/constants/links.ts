@@ -3,14 +3,14 @@
  * 集中管理便于维护和更新链接地址
  *
  * @module utils/constants/links
- * @author Art Design Pro Team
+ * @author Velox Team
  */
 export const WEB_LINKS = {
   // Github 主页
-  GITHUB_HOME: 'https://github.com/Daymychen/art-design-pro',
+  GITHUB_HOME: 'https://github.com/Daymychen/velox-web',
 
   // 项目 Github 主页
-  GITHUB: 'https://github.com/Daymychen/art-design-pro',
+  GITHUB: 'https://github.com/Daymychen/velox-web',
 
   // 个人博客
   BLOG: 'https://www.artd.pro',

@@ -26,7 +26,7 @@
  * - 提供便捷的显示/隐藏方法
  *
  * @module utils/ui/loading
- * @author Art Design Pro Team
+ * @author Velox Team
  */
 import { fourDotsSpinnerSvg } from '@/assets/svg/loading'
 
@@ -46,7 +46,7 @@ const DEFAULT_LOADING_CONFIG = {
   },
   svg: fourDotsSpinnerSvg,
   svgViewBox: '0 0 40 40',
-  customClass: 'art-loading-fix'
+  customClass: 'velox-loading-fix'
 } as const
 
 interface LoadingInstance {

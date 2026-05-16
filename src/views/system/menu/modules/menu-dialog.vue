@@ -8,7 +8,7 @@
     class="menu-dialog"
     @closed="handleClosed"
   >
-    <ArtForm
+    <VeloxForm
       ref="formRef"
       v-model="form"
       :items="formItems"
@@ -32,9 +32,9 @@
 
       <!-- 图标选择器 -->
       <template #icon>
-        <ArtIconPicker v-model="form.icon" />
+        <VeloxIconPicker v-model="form.icon" />
       </template>
-    </ArtForm>
+    </VeloxForm>
 
     <template #footer>
       <span class="dialog-footer">
@@ -51,9 +51,9 @@
   import { QuestionFilled } from '@element-plus/icons-vue'
   import { formatMenuTitle } from '@/utils/router'
   import type { AppRouteRecord } from '@/types/router'
-  import type { FormItem } from '@/components/core/forms/art-form/index.vue'
-  import ArtForm from '@/components/core/forms/art-form/index.vue'
-  import ArtIconPicker from '@/components/core/forms/art-icon-picker/index.vue'
+  import type { FormItem } from '@/components/core/forms/velox-form/index.vue'
+  import VeloxForm from '@/components/core/forms/velox-form/index.vue'
+  import VeloxIconPicker from '@/components/core/forms/velox-icon-picker/index.vue'
   import { useWindowSize } from '@vueuse/core'
   import { useI18n } from 'vue-i18n'
 

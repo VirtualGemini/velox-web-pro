@@ -1,12 +1,12 @@
 <template>
-  <div class="art-card h-105 p-5 mb-5 max-sm:mb-4">
-    <div class="art-card-header">
+  <div class="velox-card h-105 p-5 mb-5 max-sm:mb-4">
+    <div class="velox-card-header">
       <div class="title">
         <h4>访问量</h4>
         <p>今年增长<span class="text-success">+15%</span></p>
       </div>
     </div>
-    <ArtLineChart
+    <VeloxLineChart
       height="calc(100% - 56px)"
       :data="data"
       :xAxisData="xAxisData"

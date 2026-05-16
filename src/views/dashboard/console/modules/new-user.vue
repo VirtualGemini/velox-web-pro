@@ -1,6 +1,6 @@
 <template>
-  <div class="art-card p-5 h-128 overflow-hidden mb-5 max-sm:mb-4">
-    <div class="art-card-header">
+  <div class="velox-card p-5 h-128 overflow-hidden mb-5 max-sm:mb-4">
+    <div class="velox-card-header">
       <div class="title">
         <h4>新用户</h4>
         <p>这个月增长<span class="text-success">+20%</span></p>
@@ -11,7 +11,7 @@
         <ElRadioButton value="今年" label="今年"></ElRadioButton>
       </ElRadioGroup>
     </div>
-    <ArtTable
+    <VeloxTable
       class="w-full"
       :data="tableData"
       style="width: 100%"
@@ -48,7 +48,7 @@
           </template>
         </ElTableColumn>
       </template>
-    </ArtTable>
+    </VeloxTable>
   </div>
 </template>
 
@@ -87,7 +87,7 @@
       age: 22,
       percentage: 60,
       pro: 0,
-      color: 'var(--art-primary)',
+      color: 'var(--velox-primary)',
       avatar: avatar1
     },
     {
@@ -97,7 +97,7 @@
       age: 21,
       percentage: 20,
       pro: 0,
-      color: 'var(--art-secondary)',
+      color: 'var(--velox-secondary)',
       avatar: avatar2
     },
     {
@@ -107,7 +107,7 @@
       age: 23,
       percentage: 60,
       pro: 0,
-      color: 'var(--art-warning)',
+      color: 'var(--velox-warning)',
       avatar: avatar3
     },
     {
@@ -117,7 +117,7 @@
       age: 28,
       percentage: 50,
       pro: 0,
-      color: 'var(--art-info)',
+      color: 'var(--velox-info)',
       avatar: avatar4
     },
     {
@@ -127,7 +127,7 @@
       age: 26,
       percentage: 70,
       pro: 0,
-      color: 'var(--art-error)',
+      color: 'var(--velox-error)',
       avatar: avatar5
     },
     {
@@ -137,7 +137,7 @@
       age: 25,
       percentage: 90,
       pro: 0,
-      color: 'var(--art-success)',
+      color: 'var(--velox-success)',
       avatar: avatar6
     }
   ])
@@ -160,7 +160,7 @@
 </script>
 
 <style lang="scss" scoped>
-  .art-card {
+  .velox-card {
     :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
       color: var(--el-color-primary) !important;
       background: transparent !important;

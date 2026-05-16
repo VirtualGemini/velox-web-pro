@@ -17,7 +17,7 @@ html.dark {
   // 输入区域背景颜色
   --w-e-textarea-bg-color: #090909;
   // 工具栏文字颜色
-  --w-e-toolbar-color: var(--art-gray-600);
+  --w-e-toolbar-color: var(--velox-gray-600);
   // 选中菜单颜色
   --w-e-toolbar-active-bg-color: #25262b;
   // 弹窗边框颜色
@@ -31,7 +31,7 @@ html.dark {
   // 按钮背景颜色
   --w-e-modal-button-bg-color: #090909;
   // hover toolbar 背景颜色
-  --w-e-toolbar-active-color: var(--art-gray-800);
+  --w-e-toolbar-active-color: var(--velox-gray-800);
 }
 
 .dark {
@@ -46,17 +46,17 @@ html.dark {
   }
 
   .el-image-viewer__actions__inner {
-    color: var(--art-gray-900) !important;
+    color: var(--velox-gray-900) !important;
   }
 
   .el-image-viewer__actions__inner .is-disabled {
-    color: var(--art-gray-500) !important;
+    color: var(--velox-gray-500) !important;
   }
 
   .el-image-viewer__close,
   .el-image-viewer__prev,
   .el-image-viewer__next {
-    color: var(--art-gray-900) !important;
+    color: var(--velox-gray-900) !important;
     background: rgba(18, 20, 28, 0.88) !important;
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
@@ -81,7 +81,7 @@ html.dark {
   }
   // 分隔线
   .w-e-bar-divider {
-    background-color: var(--art-gray-300) !important;
+    background-color: var(--velox-gray-300) !important;
   }
 
   .w-e-select-list,
@@ -112,7 +112,7 @@ html.dark {
   /* 引用 */
   .w-e-text-container [data-slate-editor] blockquote {
     border-left: 4px solid var(--default-border-dashed) !important;
-    background-color: var(--art-color);
+    background-color: var(--velox-color);
   }
 
   .editor-wrapper {
@@ -121,7 +121,7 @@ html.dark {
     }
 
     .w-e-modal {
-      background-color: var(--art-color);
+      background-color: var(--velox-color);
     }
   }
 }

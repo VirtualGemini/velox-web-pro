@@ -58,11 +58,11 @@
                 class="relative z-[2] overflow-hidden select-none rounded-lg border border-transparent tad-300"
                 :class="{ '!border-[#FF4E4F]': !isPassing && isClickPass }"
               >
-                <ArtDragVerify
+                <VeloxDragVerify
                   ref="dragVerify"
                   v-model:value="isPassing"
                   :text="$t('login.sliderText')"
-                  textColor="var(--art-gray-700)"
+                  textColor="var(--velox-gray-700)"
                   :successText="$t('login.sliderSuccessText')"
                   progressBarBg="var(--main-color)"
                   :background="isDark ? '#26272F' : '#F1F1F4'"

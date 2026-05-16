@@ -13,7 +13,7 @@
  * 5. 自动查找模式 - 提供通过 ID 自动查找元素的便捷方式
  *
  * @module useLayoutHeight
- * @author Art Design Pro Team
+ * @author Velox Team
  */
 
 import { ref, computed, watch, onMounted } from 'vue'
@@ -27,12 +27,12 @@ interface LayoutHeightOptions {
   extraSpacing?: number
   /** 是否自动更新 CSS 变量（默认 true） */
   updateCssVar?: boolean
-  /** CSS 变量名称（默认 '--art-full-height'） */
+  /** CSS 变量名称（默认 '--velox-full-height'） */
   cssVarName?: string
 }
 
 export function useLayoutHeight(options: LayoutHeightOptions = {}) {
-  const { extraSpacing = 15, updateCssVar = true, cssVarName = '--art-full-height' } = options
+  const { extraSpacing = 15, updateCssVar = true, cssVarName = '--velox-full-height' } = options
 
   // 元素引用
   const headerRef = ref<HTMLElement>()
@@ -87,7 +87,7 @@ export function useAutoLayoutHeight(
   headerIds: string[] = ['app-header', 'app-content-header'],
   options: LayoutHeightOptions = {}
 ) {
-  const { extraSpacing = 15, updateCssVar = true, cssVarName = '--art-full-height' } = options
+  const { extraSpacing = 15, updateCssVar = true, cssVarName = '--velox-full-height' } = options
 
   // 创建元素引用
   const headerRef = ref<HTMLElement>()

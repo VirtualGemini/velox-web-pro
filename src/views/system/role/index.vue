@@ -1,6 +1,6 @@
 <!-- 角色管理页面 -->
 <template>
-  <div class="art-full-height">
+  <div class="velox-full-height">
     <RoleSearch
       v-show="showSearchBar"
       v-model="searchForm"
@@ -8,8 +8,8 @@
       @reset="resetSearchParams"
     ></RoleSearch>
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
+    <ElCard class="velox-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+      <VeloxTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
@@ -22,10 +22,10 @@
             </ElButton>
           </ElSpace>
         </template>
-      </ArtTableHeader>
+      </VeloxTableHeader>
 
       <!-- 表格 -->
-      <ArtTable
+      <VeloxTable
         :loading="loading"
         :data="data"
         :columns="columns"
@@ -33,7 +33,7 @@
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       >
-      </ArtTable>
+      </VeloxTable>
     </ElCard>
 
     <!-- 角色编辑弹窗 -->
@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
+  import { ButtonMoreItem } from '@/components/core/forms/velox-button-more/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import {
     fetchCreateRole,
@@ -62,7 +62,7 @@
     fetchGetRoleList,
     fetchUpdateRole
   } from '@/api/system-manage'
-  import ArtButtonMore from '@/components/core/forms/art-button-more/index.vue'
+  import VeloxButtonMore from '@/components/core/forms/velox-button-more/index.vue'
   import { useAuth } from '@/hooks/core/useAuth'
   import RoleSearch from './modules/role-search.vue'
   import RoleEditDialog from './modules/role-edit-dialog.vue'
@@ -176,7 +176,7 @@
           fixed: 'right',
           formatter: (row) =>
             h('div', [
-              h(ArtButtonMore, {
+              h(VeloxButtonMore, {
                 list: buildActionList(row),
                 onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row)
               })

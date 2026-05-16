@@ -1,10 +1,10 @@
 <!-- 用户管理页面 -->
-<!-- art-full-height 自动计算出页面剩余高度 -->
-<!-- art-table-card 一个符合系统样式的 class，同时自动撑满剩余高度 -->
+<!-- velox-full-height 自动计算出页面剩余高度 -->
+<!-- velox-table-card 一个符合系统样式的 class，同时自动撑满剩余高度 -->
 <!-- 更多 useTable 使用示例请移步至 功能示例 下面的高级表格示例或者查看官方文档 -->
 <!-- useTable 文档：https://www.artd.pro/docs/zh/guide/hooks/use-table.html -->
 <template>
-  <div class="user-page art-full-height">
+  <div class="user-page velox-full-height">
     <!-- 搜索栏 -->
     <UserSearch
       v-show="showSearchBar"
@@ -13,9 +13,9 @@
       @reset="resetSearchParams"
     ></UserSearch>
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard class="velox-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <!-- 表格头部 -->
-      <ArtTableHeader
+      <VeloxTableHeader
         v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
@@ -28,10 +28,10 @@
             </ElButton>
           </ElSpace>
         </template>
-      </ArtTableHeader>
+      </VeloxTableHeader>
 
       <!-- 表格 -->
-      <ArtTable
+      <VeloxTable
         :loading="loading"
         :data="data"
         :columns="columns"
@@ -40,7 +40,7 @@
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       >
-      </ArtTable>
+      </VeloxTable>
 
       <!-- 用户弹窗 -->
       <UserDialog
@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import VeloxButtonTable from '@/components/core/forms/velox-button-table/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import {
     fetchCreateUser,
@@ -244,13 +244,13 @@
               'div',
               [
                 hasAuth('system:user:update') && canEditUser(row)
-                  ? h(ArtButtonTable, {
+                  ? h(VeloxButtonTable, {
                       type: 'edit',
                       onClick: () => showDialog('edit', row)
                     })
                   : null,
                 hasAuth('system:user:delete') && canDeleteUser(row)
-                  ? h(ArtButtonTable, {
+                  ? h(VeloxButtonTable, {
                       type: 'delete',
                       onClick: () => deleteUser(row)
                     })

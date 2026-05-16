@@ -11,7 +11,7 @@
  * - 支持 GET/POST/PUT/DELETE 等常用方法
  *
  * @module utils/http
- * @author Art Design Pro Team
+ * @author Velox Team
  */
 
 import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'

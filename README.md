@@ -1,12 +1,12 @@
-<h2 align="center" id="top">Arc Pro Admin Frontend</h2>
-<p align="center">An admin console rebuilt from the Art Design Pro prototype, integrated with the velox-pro backend APIs and extended with production-oriented management features.</p>
+<h2 align="center" id="top">Velox Web</h2>
+<p align="center">The Velox admin console, evolved from the upstream Art Design Pro open-source prototype and integrated with the Velox Pro backend.</p>
 <div align="center">English | <a href="./README.zh-CN.md">简体中文</a></div>
 
 <br />
 
 ## Overview
 
-This project is the frontend of `arc-pro`. It is based on the original `art-design-pro` prototype, but no longer serves as a pure visual demo.
+This project is the frontend of `velox`. It evolved from the upstream open-source prototype, but no longer serves as a pure visual demo.
 
 It has been turned into a real admin application by:
 
@@ -67,7 +67,7 @@ The frontend is already wired to the backend modules below:
 ## Project Structure
 
 ```text
-art-design-pro/
+velox-web/
 ├── src/api                  # Backend API wrappers
 ├── src/router               # Static and dynamic routing
 ├── src/store                # Pinia stores

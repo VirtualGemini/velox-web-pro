@@ -32,7 +32,7 @@
  * 6. 更新本地版本号
  *
  * @module utils/sys/upgrade
- * @author Art Design Pro Team
+ * @author Velox Team
  */
 import { ElNotification } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'

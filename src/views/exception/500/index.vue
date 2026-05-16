@@ -1,6 +1,6 @@
 <!-- 500页面 -->
 <template>
-  <ArtException
+  <VeloxException
     :data="{
       title: '500',
       desc: $t('exceptionPage.500'),

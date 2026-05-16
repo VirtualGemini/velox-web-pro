@@ -1,12 +1,12 @@
-<h2 align="center" id="top">Arc Pro 管理后台前端</h2>
-<p align="center">基于 Art Design Pro 原型重构的后台管理前端，已接入 velox-pro 后端 API，并扩展为可实际落地的管理系统。</p>
+<h2 align="center" id="top">Velox Web</h2>
+<p align="center">Velox 管理后台前端，基于上游 Art Design Pro 开源原型演进而来，并已接入 Velox Pro 后端。</p>
 <div align="center"><a href="./README.md">English</a> | 简体中文</div>
 
 <br />
 
 ## 项目概述
 
-本项目是 `arc-pro` 的前端部分。它基于原始 `art-design-pro` 原型继续开发，但已经不再是单纯的 UI 演示模板。
+本项目是 `velox` 的前端部分。它基于上游开源原型继续演进，但已经不再是单纯的 UI 演示模板。
 
 当前版本重点完成了以下工作：
 
@@ -67,7 +67,7 @@
 ## 项目结构
 
 ```text
-art-design-pro/
+velox-web/
 ├── src/api                  # 后端接口封装
 ├── src/router               # 静态路由与动态路由
 ├── src/store                # Pinia 状态管理

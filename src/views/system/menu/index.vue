@@ -1,8 +1,8 @@
 <!-- 菜单管理页面 -->
 <template>
-  <div class="menu-page art-full-height">
+  <div class="menu-page velox-full-height">
     <!-- 搜索栏 -->
-    <ArtSearchBar
+    <VeloxSearchBar
       v-show="showSearchBar"
       v-model="formFilters"
       :items="formItems"
@@ -11,9 +11,9 @@
       @search="handleSearch"
     />
 
-    <ElCard class="art-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
+    <ElCard class="velox-table-card" :style="{ 'margin-top': showSearchBar ? '12px' : '0' }">
       <!-- 表格头部 -->
-      <ArtTableHeader
+      <VeloxTableHeader
         :showZebra="false"
         :loading="loading"
         v-model:columns="columnChecks"
@@ -32,9 +32,9 @@
             }}
           </ElButton>
         </template>
-      </ArtTableHeader>
+      </VeloxTableHeader>
 
-      <ArtTable
+      <VeloxTable
         ref="tableRef"
         rowKey="path"
         :loading="loading"
@@ -60,7 +60,7 @@
 
 <script setup lang="ts">
   import { formatMenuTitle } from '@/utils/router'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import VeloxButtonTable from '@/components/core/forms/velox-button-table/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
   import { useAuth } from '@/hooks/core/useAuth'
   import type { AppRouteRecord } from '@/types/router'
@@ -244,13 +244,13 @@
         if (row.meta?.isAuthButton) {
           return h('div', buttonStyle, [
             hasAuth('system:menu:update')
-              ? h(ArtButtonTable, {
+              ? h(VeloxButtonTable, {
                   type: 'edit',
                   onClick: () => handleEditAuth(row)
                 })
               : null,
             hasAuth('system:menu:delete')
-              ? h(ArtButtonTable, {
+              ? h(VeloxButtonTable, {
                   type: 'delete',
                   onClick: () => handleDeleteAuth(row)
                 })
@@ -263,20 +263,20 @@
           buttonStyle,
           [
             hasAuth('system:menu:create')
-              ? h(ArtButtonTable, {
+              ? h(VeloxButtonTable, {
                   type: 'add',
                   onClick: () => handleAddAuth(row),
                   title: t('pages.system.menu.actions.addPermission')
                 })
               : null,
             hasAuth('system:menu:update')
-              ? h(ArtButtonTable, {
+              ? h(VeloxButtonTable, {
                   type: 'edit',
                   onClick: () => handleEditMenu(row)
                 })
               : null,
             hasAuth('system:menu:delete')
-              ? h(ArtButtonTable, {
+              ? h(VeloxButtonTable, {
                   type: 'delete',
                   onClick: () => handleDeleteMenu(row)
                 })

@@ -26,7 +26,7 @@
  * - headerBar: 顶部栏功能配置
  *
  * @module config
- * @author Art Design Pro Team
+ * @author Velox Team
  */
 
 import { MenuThemeEnum, MenuTypeEnum, SystemThemeEnum } from '@/enums/appEnum'
@@ -38,7 +38,7 @@ import { headerBarConfig } from './modules/headerBar'
 const appConfig: SystemConfig = {
   // 系统信息
   systemInfo: {
-    name: 'Art Design Pro' // 系统名称
+    name: 'Velox Web' // 系统名称
   },
   // 系统主题
   systemThemeStyles: {
@@ -84,7 +84,7 @@ const appConfig: SystemConfig = {
     {
       theme: MenuThemeEnum.DESIGN,
       background: '#FFFFFF',
-      systemNameColor: 'var(--art-gray-800)',
+      systemNameColor: 'var(--velox-gray-800)',
       iconColor: '#6B6B6B',
       textColor: '#29343D',
       img: configImages.menuStyles.design
@@ -100,7 +100,7 @@ const appConfig: SystemConfig = {
     {
       theme: MenuThemeEnum.LIGHT,
       background: '#ffffff',
-      systemNameColor: 'var(--art-gray-800)',
+      systemNameColor: 'var(--velox-gray-800)',
       iconColor: '#6B6B6B',
       textColor: '#29343D',
       img: configImages.menuStyles.light

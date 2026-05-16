@@ -2,20 +2,20 @@
 <template>
   <div class="app-layout">
     <aside id="app-sidebar">
-      <ArtSidebarMenu />
+      <VeloxSidebarMenu />
     </aside>
 
     <main id="app-main">
       <div id="app-header">
-        <ArtHeaderBar />
+        <VeloxHeaderBar />
       </div>
       <div id="app-content">
-        <ArtPageContent />
+        <VeloxPageContent />
       </div>
     </main>
 
     <div id="app-global">
-      <ArtGlobalComponent />
+      <VeloxGlobalComponent />
     </div>
   </div>
 </template>

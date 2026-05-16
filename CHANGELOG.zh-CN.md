@@ -24,7 +24,7 @@
 
 #### 新增
 
-- ArtForm 和 ArtSearchBar 组件的 label 支持自定义渲染函数，可实现带 tooltip 等复杂标签
+- VeloxForm 和 VeloxSearchBar 组件的 label 支持自定义渲染函数，可实现带 tooltip 等复杂标签
 - 菜单管理表单关键字段新增 Tooltip 提示，降低用户配置门槛
 - iconify 新增离线图标加载模式
 - 退出登录新增 redirect 属性，用于重新登录后跳转到对应页面
@@ -48,7 +48,7 @@
 - 样式系统重构：Sass 全面迁移至 Tailwind CSS，提升开发效率与样式一致性
 - 图标方案升级：Iconfont 替换为 Iconify，支持更丰富的图标库与按需加载
 - 路由注册重构：全面重构路由注册系统，引入面向对象设计，提高代码的可维护性、可测试性和扩展能力
-- 重构 ArtTextScroll 组件，提升性能与可维护性
+- 重构 VeloxTextScroll 组件，提升性能与可维护性
 - 重构颜色体系，统一 UI 视觉规范，提升界面一致性
 
 #### 优化
@@ -58,16 +58,16 @@
 - 注释优化：统一模块注释规范，完善每一个组件介绍、功能说明与使用示例，降低用户理解成本与上手难度
 - 性能提升：优化核心代码逻辑，提升系统运行效率
 - 菜单优化：细化菜单样式，优化交互体验与视觉呈现
-- 响应式优化：优化 ArtForm、ArtSearchBar 栅格布局，适配多种屏幕尺寸
+- 响应式优化：优化 VeloxForm、VeloxSearchBar 栅格布局，适配多种屏幕尺寸
 - 配置管理优化：新增 setting.ts 配置文件，支持一键复制与重置系统默认设置
 
 #### 修复
 
-- 修复 ArtForm、ArtSearchBar 自定义组件渲染异常
+- 修复 VeloxForm、VeloxSearchBar 自定义组件渲染异常
 
 #### 新增
 
-- ArtForm、ArtSearchBar 新增 render 属性，支持自定义组件渲染
+- VeloxForm、VeloxSearchBar 新增 render 属性，支持自定义组件渲染
 - 节日功能增强：礼花配置支持跨日期范围设置与自定义播放次数
 
 #### 升级
@@ -168,7 +168,7 @@
 
 #### 新增
 
-- 新增 ArtForm 组件
+- 新增 VeloxForm 组件
 
 #### 修复
 
@@ -185,7 +185,7 @@
 
 #### 新增
 
-- ArtTableHeader 新增搜索按钮，用于控制顶部搜索栏的显示与隐藏
+- VeloxTableHeader 新增搜索按钮，用于控制顶部搜索栏的显示与隐藏
 - 新增权限演示示例
 - 添加全局错误处理基础框架
 
@@ -196,11 +196,11 @@
 - useTable 自动识别响应体支持自定义配置 (src/utils/table/tableConfig.ts)
 - useTable 空数据浏览器警告优化
 - api 接口请求代码优化、api.d.ts 类型优化
-- 优化 ArtTable 顶部按钮换行无法自适应问题（示例：功能示例 / 左右布局表格）
-- ArtTable 分页组件选中样式优化
-- ArtTable 空状态高度默认撑满
-- ArtButtonMore 组件新增图标、颜色配置
-- ArtSearchBar label 为空时不占空间
+- 优化 VeloxTable 顶部按钮换行无法自适应问题（示例：功能示例 / 左右布局表格）
+- VeloxTable 分页组件选中样式优化
+- VeloxTable 空状态高度默认撑满
+- VeloxButtonMore 组件新增图标、颜色配置
+- VeloxSearchBar label 为空时不占空间
 - 表格操作栏拖拽禁止固定列拖拽
 - 角色管理页面接口对接、代码优化
 - 菜单管理页面优化
@@ -225,19 +225,19 @@
 
 #### 新增
 
-- 新增 ArtSearchBar 组件示例
+- 新增 VeloxSearchBar 组件示例
 - useTable 新增 excludeParams，用于排除某些参数不参与请求
 
 #### 重构
 
-- 重构 ArtSearchBar 组件，支持更多组件、表单校验等能力
+- 重构 VeloxSearchBar 组件，支持更多组件、表单校验等能力
 
 #### 优化
 
 - useTable 列配置：支持动态更新能力
 - 优化颜色选择器圆角
 - el-radio、el-checkbox 统一大小
-- art-stats-card 新增小数位、分隔符配置
+- velox-stats-card 新增小数位、分隔符配置
 - 路由配置示例优化
 - 高级表格新增自定义获取数据示例（等待其他请求完成后执行 useTable 数据获取）
 - 优化路径别名类型问题
@@ -256,7 +256,7 @@
 
 #### 移除
 
-- 删除 art-chart-empty 组件
+- 删除 velox-chart-empty 组件
 
 ---
 
@@ -276,7 +276,7 @@
 - 修复获取用户信息接口时序问题导致路由注册菜单渲染错误bug
 - 修复动态路由校验问题导致的 iframe 不显示bug
 - 修复 reset 文件语法错误
-- 修复 ArtTable 数据类型错误
+- 修复 VeloxTable 数据类型错误
 - 修复地图滚轮滚动放大问题
 
 ---
@@ -289,7 +289,7 @@
 
 #### 重构
 
-- ArtTable 组件重构
+- VeloxTable 组件重构
 
 #### 升级
 
@@ -308,7 +308,7 @@
 
 #### 修复
 
-- 修复 ArtTable 切换分页大小时执行两次请求bug
+- 修复 VeloxTable 切换分页大小时执行两次请求bug
 
 ---
 
@@ -363,7 +363,7 @@
 
 #### 重构
 
-- 重构 ArtTable、ArtTableHeader、ArtNotification 组件
+- 重构 VeloxTable、VeloxTableHeader、VeloxNotification 组件
 
 #### 升级
 
@@ -371,7 +371,7 @@
 
 #### 移除
 
-- 移除 CountTo 插件，替换为 ArtCountTo 组件
+- 移除 CountTo 插件，替换为 VeloxCountTo 组件
 
 #### 修复
 
@@ -431,7 +431,7 @@
 
 #### 修复
 
-- 修复登录页面拖拽组件 ArtDragVerify 宽度、颜色异常bug
+- 修复登录页面拖拽组件 VeloxDragVerify 宽度、颜色异常bug
 - 修复 iframe 页面混合模式、双列模式异常bug
 - 优化锁屏页面被 el-loading 穿透bug
 
@@ -442,12 +442,12 @@
 #### 重构
 
 - 重构 components/core/forms 文件夹下的表单相关组件，提升可维护性与一致性
-- 重构 ArtBreadcrumb 面包屑导航组件，优化逻辑结构与样式
-- 重构 ArtFireworksEffect 烟花效果组件，显著提升渲染性能与动画流畅度
+- 重构 VeloxBreadcrumb 面包屑导航组件，优化逻辑结构与样式
+- 重构 VeloxFireworksEffect 烟花效果组件，显著提升渲染性能与动画流畅度
 
 #### 优化
 
-- 优化 ArtChatWindow 与 ArtFastEnter 组件代码，提升可读性与性能
+- 优化 VeloxChatWindow 与 VeloxFastEnter 组件代码，提升可读性与性能
 
 #### 新增
 
@@ -468,12 +468,12 @@
 
 #### 重构
 
-- ArtMenuRight 组件重构
+- VeloxMenuRight 组件重构
 - components/core/cards 下面的组件重构，代码优化
 
 #### 优化
 
-- ArtWatermark 增加类型注释
+- VeloxWatermark 增加类型注释
 
 ---
 
@@ -481,14 +481,14 @@
 
 #### 重构
 
-- ArtResultPage 组件重构
+- VeloxResultPage 组件重构
 
 #### 优化
 
-- ArtTextScroll 组件代码优化
-- ArtException 组件增加类型提示
-- ArtCutterImg 组件样式优化、增加类型定义
-- ArtVideoPlayer 组件增加类型定义
+- VeloxTextScroll 组件代码优化
+- VeloxException 组件增加类型提示
+- VeloxCutterImg 组件样式优化、增加类型定义
+- VeloxVideoPlayer 组件增加类型定义
 
 ---
 
