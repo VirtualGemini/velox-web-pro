@@ -1,5 +1,5 @@
 <h2 align="center" id="top">Arc Pro 管理后台前端</h2>
-<p align="center">基于 Art Design Pro 原型重构的后台管理前端，已接入 architecture-pro 后端 API，并扩展为可实际落地的管理系统。</p>
+<p align="center">基于 Art Design Pro 原型重构的后台管理前端，已接入 velox-pro 后端 API，并扩展为可实际落地的管理系统。</p>
 <div align="center"><a href="./README.md">English</a> | 简体中文</div>
 
 <br />
@@ -10,7 +10,7 @@
 
 当前版本重点完成了以下工作：
 
-- 接入 `architecture-pro` 后端 API
+- 接入 `velox-pro` 后端 API
 - 将原型中的演示流程替换为真实认证与业务请求
 - 新增系统管理、文件管理、个人资料等后台能力
 - 优化动态路由、权限控制、Token 管理与异常处理
@@ -86,7 +86,7 @@ art-design-pro/
 关键环境变量如下：
 
 ```bash
-VITE_ACCESS_MODE=architecture-pro
+VITE_ACCESS_MODE=backend
 VITE_API_URL=/
 VITE_API_PROXY_URL=http://localhost:8080
 VITE_WITH_CREDENTIALS=false
@@ -115,12 +115,12 @@ pnpm serve
 
 ## 后端依赖
 
-该前端默认与同仓库下的 `architecture-pro` 后端配套使用。
+该前端默认与同仓库下的 `velox-pro` 后端配套使用。
 
 推荐本地启动顺序：
 
 1. 启动 MySQL 和 Redis
-2. 启动 `architecture-pro`
+2. 启动 `velox-pro`
 3. 启动当前前端项目
 
 默认本地地址：
@@ -132,7 +132,7 @@ pnpm serve
 
 - 当前项目使用后端权限码，例如 `system:user:query`、`system:role:update`
 - 文件上传同时支持后端直传与预签名地址上传两种模式
-- 当前请求层已适配 `architecture-pro` 的统一返回结构
+- 当前请求层已适配 `velox-pro` 的统一返回结构
 
 <br>
 <div align="center"><a href="#top">回到顶部</a></div>

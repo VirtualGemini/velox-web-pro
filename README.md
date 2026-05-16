@@ -1,5 +1,5 @@
 <h2 align="center" id="top">Arc Pro Admin Frontend</h2>
-<p align="center">An admin console rebuilt from the Art Design Pro prototype, integrated with the architecture-pro backend APIs and extended with production-oriented management features.</p>
+<p align="center">An admin console rebuilt from the Art Design Pro prototype, integrated with the velox-pro backend APIs and extended with production-oriented management features.</p>
 <div align="center">English | <a href="./README.zh-CN.md">简体中文</a></div>
 
 <br />
@@ -10,7 +10,7 @@ This project is the frontend of `arc-pro`. It is based on the original `art-desi
 
 It has been turned into a real admin application by:
 
-- integrating the `architecture-pro` backend API
+- integrating the `velox-pro` backend API
 - replacing mock-oriented flows with actual authentication and business requests
 - adding system management, file management, and profile management pages
 - optimizing route permissions, token handling, and request error behavior
@@ -88,7 +88,7 @@ Runtime requirements:
 Important environment variables:
 
 ```bash
-VITE_ACCESS_MODE=architecture-pro
+VITE_ACCESS_MODE=backend
 VITE_API_URL=/
 VITE_API_PROXY_URL=http://localhost:8080
 VITE_WITH_CREDENTIALS=false
@@ -117,12 +117,12 @@ pnpm serve
 
 ## Backend Dependency
 
-This frontend is designed to work with the `architecture-pro` backend in the same repository.
+This frontend is designed to work with the `velox-pro` backend in the same repository.
 
 Recommended local startup order:
 
 1. Start MySQL and Redis
-2. Start `architecture-pro`
+2. Start `velox-pro`
 3. Start this frontend project
 
 Default local addresses:
@@ -134,7 +134,7 @@ Default local addresses:
 
 - The project uses backend permission codes such as `system:user:query` and `system:role:update`.
 - File upload supports both backend-upload and presigned-url flows.
-- The current implementation targets the unified backend response structure used by `architecture-pro`.
+- The current implementation targets the unified backend response structure used by `velox-pro`.
 
 <br>
 <div align="center"><a href="#top">Back to Top</a></div>
