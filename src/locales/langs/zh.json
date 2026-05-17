@@ -700,6 +700,7 @@
             }
           },
           "tooltips": {
+            "storage": "选择文件存储类型。若当前环境未启用某些存储能力或缺少运行依赖，它们会被隐藏。",
             "dbDomain": "可选。数据库存储时用于拼接访问地址，不填时通常走系统默认下载接口。",
             "localBasePath": "文件会写入服务器本地磁盘目录，请确保服务进程有读写权限。",
             "localDomain": "用于拼接文件访问地址，不填时通常返回相对路径或使用系统默认地址。",
@@ -771,6 +772,9 @@
           "invalidConfigJson": "配置 JSON 格式不正确",
           "createSuccess": "新增成功",
           "updateSuccess": "更新成功",
+          "unsupportedStorageLabel": "注意",
+          "unsupportedStorageTitle": "当前环境未启用部分存储能力",
+          "unsupportedStorageDescription": "以下存储类型当前环境未启用或缺少运行依赖，相关配置仍可填写，但实际服务不可用：{storages}",
           "confirmDisableMaster": "当前配置为主配置，禁用会导致上传文件失败或丢失，确认要禁用吗？",
           "disableMasterTitle": "禁用主配置",
           "enabledSuccess": "已启用",

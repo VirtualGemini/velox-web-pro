@@ -201,3 +201,9 @@ export function fetchFileConfigTest(id: string) {
     params: { id }
   })
 }
+
+export function fetchSupportedFileStorages() {
+  return request.get<number[]>({
+    url: '/api/file-config/supported-storages'
+  })
+}

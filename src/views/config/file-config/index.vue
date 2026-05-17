@@ -70,15 +70,20 @@
             </ElFormItem>
           </ElCol>
           <ElCol :span="formHalfSpan">
-            <ElFormItem :label="t('pages.config.fileConfig.form.fields.storage')" prop="storage">
+            <ElFormItem prop="storage">
+              <template #label>
+                <LabelTooltip
+                  :label="t('pages.config.fileConfig.form.fields.storage')"
+                  :tooltip="storageFieldTooltip"
+                />
+              </template>
               <ElSelect
                 v-model="formModel.storage"
-                :disabled="dialogMode === 'edit' && !isSupportedStorage(formModel.storage)"
                 :placeholder="t('pages.config.fileConfig.form.placeholders.storage')"
                 @change="handleStorageChange"
               >
                 <ElOption
-                  v-for="option in dialogStorageOptions"
+                  v-for="option in allStorageOptions"
                   :key="option.value"
                   :label="option.label"
                   :value="option.value"
@@ -555,7 +560,8 @@
     fetchFileConfigSetMaster,
     fetchFileConfigTest,
     fetchFileConfigUpdate,
-    fetchFileConfigUpdateEnabled
+    fetchFileConfigUpdateEnabled,
+    fetchSupportedFileStorages
   } from '@/api/file'
 
   defineOptions({ name: 'FileConfig' })
@@ -602,6 +608,7 @@
   const dialogWidth = computed(() => (isMobile.value ? 'calc(100vw - 24px)' : '920px'))
   const formHalfSpan = computed(() => (isMobile.value ? 24 : 12))
   const formLabelWidth = computed(() => (isMobile.value ? '140px' : 'auto'))
+  const supportedStorageTypes = ref<StorageType[]>([STORAGE_TYPES.DB, STORAGE_TYPES.LOCAL])
 
   const allStorageOptions = computed(() => [
     { label: t('pages.config.fileConfig.storage.db'), value: STORAGE_TYPES.DB },
@@ -611,30 +618,19 @@
     { label: t('pages.config.fileConfig.storage.s3'), value: STORAGE_TYPES.S3 }
   ])
 
-  const supportedStorageOptions = computed(() =>
-    allStorageOptions.value.filter((item) =>
-      (
-        [
-          STORAGE_TYPES.DB,
-          STORAGE_TYPES.LOCAL,
-          STORAGE_TYPES.FTP,
-          STORAGE_TYPES.SFTP,
-          STORAGE_TYPES.S3
-        ] as StorageType[]
-      ).includes(item.value)
-    )
+  const unsupportedStorageLabels = computed(() =>
+    allStorageOptions.value
+      .filter((item) => !supportedStorageTypes.value.includes(item.value))
+      .map((item) => item.label)
   )
 
-  const dialogStorageOptions = computed(() => {
-    if (dialogMode.value === 'create' || isSupportedStorage(formModel.storage)) {
-      return supportedStorageOptions.value
-    }
-
-    const currentOption = allStorageOptions.value.find((item) => item.value === formModel.storage)
-    return currentOption
-      ? [currentOption, ...supportedStorageOptions.value]
-      : supportedStorageOptions.value
-  })
+  const storageFieldTooltip = computed(() =>
+    unsupportedStorageLabels.value.length > 0
+      ? t('pages.config.fileConfig.messages.unsupportedStorageDescription', {
+          storages: unsupportedStorageLabels.value.join(' / ')
+        })
+      : t('pages.config.fileConfig.form.tooltips.storage')
+  )
 
   const searchForm = ref<Partial<FileConfigQuery>>({
     name: undefined,
@@ -937,12 +933,13 @@
   }
 
   function isSupportedStorage(storage?: number | null) {
-    return (
-      storage === STORAGE_TYPES.DB ||
-      storage === STORAGE_TYPES.LOCAL ||
-      storage === STORAGE_TYPES.FTP ||
-      storage === STORAGE_TYPES.SFTP ||
-      storage === STORAGE_TYPES.S3
+    return supportedStorageTypes.value.includes(storage as StorageType)
+  }
+
+  async function loadSupportedStorageTypes() {
+    const supported = await fetchSupportedFileStorages()
+    supportedStorageTypes.value = supported.filter((item): item is StorageType =>
+      Object.values(STORAGE_TYPES).includes(item as StorageType)
     )
   }
 
@@ -1089,7 +1086,7 @@
   function openCreateDialog() {
     dialogMode.value = 'create'
     currentEditId.value = ''
-    fillForm()
+    fillForm({ storage: STORAGE_TYPES.LOCAL } as FileConfig)
     dialogVisible.value = true
   }
 
@@ -1296,6 +1293,10 @@
     resetSearchParams()
     getData()
   }
+
+  onMounted(async () => {
+    await loadSupportedStorageTypes()
+  })
 
   async function handleEnabledChange(row: FileConfig, val: boolean) {
     const configId = resolveConfigId(row)

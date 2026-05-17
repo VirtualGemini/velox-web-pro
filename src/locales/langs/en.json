@@ -700,6 +700,7 @@
             }
           },
           "tooltips": {
+            "storage": "Select the file storage type. If some storage capabilities are unavailable in the current environment or required runtime dependencies are missing, they will be hidden.",
             "dbDomain": "Optional. Used to compose the access URL for database storage. When empty, the system download API is typically used.",
             "localBasePath": "Files will be written to the server's local disk directory. Make sure the service process has read and write permissions.",
             "localDomain": "Used to compose the file access URL. When empty, a relative path or the system default address is typically returned.",
@@ -771,6 +772,9 @@
           "invalidConfigJson": "Invalid config JSON format",
           "createSuccess": "Created successfully",
           "updateSuccess": "Updated successfully",
+          "unsupportedStorageLabel": "Note",
+          "unsupportedStorageTitle": "Some storage capabilities are unavailable in the current environment",
+          "unsupportedStorageDescription": "The following storage types are unavailable in the current environment or missing required runtime dependencies. You can still fill in the configuration, but the actual service will be unavailable: {storages}",
           "confirmDisableMaster": "This config is the master config. Disabling it may cause file upload failures or data loss. Continue?",
           "disableMasterTitle": "Disable Master Config",
           "enabledSuccess": "Enabled",
