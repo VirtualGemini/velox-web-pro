@@ -86,8 +86,6 @@ velox:
   version: 1.0.0
   # 所有 REST 接口统一前缀
   api-prefix: /api
-  # 是否启用 Swagger 相关能力
-  swagger-enabled: true
   web:
     cors:
       # 允许跨域访问的来源模式
@@ -150,24 +148,32 @@ velox:
       ttl-seconds: 120
       # 验证码缓存的最大条数
       max-cache-size: 10000
-# Sa-Token 配置
-sa-token:
-  # 请求头中的 Token 名称
-  token-name: Authorization
-  # Token 有效期（秒）
-  timeout: 86400
-  # 是否允许同账号并发登录
-  is-concurrent: true
-  # 是否共享同一 Token；false 表示每次登录单独发放
-  is-share: false
-  # Token 生成风格
-  token-style: uuid
-  # 是否输出 Sa-Token 内部日志
-  is-log: false
-  # 是否从请求头中读取 Token
-  is-read-header: true
-  # 是否从 Cookie 中读取 Token
-  is-read-cookie: false
+    token:
+      # token provider 模式：stateful / jwt
+      mode: stateful
+      # Token 名称
+      token-name: Authorization
+      # Token 有效期（秒）
+      timeout: 86400
+      # 是否允许同账号并发登录
+      concurrent: true
+      # 是否共享同一 Token；false 表示每次登录单独发放
+      share: false
+      # stateful provider 下的 token 生成风格
+      style: uuid
+      # 是否输出底层认证日志
+      log-enabled: false
+      # 是否从请求头中读取 Token
+      read-header: true
+      # 是否从 Cookie 中读取 Token
+      read-cookie: false
+      jwt:
+        # jwt 运行策略：simple / mixin / stateless
+        strategy: mixin
+        # 建议通过环境变量覆盖
+        secret: ${VELOX_SECURITY_JWT_SECRET:change-this-jwt-secret}
+        # jwt 模式下是否回写响应头
+        write-header: true
 
 # 日志配置
 logging:
