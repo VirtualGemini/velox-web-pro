@@ -1,19 +1,9 @@
-package com.velox.framework.log;
+package com.velox.framework.web.support.servlet;
 
-import com.velox.framework.web.core.logging.DefaultRequestLogHandler;
 import com.velox.framework.web.spi.logging.RequestLogHandler;
 import com.velox.framework.web.spi.logging.AbstractRequestLogInterceptor;
 
-/**
- * 请求日志拦截器
- * <p>
- * 记录每个 HTTP 请求的基本信息（方法、URI、耗时、状态码）
- */
 public class RequestLogInterceptor extends AbstractRequestLogInterceptor {
-
-    public RequestLogInterceptor() {
-        this(new DefaultRequestLogHandler());
-    }
 
     public RequestLogInterceptor(RequestLogHandler requestLogHandler) {
         super(requestLogHandler);

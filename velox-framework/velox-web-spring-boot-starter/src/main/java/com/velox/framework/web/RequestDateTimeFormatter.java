@@ -2,40 +2,21 @@ package com.velox.framework.web;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 
 public final class RequestDateTimeFormatter {
-
-    private static final ZoneId UTC = ZoneOffset.UTC;
-
-    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private RequestDateTimeFormatter() {
     }
 
     public static String format(LocalDateTime utcDateTime) {
-        if (utcDateTime == null) {
-            return null;
-        }
-        return utcDateTime.atZone(UTC)
-                .withZoneSameInstant(RequestTimeZoneContext.getCurrentZoneId())
-                .toLocalDateTime()
-                .format(DATETIME_FORMATTER);
+        return com.velox.framework.web.api.timezone.RequestDateTimeFormatter.format(utcDateTime);
     }
 
     public static LocalDateTime toUtcStartOfDay(LocalDate localDate) {
-        return localDate.atStartOfDay(RequestTimeZoneContext.getCurrentZoneId())
-                .withZoneSameInstant(UTC)
-                .toLocalDateTime();
+        return com.velox.framework.web.api.timezone.RequestDateTimeFormatter.toUtcStartOfDay(localDate);
     }
 
     public static LocalDateTime toUtcEndOfDay(LocalDate localDate) {
-        return localDate.plusDays(1)
-                .atStartOfDay(RequestTimeZoneContext.getCurrentZoneId())
-                .withZoneSameInstant(UTC)
-                .toLocalDateTime()
-                .minusSeconds(1);
+        return com.velox.framework.web.api.timezone.RequestDateTimeFormatter.toUtcEndOfDay(localDate);
     }
 }

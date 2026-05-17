@@ -1,4 +1,1 @@
-com.velox.framework.context.autoconfigure.VeloxContextAutoConfiguration
-com.velox.framework.logging.autoconfigure.VeloxLoggingAutoConfiguration
-com.velox.framework.tracing.autoconfigure.VeloxTracingAutoConfiguration
-com.velox.framework.web.autoconfigure.VeloxWebMvcAutoConfiguration
+com.velox.framework.web.autoconfigure.VeloxWebAutoConfiguration

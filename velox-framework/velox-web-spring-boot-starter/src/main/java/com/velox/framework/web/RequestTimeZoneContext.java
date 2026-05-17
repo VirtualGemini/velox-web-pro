@@ -1,43 +1,27 @@
 package com.velox.framework.web;
 
-import org.springframework.util.StringUtils;
-
-import java.time.DateTimeException;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 
 public final class RequestTimeZoneContext {
 
-    public static final String HEADER_NAME = "X-Time-Zone";
-
-    private static final ZoneId DEFAULT_ZONE_ID = ZoneOffset.UTC;
-
-    private static final ThreadLocal<ZoneId> CONTEXT = new ThreadLocal<>();
+    public static final String HEADER_NAME = com.velox.framework.web.api.timezone.RequestTimeZoneContext.HEADER_NAME;
 
     private RequestTimeZoneContext() {
     }
 
     public static ZoneId getCurrentZoneId() {
-        ZoneId zoneId = CONTEXT.get();
-        return zoneId == null ? DEFAULT_ZONE_ID : zoneId;
+        return com.velox.framework.web.api.timezone.RequestTimeZoneContext.getCurrentZoneId();
     }
 
     public static void setCurrentZoneId(String timeZone) {
-        CONTEXT.set(resolveZoneId(timeZone));
+        com.velox.framework.web.api.timezone.RequestTimeZoneContext.setCurrentZoneId(timeZone);
+    }
+
+    public static void setCurrentZoneId(ZoneId zoneId) {
+        com.velox.framework.web.api.timezone.RequestTimeZoneContext.setCurrentZoneId(zoneId);
     }
 
     public static void clear() {
-        CONTEXT.remove();
-    }
-
-    private static ZoneId resolveZoneId(String timeZone) {
-        if (!StringUtils.hasText(timeZone)) {
-            return DEFAULT_ZONE_ID;
-        }
-        try {
-            return ZoneId.of(timeZone.trim());
-        } catch (DateTimeException ex) {
-            return DEFAULT_ZONE_ID;
-        }
+        com.velox.framework.web.api.timezone.RequestTimeZoneContext.clear();
     }
 }
