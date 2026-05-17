@@ -87,6 +87,21 @@ velox:
       enabled: false
       # 若业务误用缓存能力，默认快速失败便于尽早暴露问题
       disabled-strategy: FAIL_FAST
+  id:
+    # 开发环境显式开启业务主键能力，避免依赖 Java 默认值
+    enabled: true
+    # 开发环境默认推荐 Snowflake；需要兼容 UUID 系统时再显式切换；只建议在开发环境或初始化数据库时切换
+    strategy: snowflake
+    database:
+      # 开发环境允许启动时热更新数据库 ID 对象，便于反复验证两种策略
+      init-mode: update
+      # 保持告警开关显式开启，避免环境切换时误判数据库初始化状态
+      warn-on-prod-mismatch: true
+    snowflake:
+      # 开发环境节点编号建议由部署平台注入，默认回退到单节点
+      worker-id: ${VELOX_ID_WORKER_ID:1}
+      # 开发环境机房编号建议与集群规划保持一致
+      datacenter-id: ${VELOX_ID_DATACENTER_ID:1}
   file:
     # 是否启用文件能力；开发环境显式开启，避免依赖默认值
     enabled: true

@@ -10,8 +10,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>velox-id-generator-spring-boot-starter</artifactId>
-    <description>ID 生成 starter - 业务主键生成</description>
+    <artifactId>velox-id-spring-boot-starter</artifactId>
+    <description>ID starter - Snowflake + UUID with optional Base62 encoding and database-default governance</description>
 
     <dependencies>
         <dependency>
@@ -19,8 +19,18 @@
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

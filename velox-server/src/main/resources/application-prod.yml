@@ -69,6 +69,21 @@ velox:
       enabled: false
       # 若仍有业务误用缓存注解，默认快速失败，避免产生伪缓存成功
       disabled-strategy: FAIL_FAST
+  id:
+    # 生产环境显式开启业务主键能力，避免依赖默认值
+    enabled: true
+    # 生产环境默认推荐 Snowflake；切换为 uuid 必须显式配置并评估兼容性；只建议在开发环境或初始化数据库时切换，生产环境切换风险较大
+    strategy: snowflake
+    database:
+      # 生产环境默认只校验并告警，不在启动时自动改写数据库 ID 对象
+      init-mode: none
+      # 若数据库已按其他 ID 策略初始化，生产启动时打印告警日志
+      warn-on-prod-mismatch: true
+    snowflake:
+      # 生产环境节点编号必须按实例唯一规划；未覆盖时回退默认值仅用于保底
+      worker-id: ${VELOX_ID_WORKER_ID:1}
+      # 生产环境机房编号必须与部署拓扑一致，避免跨集群冲突
+      datacenter-id: ${VELOX_ID_DATACENTER_ID:1}
   file:
     # 是否启用文件能力；生产环境显式开启，避免依赖默认值
     enabled: true
