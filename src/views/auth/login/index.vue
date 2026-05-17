@@ -135,6 +135,21 @@
   type Account = Api.Auth.LoginRole
   const accounts = ref<Account[]>([])
 
+  const DEFAULT_ROLE_CREDENTIALS: Record<string, { username: string; password: string }> = {
+    R_SUPER: {
+      username: 'Super',
+      password: '123456'
+    },
+    R_ADMIN: {
+      username: 'Admin',
+      password: '123456'
+    },
+    R_USER: {
+      username: 'User',
+      password: '123456'
+    }
+  }
+
   const dragVerify = ref()
 
   const userStore = useUserStore()
@@ -176,6 +191,12 @@
   // 设置账号
   const setupAccount = (roleCode: string) => {
     formData.account = roleCode
+    const defaults = DEFAULT_ROLE_CREDENTIALS[roleCode]
+    if (!defaults) {
+      return
+    }
+    formData.username = defaults.username
+    formData.password = defaults.password
   }
 
   // 登录
