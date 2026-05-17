@@ -3,13 +3,16 @@
     <!-- 引入 Spring Boot 默认配置 -->
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
+    <!-- 统一控制控制台时间格式，支持 logging.pattern.dateformat / LOG_DATEFORMAT_PATTERN -->
+    <springProperty scope="context" name="LOG_DATEFORMAT_PATTERN" source="logging.pattern.dateformat" defaultValue="HH:mm:ss.SSS"/>
+
     <!-- 定义日志存储路径 -->
     <property name="LOG_PATH" value="${LOG_PATH:-./logs}"/>
     <property name="APP_NAME" value="velox"/>
 
     <!-- 控制台日志格式（带颜色和 traceId） -->
     <property name="CONSOLE_PATTERN"
-              value="%d{HH:mm:ss.SSS} %green(%-5level) [%thread] %cyan(%logger{20}) %magenta([%method:%line]) traceId:%X{traceId} - %msg%n"/>
+              value="%d{${LOG_DATEFORMAT_PATTERN}} %green(%-5level) [%thread] %cyan(%logger{20}) %magenta([%method:%line]) traceId:%X{traceId:-} - %msg%n"/>
 
     <!-- 文件日志格式 -->
     <property name="FILE_PATTERN"
