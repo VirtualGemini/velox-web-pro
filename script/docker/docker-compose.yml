@@ -8,7 +8,10 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ../sql/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      # The default language is Chinese.
+      - ../sql/mysql/init-zh-CN.sql:/docker-entrypoint-initdb.d/init.sql
+      # You can switch to English by mounting the corresponding SQL file. ⬇
+      # - ../sql/mysql/init-en.sql:/docker-entrypoint-initdb.d/init.sql ⬅
       - mysql-data:/var/lib/mysql
 
   postgresql:
@@ -22,7 +25,10 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ../sql/postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      # The default language is Chinese. 
+      - ../sql/postgresql/init-zh-CN.sql:/docker-entrypoint-initdb.d/init.sql
+      # You can switch to English by mounting the corresponding SQL file. ⬇
+      # - ../sql/postgresql/init-en.sql:/docker-entrypoint-initdb.d/init.sql ⬅
       # postgres 18+ requires mounting the parent directory instead of PGDATA itself.
       - postgresql-data:/var/lib/postgresql
 

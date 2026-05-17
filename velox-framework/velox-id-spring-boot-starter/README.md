@@ -83,7 +83,7 @@ public BusinessIdGenerator businessIdGenerator(IdGeneratorEngine engine, IdCodec
 
 ## Disabled Mode
 
-When `velox.id.enabled=false`:
+When `velox.id.snowflake.enabled=false`:
 
 - `BusinessIdGenerator` is still injectable
 - `IdCodec` is still usable

@@ -3,7 +3,7 @@ package com.velox.framework.id.common.message;
 public final class IdGeneratorCommonMessages {
 
     public static final String ID_GENERATOR_DISABLED =
-            "Velox id capability is disabled and no database-backed generator is available; enable velox.id.enabled or provide a custom engine bean";
+            "Velox id capability is disabled and no database-backed generator is available; enable velox.id.snowflake.enabled or provide a custom engine bean";
     public static final String DB_ID_OPERATOR_REQUIRED =
             "Velox id capability is configured for database-default mode but no database id operator is available";
     public static final String ENCODED_ID_MUST_NOT_BE_BLANK = "Encoded id must not be blank";

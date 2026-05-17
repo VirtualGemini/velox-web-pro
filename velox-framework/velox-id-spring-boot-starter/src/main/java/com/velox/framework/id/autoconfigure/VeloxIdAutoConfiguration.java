@@ -7,11 +7,8 @@ import com.velox.framework.id.properties.VeloxIdProperties;
 import com.velox.framework.id.spi.database.DatabaseIdOperator;
 import com.velox.framework.id.spi.generator.IdGeneratorEngine;
 import com.velox.framework.id.support.codec.Base62IdCodec;
-import com.velox.framework.id.support.codec.IdentityIdCodec;
 import com.velox.framework.id.support.generator.DatabaseIdGeneratorEngine;
 import com.velox.framework.id.support.generator.SnowflakeIdGeneratorEngine;
-import com.velox.framework.id.support.generator.UuidIdGeneratorEngine;
-import com.velox.framework.id.common.type.IdGeneratorStrategies;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -26,9 +23,6 @@ public class VeloxIdAutoConfiguration {
     @ConditionalOnMissingBean
     public IdCodec idCodec(VeloxIdProperties properties) {
         properties.validate();
-        if (IdGeneratorStrategies.UUID.equals(properties.getStrategy())) {
-            return new IdentityIdCodec();
-        }
         return new Base62IdCodec();
     }
 
@@ -41,9 +35,6 @@ public class VeloxIdAutoConfiguration {
     ) {
         properties.validate();
         if (properties.isEnabled()) {
-            if (properties.isUuidStrategy()) {
-                return new UuidIdGeneratorEngine(properties, codec);
-            }
             return new SnowflakeIdGeneratorEngine(properties, codec);
         }
 

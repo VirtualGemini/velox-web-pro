@@ -19,7 +19,7 @@
         <module>velox-persistence-spring-boot-starter</module>
         <module>velox-file-spring-boot-starter</module>
         <module>velox-email-spring-boot-starter</module>
-        <module>velox-id-generator-spring-boot-starter</module>
+        <module>velox-id-spring-boot-starter</module>
         <module>velox-redis-spring-boot-starter</module>
     </modules>
 </project>

@@ -11,19 +11,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class VeloxIdProperties {
 
     public static final String PREFIX = "velox.id";
-    public static final String ENABLED_KEY = "enabled";
-    public static final String ENABLED_TRUE = "true";
-    public static final String ENABLED_FALSE = "false";
+    /**
+     * Top-level snowflake worker id.
+     */
+    private long workerId = 1L;
 
     /**
-     * Whether the id generator capability is enabled.
+     * Top-level snowflake datacenter id.
      */
-    private boolean enabled = true;
-
-    /**
-     * Application-side id strategy. Defaults to snowflake.
-     */
-    private String strategy = IdGeneratorStrategies.SNOWFLAKE;
+    private long datacenterId = 1L;
 
     /**
      * Database-default id governance.
@@ -36,19 +32,23 @@ public class VeloxIdProperties {
     private final SnowflakeProperties snowflake = new SnowflakeProperties();
 
     public boolean isEnabled() {
-        return enabled;
+        return snowflake.isEnabled();
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public long getWorkerId() {
+        return workerId;
     }
 
-    public String getStrategy() {
-        return strategy;
+    public void setWorkerId(long workerId) {
+        this.workerId = workerId;
     }
 
-    public void setStrategy(String strategy) {
-        this.strategy = strategy;
+    public long getDatacenterId() {
+        return datacenterId;
+    }
+
+    public void setDatacenterId(long datacenterId) {
+        this.datacenterId = datacenterId;
     }
 
     public DatabaseProperties getDatabase() {
@@ -60,22 +60,30 @@ public class VeloxIdProperties {
     }
 
     public void validate() {
-        strategy = IdGeneratorStrategies.normalize(strategy);
-        if (!IdGeneratorStrategies.isSupported(strategy)) {
-            throw new VeloxIdGeneratorException(IdGeneratorCommonMessages.unsupportedIdStrategy(strategy));
-        }
         database.validate();
-        if (IdGeneratorStrategies.SNOWFLAKE.equals(strategy)) {
+        validateSnowflakeCoordinates();
+        if (isEnabled()) {
             snowflake.validate();
         }
     }
 
-    public boolean isSnowflakeStrategy() {
-        return IdGeneratorStrategies.SNOWFLAKE.equals(IdGeneratorStrategies.normalize(strategy));
+    public String getStrategy() {
+        return isEnabled() ? IdGeneratorStrategies.SNOWFLAKE : IdGeneratorStrategies.DATABASE;
     }
 
-    public boolean isUuidStrategy() {
-        return IdGeneratorStrategies.UUID.equals(IdGeneratorStrategies.normalize(strategy));
+    public boolean isSnowflakeStrategy() {
+        return isEnabled();
+    }
+
+    private void validateSnowflakeCoordinates() {
+        if (workerId < 0 || workerId > Snowflake.MAX_WORKER_ID) {
+            throw new VeloxIdGeneratorException(
+                    IdGeneratorCommonMessages.snowflakeWorkerIdOutOfRange(Snowflake.MAX_WORKER_ID));
+        }
+        if (datacenterId < 0 || datacenterId > Snowflake.MAX_DATA_CENTER_ID) {
+            throw new VeloxIdGeneratorException(
+                    IdGeneratorCommonMessages.snowflakeDatacenterIdOutOfRange(Snowflake.MAX_DATA_CENTER_ID));
+        }
     }
 
     public static class DatabaseProperties {
@@ -116,26 +124,17 @@ public class VeloxIdProperties {
 
     public static class SnowflakeProperties {
 
-        private long workerId = 1L;
-        private long datacenterId = 1L;
+        private boolean enabled = true;
         private long twepoch = Snowflake.DEFAULT_TWEPOCH;
         private long timeOffset = Snowflake.DEFAULT_TIME_OFFSET;
         private boolean useSystemClock;
 
-        public long getWorkerId() {
-            return workerId;
+        public boolean isEnabled() {
+            return enabled;
         }
 
-        public void setWorkerId(long workerId) {
-            this.workerId = workerId;
-        }
-
-        public long getDatacenterId() {
-            return datacenterId;
-        }
-
-        public void setDatacenterId(long datacenterId) {
-            this.datacenterId = datacenterId;
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
 
         public long getTwepoch() {
@@ -163,14 +162,6 @@ public class VeloxIdProperties {
         }
 
         void validate() {
-            if (workerId < 0 || workerId > Snowflake.MAX_WORKER_ID) {
-                throw new VeloxIdGeneratorException(
-                        IdGeneratorCommonMessages.snowflakeWorkerIdOutOfRange(Snowflake.MAX_WORKER_ID));
-            }
-            if (datacenterId < 0 || datacenterId > Snowflake.MAX_DATA_CENTER_ID) {
-                throw new VeloxIdGeneratorException(
-                        IdGeneratorCommonMessages.snowflakeDatacenterIdOutOfRange(Snowflake.MAX_DATA_CENTER_ID));
-            }
             if (twepoch <= 0) {
                 throw new VeloxIdGeneratorException(IdGeneratorCommonMessages.SNOWFLAKE_TWEPOCH_MUST_BE_POSITIVE);
             }

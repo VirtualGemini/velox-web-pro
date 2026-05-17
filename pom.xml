@@ -73,7 +73,7 @@
             </dependency>
             <dependency>
                 <groupId>com.velox</groupId>
-                <artifactId>velox-id-generator-spring-boot-starter</artifactId>
+                <artifactId>velox-id-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

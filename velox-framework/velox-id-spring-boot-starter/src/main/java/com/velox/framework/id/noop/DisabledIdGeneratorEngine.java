@@ -17,15 +17,15 @@ public class DisabledIdGeneratorEngine extends AbstractIdGeneratorEngine {
         VeloxIdProperties.SnowflakeProperties snowflake = properties.getSnowflake();
         this.metadata = new IdGeneratorMetadata(
                 false,
-                IdSourceModes.DISABLED,
+                IdSourceModes.DATABASE_DEFAULT,
                 properties.getStrategy(),
                 codec.getName(),
                 properties.getDatabase().getInitMode(),
-                properties.isSnowflakeStrategy() ? snowflake.getWorkerId() : null,
-                properties.isSnowflakeStrategy() ? snowflake.getDatacenterId() : null,
-                properties.isSnowflakeStrategy() ? snowflake.getTwepoch() : null,
-                properties.isSnowflakeStrategy() ? snowflake.getTimeOffset() : null,
-                properties.isSnowflakeStrategy() && snowflake.isUseSystemClock()
+                null,
+                null,
+                null,
+                null,
+                false
         );
     }
 

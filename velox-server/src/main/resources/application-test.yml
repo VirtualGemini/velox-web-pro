@@ -54,20 +54,20 @@ velox:
       # 测试环境默认快速失败，便于发现错误的缓存依赖
       disabled-strategy: FAIL_FAST
   id:
-    # 测试环境显式开启业务主键能力，避免依赖 Java 默认值
-    enabled: true
-    # 测试环境默认走 Snowflake；回归 UUID 兼容性时再显式切换；只建议在开发环境或初始化数据库时切换
-    strategy: snowflake
+    snowflake:
+      # true 使用 Snowflake BIGINT；false 使用数据库序列 BIGINT
+      enabled: true
+      # 测试环境默认直传原始雪花 ID，便于断言；需要验证 Base62 场景时改为 true
+      base62: false
     database:
-      # 测试环境启动时自动对齐数据库 ID 对象，保证回归环境与当前配置一致
+      # 测试环境启动时自动对齐数据库 ID 对象，保证回归环境与当前 BIGINT 配置一致
       init-mode: update
       # 显式保留元数据告警开关，避免测试环境掩盖配置漂移
       warn-on-prod-mismatch: true
-    snowflake:
-      # 测试环境节点编号建议独立规划，避免与开发环境冲突
-      worker-id: ${VELOX_ID_WORKER_ID:1}
-      # 测试环境机房编号建议与实际部署拓扑保持一致
-      datacenter-id: ${VELOX_ID_DATACENTER_ID:1}
+    # 测试环境节点编号建议独立规划，避免与开发环境冲突
+    worker-id: ${VELOX_ID_WORKER_ID:1}
+    # 测试环境机房编号建议与实际部署拓扑保持一致
+    datacenter-id: ${VELOX_ID_DATACENTER_ID:1}
   file:
     # 是否启用文件能力；测试环境显式开启，避免依赖默认值
     enabled: true

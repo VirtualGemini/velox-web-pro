@@ -92,7 +92,7 @@ public BusinessIdGenerator businessIdGenerator(IdGeneratorEngine engine, IdCodec
 
 ## Disabled 模式
 
-当 `velox.id.enabled=false` 时：
+当 `velox.id.snowflake.enabled=false` 时：
 
 - `BusinessIdGenerator` 仍可注入
 - `IdCodec` 仍可使用

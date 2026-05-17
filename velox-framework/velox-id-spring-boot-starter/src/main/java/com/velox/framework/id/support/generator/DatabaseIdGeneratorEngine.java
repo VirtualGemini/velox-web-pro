@@ -25,8 +25,8 @@ public class DatabaseIdGeneratorEngine extends AbstractIdGeneratorEngine {
                 properties.getStrategy(),
                 codec.getName(),
                 properties.getDatabase().getInitMode(),
-                IdGeneratorStrategies.SNOWFLAKE.equals(properties.getStrategy()) ? snowflake.getWorkerId() : null,
-                IdGeneratorStrategies.SNOWFLAKE.equals(properties.getStrategy()) ? snowflake.getDatacenterId() : null,
+                IdGeneratorStrategies.SNOWFLAKE.equals(properties.getStrategy()) ? properties.getWorkerId() : null,
+                IdGeneratorStrategies.SNOWFLAKE.equals(properties.getStrategy()) ? properties.getDatacenterId() : null,
                 IdGeneratorStrategies.SNOWFLAKE.equals(properties.getStrategy()) ? snowflake.getTwepoch() : null,
                 IdGeneratorStrategies.SNOWFLAKE.equals(properties.getStrategy()) ? snowflake.getTimeOffset() : null,
                 IdGeneratorStrategies.SNOWFLAKE.equals(properties.getStrategy()) && snowflake.isUseSystemClock()

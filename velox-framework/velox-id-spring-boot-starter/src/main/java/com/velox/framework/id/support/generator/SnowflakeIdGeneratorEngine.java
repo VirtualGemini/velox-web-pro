@@ -22,8 +22,8 @@ public class SnowflakeIdGeneratorEngine extends AbstractIdGeneratorEngine {
         this.codec = codec;
         this.snowflake = new Snowflake(
                 new Date(snowflakeProperties.getTwepoch()),
-                snowflakeProperties.getWorkerId(),
-                snowflakeProperties.getDatacenterId(),
+                properties.getWorkerId(),
+                properties.getDatacenterId(),
                 snowflakeProperties.isUseSystemClock(),
                 snowflakeProperties.getTimeOffset()
         );
@@ -33,8 +33,8 @@ public class SnowflakeIdGeneratorEngine extends AbstractIdGeneratorEngine {
                 IdGeneratorStrategies.SNOWFLAKE,
                 codec.getName(),
                 properties.getDatabase().getInitMode(),
-                snowflakeProperties.getWorkerId(),
-                snowflakeProperties.getDatacenterId(),
+                properties.getWorkerId(),
+                properties.getDatacenterId(),
                 snowflakeProperties.getTwepoch(),
                 snowflakeProperties.getTimeOffset(),
                 snowflakeProperties.isUseSystemClock()
