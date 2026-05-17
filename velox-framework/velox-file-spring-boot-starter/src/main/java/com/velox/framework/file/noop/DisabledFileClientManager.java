@@ -7,6 +7,8 @@ import com.velox.framework.file.spi.client.FileClientConfig;
 import com.velox.framework.file.support.client.FileClientTypeRegistry;
 import org.springframework.lang.Nullable;
 
+import java.util.List;
+
 public class DisabledFileClientManager implements FileClientManager {
 
     private final FileClientTypeRegistry typeRegistry;
@@ -29,5 +31,10 @@ public class DisabledFileClientManager implements FileClientManager {
     @Nullable
     public Class<? extends FileClientConfig> getConfigClass(Integer storage) {
         return typeRegistry.require(storage).configClass();
+    }
+
+    @Override
+    public List<Integer> getSupportedStorageTypes() {
+        return typeRegistry.storageTypes();
     }
 }

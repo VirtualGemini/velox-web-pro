@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class FileClientTypeRegistry {
@@ -53,5 +54,9 @@ public class FileClientTypeRegistry {
             throw FileClientException.unsupportedStorage(storage);
         }
         return registration;
+    }
+
+    public List<Integer> storageTypes() {
+        return List.copyOf(registrations.keySet());
     }
 }

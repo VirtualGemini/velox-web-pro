@@ -48,6 +48,11 @@ public class DefaultFileClientManager implements FileClientManager {
         return registration != null ? registration.configClass() : null;
     }
 
+    @Override
+    public java.util.List<Integer> getSupportedStorageTypes() {
+        return typeRegistry.storageTypes();
+    }
+
     @SuppressWarnings("unchecked")
     private <Config extends FileClientConfig> FileClient createFileClient(
             String configId, Integer storage, Config config) {

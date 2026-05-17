@@ -7,11 +7,11 @@ public interface FileClient {
 
     String getId();
 
-    String upload(byte[] content, String path, String type) throws Exception;
+    String upload(byte[] content, String path, String type);
 
-    void delete(String path) throws Exception;
+    void delete(String path);
 
-    byte[] getContent(String path) throws Exception;
+    byte[] getContent(String path);
 
     default String presignPutUrl(String path) {
         throw FileClientException.operationNotSupported(FileClientOperationType.PRESIGN_PUT_URL);

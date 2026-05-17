@@ -1,4 +1,4 @@
-package com.velox.framework.file.support.util;
+package com.velox.framework.file.api.util;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
@@ -15,11 +15,14 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-public class FileTypeUtils {
+public final class FileTypeUtils {
 
     private static final Logger log = LoggerFactory.getLogger(FileTypeUtils.class);
 
     private static final Tika TIKA = new Tika();
+
+    private FileTypeUtils() {
+    }
 
     public static String getMineType(byte[] data) {
         return TIKA.detect(data);

@@ -58,7 +58,7 @@ public enum BusinessErrorCode implements ErrorCode {
     FILE_CONFIG_INVALID(13007, "文件配置不合法: %s"),
     FILE_STORAGE_TYPE_UNSUPPORTED(13008, "不支持的存储类型: %s"),
     FILE_SERVICE_DISABLED(13009, "文件能力未启用，请联系管理员"),
-    FILE_CONFIG_TEST_FAILED(13010, "文件配置测试失败"),
+    FILE_CONFIG_TEST_FAILED(13010, "文件配置测试失败: %s"),
 
     // ---- 权限模块 (20000-20999) ----
     ROLE_NOT_FOUND(20000, "角色不存在"),

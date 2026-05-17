@@ -1,6 +1,7 @@
 package com.velox.framework.file.autoconfigure;
 
 import com.velox.framework.file.api.client.FileClientFactory;
+import com.velox.framework.file.api.diagnostics.FileFailureReasonResolver;
 import com.velox.framework.file.common.storage.FileStorageCodes;
 import com.velox.framework.file.core.client.DefaultFileClientManager;
 import com.velox.framework.file.noop.DisabledFileClientManager;
@@ -8,6 +9,7 @@ import com.velox.framework.file.properties.VeloxFileProperties;
 import com.velox.framework.file.spi.client.FileClientManager;
 import com.velox.framework.file.spi.client.FileClientTypeRegistration;
 import com.velox.framework.file.support.client.FileClientTypeRegistry;
+import com.velox.framework.file.support.diagnostics.DefaultFileFailureReasonResolver;
 import com.velox.framework.file.support.client.ftp.FtpFileClient;
 import com.velox.framework.file.support.client.ftp.FtpFileClientConfig;
 import com.velox.framework.file.support.client.local.LocalFileClient;
@@ -65,6 +67,12 @@ public class VeloxFileAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
+    public FileFailureReasonResolver fileFailureReasonResolver() {
+        return new DefaultFileFailureReasonResolver();
+    }
+
+    @Bean
     @ConditionalOnMissingBean(name = FileAutoConfigurationConstants.LOCAL_REGISTRATION_BEAN_NAME)
     public FileClientTypeRegistration localFileClientTypeRegistration() {
         return FileClientTypeRegistration.builtIn(FileStorageCodes.LOCAL, LocalFileClientConfig.class,
@@ -73,7 +81,10 @@ public class VeloxFileAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = FileAutoConfigurationConstants.FTP_REGISTRATION_BEAN_NAME)
-    @ConditionalOnClass(name = FileAutoConfigurationConstants.FTP_CLASS_NAME)
+    @ConditionalOnClass(name = {
+            FileAutoConfigurationConstants.FTP_CLASS_NAME,
+            FileAutoConfigurationConstants.FTP_CLIENT_CLASS_NAME
+    })
     public FileClientTypeRegistration ftpFileClientTypeRegistration() {
         return FileClientTypeRegistration.builtIn(FileStorageCodes.FTP, FtpFileClientConfig.class,
                 (configId, config) -> new FtpFileClient(configId, (FtpFileClientConfig) config));
