@@ -58,11 +58,11 @@ velox:
   redis:
     enabled: true
     template-type: default
-  cache:
-    enabled: true
-    cache-manager-type: default
-    redis-scan-batch-size: 30
-    disabled-strategy: FAIL_FAST
+    cache:
+      enabled: true
+      cache-manager-type: default
+      redis-scan-batch-size: 30
+      disabled-strategy: FAIL_FAST
 spring:
   cache:
     redis:
@@ -89,15 +89,16 @@ When disabled:
 
 ```yaml
 velox:
-  cache:
-    enabled: false
+  redis:
+    cache:
+      enabled: false
 ```
 
 When disabled:
 
 - `redisCacheManager` and `cacheManager` still remain injectable
 - cache metadata and `RedisCacheConfiguration` remain available
-- runtime cache behavior follows `velox.cache.disabled-strategy`
+- runtime cache behavior follows `velox.redis.cache.disabled-strategy`
 
 Available disabled strategies:
 

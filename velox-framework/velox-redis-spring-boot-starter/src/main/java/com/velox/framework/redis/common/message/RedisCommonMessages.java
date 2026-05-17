@@ -5,7 +5,7 @@ public final class RedisCommonMessages {
     public static final String REDIS_CAPABILITY_DISABLED =
             "Velox redis capability is disabled. Please enable velox.redis.enabled=true.";
     public static final String REDIS_CACHE_CAPABILITY_DISABLED =
-            "Velox redis cache capability is disabled. Please enable velox.cache.enabled=true.";
+            "Velox redis cache capability is disabled. Please enable velox.redis.cache.enabled=true.";
     public static final String REDIS_TEMPLATE_TYPE_REQUIRED = "Redis template type must not be blank";
     public static final String REDIS_TEMPLATE_CREATOR_REQUIRED = "Redis template creator must not be null";
     public static final String REDIS_CACHE_MANAGER_TYPE_REQUIRED = "Redis cache manager type must not be blank";

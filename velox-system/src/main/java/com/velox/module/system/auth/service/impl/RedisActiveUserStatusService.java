@@ -2,6 +2,7 @@ package com.velox.module.system.auth.service.impl;
 
 import com.velox.framework.config.SecurityProperties;
 import com.velox.module.system.auth.service.ActiveUserStatusService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@ConditionalOnProperty(prefix = "velox.redis", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class RedisActiveUserStatusService implements ActiveUserStatusService {
 
     private static final String PRESENCE_KEY_PREFIX = "auth:presence:user:";

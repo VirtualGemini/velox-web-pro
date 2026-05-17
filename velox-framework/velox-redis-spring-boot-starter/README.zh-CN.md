@@ -59,11 +59,11 @@ velox:
   redis:
     enabled: true
     template-type: default
-  cache:
-    enabled: true
-    cache-manager-type: default
-    redis-scan-batch-size: 30
-    disabled-strategy: FAIL_FAST
+    cache:
+      enabled: true
+      cache-manager-type: default
+      redis-scan-batch-size: 30
+      disabled-strategy: FAIL_FAST
 spring:
   cache:
     redis:
@@ -90,15 +90,16 @@ velox:
 
 ```yaml
 velox:
-  cache:
-    enabled: false
+  redis:
+    cache:
+      enabled: false
 ```
 
 关闭后：
 
 - `redisCacheManager` 和 `cacheManager` 仍然会注册并保持可注入
 - 缓存元数据与 `RedisCacheConfiguration` 仍然可用
-- 运行期缓存行为由 `velox.cache.disabled-strategy` 决定
+- 运行期缓存行为由 `velox.redis.cache.disabled-strategy` 决定
 
 支持的 disabled 策略：
 

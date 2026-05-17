@@ -46,6 +46,7 @@ public enum BusinessErrorCode implements ErrorCode {
     RESET_CODE_EXPIRED(12015, "重置验证码已过期"),
     RESET_CODE_SEND_TOO_FREQUENT(12016, "验证码发送过于频繁，请稍后重试"),
     EMAIL_SERVICE_DISABLED(12017, "邮件能力未启用，请联系管理员"),
+    EMAIL_SEND_FAILED(12018, "邮件发送失败，请稍后重试"),
 
     // ---- 文件模块 (13000-13999) ----
     FILE_UPLOAD_FAILED(13000, "文件上传失败"),

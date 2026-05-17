@@ -79,6 +79,14 @@ velox:
       reset-code-ttl-seconds: 600
       # 邮件重置验证码重复发送间隔（秒）
       reset-code-resend-interval-seconds: 60
+  redis:
+    # 开发环境默认开启 Redis；关闭后验证码和在线状态改为内存实现
+    enabled: true
+    cache:
+      # 开发环境默认关闭 Spring Cache 层，避免调试时引入额外缓存副作用
+      enabled: false
+      # 若业务误用缓存能力，默认快速失败便于尽早暴露问题
+      disabled-strategy: FAIL_FAST
   file:
     # 是否启用文件能力；开发环境显式开启，避免依赖默认值
     enabled: true

@@ -8,7 +8,7 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(VeloxCacheProperties.PREFIX)
 public class VeloxCacheProperties {
 
-    public static final String PREFIX = "velox.cache";
+    public static final String PREFIX = "velox.redis.cache";
     public static final String ENABLED_KEY = "enabled";
     public static final String ENABLED_TRUE = "true";
     public static final String ENABLED_FALSE = "false";

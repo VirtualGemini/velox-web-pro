@@ -7,6 +7,8 @@ import com.velox.module.system.common.enums.RoleTypeEnum;
 import com.velox.common.exception.ApiException;
 import com.velox.common.exception.BusinessErrorCode;
 import com.velox.email.api.builder.EmailBuilder;
+import com.velox.email.api.message.SendResponse;
+import com.velox.email.common.error.EmailErrorCode;
 import com.velox.module.system.domain.model.Profile;
 import com.velox.module.system.domain.model.Role;
 import com.velox.module.system.domain.model.User;
@@ -239,19 +241,28 @@ public class LoginServiceImpl implements LoginService {
         }
 
         EmailBuilder emailBuilder = requireEmailBuilder();
-
-        if (!verificationCodeStore.canSendResetCode(email)) {
+        String code = RandomUtil.randomNumbers(6);
+        if (!verificationCodeStore.trySaveResetCode(email, code)) {
             throw new ApiException(BusinessErrorCode.RESET_CODE_SEND_TOO_FREQUENT);
         }
-
-        String code = RandomUtil.randomNumbers(6);
-        verificationCodeStore.saveResetCode(email, code);
-
-        emailBuilder.to(email)
-                .subject("密码重置验证码")
-                .text(buildResetPasswordMailContent(user.getUsername(), code))
-                .async()
-                .send();
+        try {
+            SendResponse response = emailBuilder.to(email)
+                    .subject("密码重置验证码")
+                    .text(buildResetPasswordMailContent(user.getUsername(), code))
+                    .sendSync();
+            if (!response.success()) {
+                verificationCodeStore.invalidateResetCode(email);
+                if (response.errorCode() == EmailErrorCode.DISABLED.code()) {
+                    throw new ApiException(BusinessErrorCode.EMAIL_SERVICE_DISABLED);
+                }
+                throw new ApiException(BusinessErrorCode.EMAIL_SEND_FAILED);
+            }
+        } catch (ApiException exception) {
+            throw exception;
+        } catch (RuntimeException exception) {
+            verificationCodeStore.invalidateResetCode(email);
+            throw new ApiException(exception, BusinessErrorCode.EMAIL_SEND_FAILED);
+        }
     }
 
     @Override
@@ -307,10 +318,11 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.CAPTCHA_ERROR);
         }
 
-        if (!verificationCodeStore.captchaExists(key)) {
+        VerificationCodeStore.VerificationResult captchaResult = verificationCodeStore.consumeCaptcha(key, captchaCode);
+        if (captchaResult == VerificationCodeStore.VerificationResult.EXPIRED) {
             throw new ApiException(BusinessErrorCode.CAPTCHA_EXPIRED);
         }
-        if (!verificationCodeStore.consumeCaptcha(key, captchaCode)) {
+        if (captchaResult == VerificationCodeStore.VerificationResult.INVALID) {
             throw new ApiException(BusinessErrorCode.CAPTCHA_ERROR);
         }
     }
