@@ -64,22 +64,6 @@ velox:
       init-mode: update
       # 显式保留元数据告警开关，避免测试环境掩盖配置漂移
       warn-on-prod-mismatch: true
-      governance:
-        # 是否输出数据库 ID 规划报告与诊断摘要
-        report-enabled: true
-        # 可选：显式排除某些列，禁止其参与 ID 识别、引用推断和迁移
-        ignores: [ ]
-        # 可选：当动态推断不足时，允许显式声明引用绑定
-        overrides: [ ]
-        # 示例：
-        # ignores:
-        #   - table: biz_order
-        #     column: owner_id
-        # overrides:
-        #   - table: biz_order
-        #     column: owner_code
-        #     target-business-type: sys_user
-        #     path-like: false
     # 测试环境节点编号建议独立规划，避免与开发环境冲突
     worker-id: ${VELOX_ID_WORKER_ID:1}
     # 测试环境机房编号建议与实际部署拓扑保持一致

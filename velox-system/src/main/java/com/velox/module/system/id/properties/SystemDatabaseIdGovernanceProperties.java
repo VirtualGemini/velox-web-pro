@@ -11,8 +11,8 @@ import java.util.List;
 public class SystemDatabaseIdGovernanceProperties {
 
     private boolean reportEnabled = true;
-    private final List<ColumnIgnore> ignores = new ArrayList<>();
-    private final List<ReferenceOverride> overrides = new ArrayList<>();
+    private final List<DomainDeclaration> domains = new ArrayList<>();
+    private final List<TableReferenceDeclaration> references = new ArrayList<>();
 
     public boolean isReportEnabled() {
         return reportEnabled;
@@ -22,18 +22,19 @@ public class SystemDatabaseIdGovernanceProperties {
         this.reportEnabled = reportEnabled;
     }
 
-    public List<ReferenceOverride> getOverrides() {
-        return overrides;
+    public List<DomainDeclaration> getDomains() {
+        return domains;
     }
 
-    public List<ColumnIgnore> getIgnores() {
-        return ignores;
+    public List<TableReferenceDeclaration> getReferences() {
+        return references;
     }
 
-    public static class ColumnIgnore {
+    public static class DomainDeclaration {
 
         private String table;
-        private String column;
+        private String idColumn;
+        private String businessType;
         private boolean enabled = true;
 
         public String getTable() {
@@ -44,12 +45,20 @@ public class SystemDatabaseIdGovernanceProperties {
             this.table = table;
         }
 
-        public String getColumn() {
-            return column;
+        public String getIdColumn() {
+            return idColumn;
         }
 
-        public void setColumn(String column) {
-            this.column = column;
+        public void setIdColumn(String idColumn) {
+            this.idColumn = idColumn;
+        }
+
+        public String getBusinessType() {
+            return businessType;
+        }
+
+        public void setBusinessType(String businessType) {
+            this.businessType = businessType;
         }
 
         public boolean isEnabled() {
@@ -61,13 +70,11 @@ public class SystemDatabaseIdGovernanceProperties {
         }
     }
 
-    public static class ReferenceOverride {
+    public static class TableReferenceDeclaration {
 
         private String table;
-        private String column;
-        private String targetBusinessType;
-        private boolean pathLike;
         private boolean enabled = true;
+        private final List<ReferenceMappingDeclaration> mappings = new ArrayList<>();
 
         public String getTable() {
             return table;
@@ -76,6 +83,26 @@ public class SystemDatabaseIdGovernanceProperties {
         public void setTable(String table) {
             this.table = table;
         }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public List<ReferenceMappingDeclaration> getMappings() {
+            return mappings;
+        }
+    }
+
+    public static class ReferenceMappingDeclaration {
+
+        private String column;
+        private String targetBusinessType;
+        private String kind = "explicit";
+        private boolean enabled = true;
 
         public String getColumn() {
             return column;
@@ -93,12 +120,12 @@ public class SystemDatabaseIdGovernanceProperties {
             this.targetBusinessType = targetBusinessType;
         }
 
-        public boolean isPathLike() {
-            return pathLike;
+        public String getKind() {
+            return kind;
         }
 
-        public void setPathLike(boolean pathLike) {
-            this.pathLike = pathLike;
+        public void setKind(String kind) {
+            this.kind = kind;
         }
 
         public boolean isEnabled() {
