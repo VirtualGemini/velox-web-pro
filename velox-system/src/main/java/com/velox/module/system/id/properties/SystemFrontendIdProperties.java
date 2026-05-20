@@ -1,15 +1,13 @@
-package com.velox.module.system.id.web;
+package com.velox.module.system.id.properties;
 
+import com.velox.framework.id.common.prefix.IdPropertyPrefixes;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "velox.id.snowflake")
+@ConfigurationProperties(prefix = IdPropertyPrefixes.ID_SNOWFLAKE)
 public class SystemFrontendIdProperties {
 
-    /**
-     * Whether snowflake ids should be exposed to the frontend as Base62 strings.
-     */
     private boolean base62 = true;
 
     public boolean isBase62() {

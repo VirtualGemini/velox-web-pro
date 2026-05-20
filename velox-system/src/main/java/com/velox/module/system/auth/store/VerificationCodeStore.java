@@ -1,4 +1,4 @@
-package com.velox.module.system.auth.service.impl;
+package com.velox.module.system.auth.store;
 
 public interface VerificationCodeStore {
 

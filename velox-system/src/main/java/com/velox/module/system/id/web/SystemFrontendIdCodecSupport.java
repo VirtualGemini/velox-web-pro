@@ -3,6 +3,7 @@ package com.velox.module.system.id.web;
 import com.velox.framework.id.exception.VeloxIdGeneratorException;
 import com.velox.framework.id.properties.VeloxIdProperties;
 import com.velox.framework.id.support.codec.Base62IdCodec;
+import com.velox.module.system.id.properties.SystemFrontendIdProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 

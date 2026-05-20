@@ -1,7 +1,7 @@
 package com.velox.module.system.auth.interceptor;
 
 import com.velox.framework.security.api.session.SecuritySessionService;
-import com.velox.module.system.auth.service.ActiveUserStatusService;
+import com.velox.module.system.auth.status.ActiveUserStatusService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;

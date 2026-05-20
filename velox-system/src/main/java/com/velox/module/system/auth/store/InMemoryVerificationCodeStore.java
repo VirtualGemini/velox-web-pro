@@ -1,8 +1,6 @@
-package com.velox.module.system.auth.service.impl;
+package com.velox.module.system.auth.store;
 
-import com.velox.framework.config.SecurityProperties;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
+import com.velox.framework.security.properties.SecurityProperties;
 
 import java.time.Duration;
 import java.util.Map;
@@ -10,8 +8,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Component
-@ConditionalOnProperty(prefix = "velox.redis", name = "enabled", havingValue = "false")
 public class InMemoryVerificationCodeStore extends AbstractVerificationCodeStore {
 
     private static final int CLEANUP_INTERVAL = 128;

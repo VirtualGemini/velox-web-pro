@@ -5,6 +5,7 @@ import com.velox.framework.id.common.message.IdGeneratorCommonMessages;
 import com.velox.framework.id.common.type.IdDatabaseInitModes;
 import com.velox.framework.id.exception.VeloxIdGeneratorException;
 import com.velox.framework.id.properties.VeloxIdProperties;
+import com.velox.module.system.id.properties.SystemDatabaseIdGovernanceProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,41 +24,131 @@ public class DatabaseIdSchemaBootstrapper {
 
     private final DataSource dataSource;
     private final VeloxIdProperties properties;
+    private final SystemDatabaseIdGovernanceProperties governanceProperties;
     private final DatabaseIdSchemaReconciler reconciler;
 
     public DatabaseIdSchemaBootstrapper(
             DataSource dataSource,
-            VeloxIdProperties properties
+            VeloxIdProperties properties,
+            SystemDatabaseIdGovernanceProperties governanceProperties
     ) {
         this.dataSource = dataSource;
         this.properties = properties;
-        this.reconciler = new DatabaseIdSchemaReconciler(properties);
+        this.governanceProperties = governanceProperties;
+        this.reconciler = new DatabaseIdSchemaReconciler(properties, governanceProperties);
     }
 
     public void bootstrap() {
         boolean updateMode = IdDatabaseInitModes.UPDATE.equals(properties.getDatabase().getInitMode());
-        if (!updateMode) {
-            return;
-        }
         try (Connection connection = dataSource.getConnection()) {
-            DatabaseIdSchemaReconciler.DatabaseIdReconciliationPlan reconciliationPlan = reconciler.plan(connection);
+            DatabaseIdReconciliationPlan reconciliationPlan = executeStage(
+                    "plan database id reconciliation",
+                    () -> reconciler.plan(connection)
+            );
+            emitPlanReport(buildPlanReport(reconciliationPlan), updateMode);
+            emitDiagnostics(reconciliationPlan, updateMode);
+            if (!updateMode) {
+                return;
+            }
             if (!reconciliationPlan.shouldBootstrap()) {
                 return;
             }
 
             if (!tableExists(connection)) {
-                createTable(connection);
+                executeStage("create sys_id_sequence", () -> {
+                    createTable(connection);
+                    return null;
+                });
                 log.info("Initialized {} for Velox database id sequencing", TABLE_NAME);
             }
 
             if (reconciliationPlan.needsMigration()) {
-                reconciler.reconcile(connection, reconciliationPlan);
+                executeStage("reconcile managed database ids", () -> {
+                    reconciler.reconcile(connection, reconciliationPlan);
+                    return null;
+                });
                 log.info("Reconciled managed database ids to {}", reconciliationPlan.targetPosture().name().toLowerCase());
             }
-            seedBusinessTypes(connection, determineSequenceSeeds(connection));
+            Map<String, Long> sequenceSeeds = executeStage(
+                    "resolve sys_id_sequence seed values",
+                    () -> determineSequenceSeeds(connection)
+            );
+            executeStage("seed sys_id_sequence", () -> {
+                seedBusinessTypes(connection, sequenceSeeds);
+                return null;
+            });
         } catch (SQLException exception) {
-            throw new VeloxIdGeneratorException(IdGeneratorCommonMessages.DATABASE_ID_INITIALIZATION_FAILED, exception);
+            throw wrapSqlException("open bootstrap connection", exception);
         }
+    }
+
+    private DatabaseIdPlanReport buildPlanReport(DatabaseIdReconciliationPlan reconciliationPlan) {
+        int managedTableCount = reconciliationPlan.availableTables().size();
+        int identityDomainCount = (int) reconciliationPlan.availableTables().values().stream()
+                .filter(table -> table.identityColumn() != null)
+                .count();
+        int migrationCount = reconciliationPlan.idMappings().values().stream()
+                .mapToInt(Map::size)
+                .sum();
+        return new DatabaseIdPlanReport(
+                reconciliationPlan.targetPosture(),
+                managedTableCount,
+                identityDomainCount,
+                migrationCount,
+                reconciliationPlan.diagnostics()
+        );
+    }
+
+    private void emitPlanReport(DatabaseIdPlanReport report, boolean updateMode) {
+        if (!governanceProperties.isReportEnabled()) {
+            return;
+        }
+        String mode = updateMode ? "update" : "none";
+        log.info(
+                "Velox database id plan [mode={}, targetPosture={}, managedTables={}, identityDomains={}, migrations={}, warnings={}, errors={}]",
+                mode,
+                report.targetPosture().name().toLowerCase(),
+                report.managedTableCount(),
+                report.identityDomainCount(),
+                report.migrationCount(),
+                report.warningCount(),
+                report.errorCount()
+        );
+    }
+
+    private void emitDiagnostics(DatabaseIdReconciliationPlan reconciliationPlan, boolean updateMode) {
+        for (DatabaseIdPlanDiagnostic diagnostic : reconciliationPlan.diagnostics()) {
+            if (diagnostic.severity() == DatabaseIdDiagnosticSeverity.ERROR) {
+                log.error("Velox database id diagnostic [{}] {} - {}", diagnostic.code(), diagnostic.location(), diagnostic.message());
+                continue;
+            }
+            if (updateMode) {
+                log.warn("Velox database id diagnostic [{}] {} - {}", diagnostic.code(), diagnostic.location(), diagnostic.message());
+            } else {
+                log.info("Velox database id diagnostic [{}] {} - {}", diagnostic.code(), diagnostic.location(), diagnostic.message());
+            }
+        }
+    }
+
+    private <T> T executeStage(String stage, SqlSupplier<T> supplier) throws SQLException {
+        try {
+            return supplier.get();
+        } catch (SQLException exception) {
+            throw wrapSqlException(stage, exception);
+        }
+    }
+
+    private VeloxIdGeneratorException wrapSqlException(String stage, SQLException exception) {
+        String sqlState = exception.getSQLState() == null ? "-" : exception.getSQLState();
+        String message = exception.getMessage() == null ? "-" : exception.getMessage();
+        return new VeloxIdGeneratorException(
+                IdGeneratorCommonMessages.DATABASE_ID_INITIALIZATION_FAILED
+                        + " [stage=" + stage
+                        + ", sqlState=" + sqlState
+                        + ", errorCode=" + exception.getErrorCode()
+                        + ", message=" + message + "]",
+                exception
+        );
     }
 
     private boolean tableExists(Connection connection) {
@@ -140,5 +231,11 @@ public class DatabaseIdSchemaBootstrapper {
             values.putIfAbsent(businessType, 0L);
         }
         return values;
+    }
+
+    @FunctionalInterface
+    private interface SqlSupplier<T> {
+
+        T get() throws SQLException;
     }
 }

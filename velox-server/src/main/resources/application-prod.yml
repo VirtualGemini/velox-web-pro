@@ -80,6 +80,22 @@ velox:
       init-mode: none
       # 若数据库已按其他 ID 策略初始化，生产启动时打印告警日志
       warn-on-prod-mismatch: true
+      governance:
+        # 是否输出数据库 ID 规划报告与诊断摘要
+        report-enabled: true
+        # 可选：显式排除某些列，禁止其参与 ID 识别、引用推断和迁移
+        ignores: [ ]
+        # 可选：当动态推断不足时，允许显式声明引用绑定
+        overrides: [ ]
+        # 示例：
+        # ignores:
+        #   - table: biz_order
+        #     column: owner_id
+        # overrides:
+        #   - table: biz_order
+        #     column: owner_code
+        #     target-business-type: sys_user
+        #     path-like: false
     # 生产环境节点编号必须按实例唯一规划；未覆盖时回退默认值仅用于保底
     worker-id: ${VELOX_ID_WORKER_ID:1}
     # 生产环境机房编号必须与部署拓扑一致，避免跨集群冲突

@@ -2,6 +2,7 @@ package com.velox.module.system.id.autoconfigure;
 
 import com.velox.framework.id.properties.VeloxIdProperties;
 import com.velox.framework.id.spi.database.DatabaseIdOperator;
+import com.velox.module.system.id.properties.SystemDatabaseIdGovernanceProperties;
 import com.velox.module.system.id.support.DatabaseIdSchemaBootstrapper;
 import com.velox.module.system.id.support.DatabaseIdSequenceOperator;
 import org.springframework.boot.ApplicationRunner;
@@ -26,9 +27,10 @@ public class VeloxSystemIdDatabaseAutoConfiguration {
     @Bean
     public DatabaseIdSchemaBootstrapper databaseIdSchemaBootstrapper(
             DataSource dataSource,
-            VeloxIdProperties properties
+            VeloxIdProperties properties,
+            SystemDatabaseIdGovernanceProperties governanceProperties
     ) {
-        return new DatabaseIdSchemaBootstrapper(dataSource, properties);
+        return new DatabaseIdSchemaBootstrapper(dataSource, properties, governanceProperties);
     }
 
     @Bean

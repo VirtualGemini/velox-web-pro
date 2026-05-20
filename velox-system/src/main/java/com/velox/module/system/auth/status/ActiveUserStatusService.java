@@ -1,4 +1,4 @@
-package com.velox.module.system.auth.service;
+package com.velox.module.system.auth.status;
 
 import java.util.Collection;
 import java.util.Map;

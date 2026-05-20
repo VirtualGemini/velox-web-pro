@@ -1,16 +1,12 @@
-package com.velox.module.system.auth.service.impl;
+package com.velox.module.system.auth.store;
 
-import com.velox.framework.config.SecurityProperties;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import com.velox.framework.security.properties.SecurityProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.List;
 
-@Component
-@ConditionalOnProperty(prefix = "velox.redis", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class RedisVerificationCodeStore extends AbstractVerificationCodeStore {
 
     private static final DefaultRedisScript<Long> CONSUME_AND_COMPARE_SCRIPT = new DefaultRedisScript<>(

@@ -1,8 +1,8 @@
 package com.velox.module.system.auth.config;
 
-import com.velox.framework.config.SecurityProperties;
-import com.velox.framework.config.VeloxProperties;
 import com.velox.framework.security.api.authorization.SecurityAuthorizationService;
+import com.velox.framework.security.properties.SecurityProperties;
+import com.velox.framework.web.properties.VeloxProperties;
 import com.velox.framework.web.api.path.ApiPathPrefixes;
 import com.velox.module.system.auth.interceptor.ActiveUserHeartbeatInterceptor;
 import jakarta.servlet.http.HttpServletRequest;

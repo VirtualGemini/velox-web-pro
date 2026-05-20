@@ -1,9 +1,6 @@
-package com.velox.module.system.auth.service.impl;
+package com.velox.module.system.auth.status;
 
-import com.velox.framework.config.SecurityProperties;
-import com.velox.module.system.auth.service.ActiveUserStatusService;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
+import com.velox.framework.security.properties.SecurityProperties;
 import org.springframework.util.StringUtils;
 
 import java.util.Collection;
@@ -12,8 +9,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Service
-@ConditionalOnProperty(prefix = "velox.redis", name = "enabled", havingValue = "false")
 public class InMemoryActiveUserStatusService implements ActiveUserStatusService {
 
     private static final int CLEANUP_INTERVAL = 128;

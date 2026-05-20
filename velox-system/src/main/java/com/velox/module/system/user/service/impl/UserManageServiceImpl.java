@@ -14,7 +14,7 @@ import com.velox.module.system.persistence.RoleMapper;
 import com.velox.module.system.persistence.UserMapper;
 import com.velox.module.system.persistence.UserRoleMapper;
 import com.velox.module.system.auth.service.PasswordCipherService;
-import com.velox.module.system.auth.service.ActiveUserStatusService;
+import com.velox.module.system.auth.status.ActiveUserStatusService;
 import com.velox.module.system.permission.service.PermissionService;
 import com.velox.framework.web.RequestDateTimeFormatter;
 import com.velox.module.system.user.dto.UserListItemDTO;

@@ -3,7 +3,7 @@ package com.velox.module.system.auth.service.impl;
 import cn.hutool.crypto.digest.BCrypt;
 import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.crypto.symmetric.PBKDF2;
-import com.velox.framework.config.SecurityProperties;
+import com.velox.framework.security.properties.SecurityProperties;
 import com.velox.module.system.auth.service.PasswordCipherService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;

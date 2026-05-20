@@ -1,8 +1,8 @@
-package com.velox.module.system.auth.service.impl;
+package com.velox.module.system.auth.store;
 
 import cn.hutool.crypto.digest.HMac;
 import cn.hutool.crypto.digest.HmacAlgorithm;
-import com.velox.framework.config.SecurityProperties;
+import com.velox.framework.security.properties.SecurityProperties;
 
 import java.nio.charset.StandardCharsets;
 
