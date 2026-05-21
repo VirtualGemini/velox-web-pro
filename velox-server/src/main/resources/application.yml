@@ -18,7 +18,7 @@ server:
 spring:
   config:
     # 额外导入数据库 ID 治理声明，避免主配置文件过长
-    import: classpath:id-governance.yml
+    import: classpath:id.yml
   profiles:
     # 当前默认激活环境
     active: local

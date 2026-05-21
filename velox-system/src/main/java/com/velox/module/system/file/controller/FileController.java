@@ -8,7 +8,7 @@ import com.velox.common.result.PageResult;
 import com.velox.common.result.Result;
 import com.velox.framework.file.api.util.FileTypeUtils;
 import com.velox.framework.security.api.annotation.RequirePermission;
-import com.velox.module.system.id.web.SystemFrontendIdCodecSupport;
+import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
 import com.velox.module.system.file.service.FileService;
 import com.velox.module.system.file.vo.FileCreateReqVO;
 import com.velox.module.system.file.vo.FilePageReqVO;

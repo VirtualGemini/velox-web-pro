@@ -2,9 +2,9 @@ package com.velox.module.system.id.autoconfigure;
 
 import com.velox.framework.id.properties.VeloxIdProperties;
 import com.velox.framework.id.spi.database.DatabaseIdOperator;
-import com.velox.module.system.id.properties.SystemDatabaseIdGovernanceProperties;
-import com.velox.module.system.id.support.DatabaseIdSchemaBootstrapper;
-import com.velox.module.system.id.support.DatabaseIdSequenceOperator;
+import com.velox.module.system.id.database.SystemDatabaseIdGovernanceProperties;
+import com.velox.module.system.id.database.schema.DatabaseIdSchemaBootstrapper;
+import com.velox.module.system.id.database.schema.DatabaseIdSequenceOperator;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;

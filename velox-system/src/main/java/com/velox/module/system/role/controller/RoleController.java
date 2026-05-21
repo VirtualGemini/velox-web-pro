@@ -2,7 +2,7 @@ package com.velox.module.system.role.controller;
 
 import com.velox.common.result.Result;
 import com.velox.framework.security.api.annotation.RequirePermission;
-import com.velox.module.system.id.web.SystemFrontendIdCodecSupport;
+import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
 import com.velox.module.system.role.dto.RoleListItemDTO;
 import com.velox.module.system.role.dto.RoleMenuPermissionUpdateCommand;
 import com.velox.module.system.role.dto.RoleQuery;

@@ -3,7 +3,7 @@ package com.velox.module.system.menu.controller;
 import com.velox.common.result.Result;
 import com.velox.framework.security.api.annotation.RequireAuthenticated;
 import com.velox.framework.security.api.annotation.RequirePermission;
-import com.velox.module.system.id.web.SystemFrontendIdCodecSupport;
+import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
 import com.velox.module.system.menu.dto.MenuSaveCommand;
 import com.velox.module.system.menu.dto.MenuRouteDTO;
 import com.velox.module.system.menu.service.MenuService;

@@ -3,7 +3,7 @@ package com.velox.module.system.file.controller;
 import com.velox.common.result.PageResult;
 import com.velox.common.result.Result;
 import com.velox.framework.security.api.annotation.RequirePermission;
-import com.velox.module.system.id.web.SystemFrontendIdCodecSupport;
+import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
 import com.velox.module.system.file.service.FileConfigService;
 import com.velox.module.system.file.vo.FileConfigPageReqVO;
 import com.velox.module.system.file.vo.FileConfigRespVO;

@@ -62,8 +62,6 @@ velox:
     database:
       # 测试环境启动时自动对齐数据库 ID 对象，保证回归环境与当前 BIGINT 配置一致
       init-mode: update
-      # 显式保留元数据告警开关，避免测试环境掩盖配置漂移
-      warn-on-prod-mismatch: true
     # 测试环境节点编号建议独立规划，避免与开发环境冲突
     worker-id: ${VELOX_ID_WORKER_ID:1}
     # 测试环境机房编号建议与实际部署拓扑保持一致

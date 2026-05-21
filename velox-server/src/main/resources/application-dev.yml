@@ -96,8 +96,6 @@ velox:
     database:
       # 开发环境允许启动时热更新数据库 ID 对象，便于反复验证雪花/数据库序列切换
       init-mode: update
-      # 保持告警开关显式开启，避免环境切换时误判数据库初始化状态
-      warn-on-prod-mismatch: true
     # 开发环境节点编号建议由部署平台注入，默认回退到单节点
     worker-id: ${VELOX_ID_WORKER_ID:1}
     # 开发环境机房编号建议与集群规划保持一致
