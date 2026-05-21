@@ -92,25 +92,12 @@ public class VeloxIdProperties {
          */
         private String initMode = IdDatabaseInitModes.NONE;
 
-        /**
-         * Warn in prod when database metadata differs from current YAML posture.
-         */
-        private boolean warnOnProdMismatch = true;
-
         public String getInitMode() {
             return initMode;
         }
 
         public void setInitMode(String initMode) {
             this.initMode = initMode;
-        }
-
-        public boolean isWarnOnProdMismatch() {
-            return warnOnProdMismatch;
-        }
-
-        public void setWarnOnProdMismatch(boolean warnOnProdMismatch) {
-            this.warnOnProdMismatch = warnOnProdMismatch;
         }
 
         void validate() {

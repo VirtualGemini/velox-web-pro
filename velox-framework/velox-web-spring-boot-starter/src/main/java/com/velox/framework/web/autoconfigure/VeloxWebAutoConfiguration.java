@@ -1,6 +1,6 @@
 package com.velox.framework.web.autoconfigure;
 
-import com.velox.framework.log.RequestLogInterceptor;
+import com.velox.framework.web.support.servlet.RequestLogInterceptor;
 import com.velox.framework.web.common.path.WebPathConstants;
 import com.velox.framework.web.common.servlet.WebFilterNames;
 import com.velox.framework.web.core.logging.DefaultRequestLogHandler;

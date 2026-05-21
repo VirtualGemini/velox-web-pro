@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>velox-infra-persistence</artifactId>
-    <description>产品级 starter 接入层 Persistence 域 - 声明业务级 Mapper 扫描策略</description>
+    <description>产品级 starter 接入层 Persistence 域 - 声明当前产品启用 persistence starter</description>
 
     <dependencies>
         <dependency>

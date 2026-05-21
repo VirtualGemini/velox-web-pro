@@ -1,7 +1,6 @@
 package com.velox.common.autoconfigure;
 
 import com.velox.common.exception.MessageUtils;
-import com.velox.common.log.OperationLogAspect;
 import com.velox.common.web.GlobalExceptionHandler;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -34,11 +33,5 @@ public class VeloxCommonAutoConfiguration {
     @ConditionalOnMissingBean
     public GlobalExceptionHandler globalExceptionHandler() {
         return new GlobalExceptionHandler();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public OperationLogAspect operationLogAspect() {
-        return new OperationLogAspect();
     }
 }

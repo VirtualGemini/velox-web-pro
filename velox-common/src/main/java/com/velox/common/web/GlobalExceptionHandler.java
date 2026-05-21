@@ -5,8 +5,6 @@ import com.velox.common.exception.BusinessErrorCode;
 import com.velox.common.exception.ClientErrorCode;
 import com.velox.common.exception.InternalErrorCode;
 import com.velox.common.result.Result;
-import com.velox.framework.security.exception.SecurityAuthenticationException;
-import com.velox.framework.security.exception.SecurityAuthorizationException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,20 +27,6 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
-    @ExceptionHandler(SecurityAuthenticationException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public Result<Void> handleSecurityAuthenticationException(SecurityAuthenticationException exception, HttpServletRequest request) {
-        log.warn("Unauthorized [{}] {}: {}", request.getMethod(), request.getRequestURI(), exception.getMessage());
-        return Result.fail(ClientErrorCode.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(SecurityAuthorizationException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    public Result<Void> handleForbiddenException(SecurityAuthorizationException exception, HttpServletRequest request) {
-        log.warn("Forbidden [{}] {}: {}", request.getMethod(), request.getRequestURI(), exception.getMessage());
-        return Result.fail(ClientErrorCode.FORBIDDEN);
-    }
 
     @ExceptionHandler(ApiException.class)
     public Result<Void> handleApiException(ApiException exception, HttpServletRequest request) {
