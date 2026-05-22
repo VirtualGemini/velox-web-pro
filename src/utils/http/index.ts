@@ -64,9 +64,11 @@ const axiosInstance = axios.create({
 /** 请求拦截器 */
 axiosInstance.interceptors.request.use(
   (request: InternalAxiosRequestConfig) => {
-    const { accessToken } = useUserStore()
+    const userStore = useUserStore()
+    const { accessToken } = userStore
     if (accessToken) request.headers.set('Authorization', accessToken)
     request.headers.set('X-Time-Zone', Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC')
+    request.headers.set('Accept-Language', userStore.language || 'zh')
 
     if (request.data && !(request.data instanceof FormData) && !request.headers['Content-Type']) {
       request.headers.set('Content-Type', 'application/json')

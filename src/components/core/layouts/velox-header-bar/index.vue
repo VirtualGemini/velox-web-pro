@@ -183,6 +183,7 @@
   import { useCommon } from '@/hooks/core/useCommon'
   import { useHeaderBar } from '@/hooks/core/useHeaderBar'
   import VeloxUserMenu from './widget/VeloxUserMenu.vue'
+  import { fetchUpdateUserLanguage } from '@/api/auth'
 
   defineOptions({ name: 'VeloxHeaderBar' })
 
@@ -284,8 +285,15 @@
    * 切换系统语言
    * @param {LanguageEnum} lang - 目标语言类型
    */
-  const changeLanguage = (lang: LanguageEnum): void => {
+  const changeLanguage = async (lang: LanguageEnum): Promise<void> => {
     if (locale.value === lang) return
+    if (userStore.isLogin) {
+      try {
+        await fetchUpdateUserLanguage(lang)
+      } catch {
+        return
+      }
+    }
     locale.value = lang
     userStore.setLanguage(lang)
     reload(50)

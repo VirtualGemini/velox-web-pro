@@ -52,6 +52,8 @@ import { fetchGetUserInfo } from '@/api/auth'
 import { ApiStatus } from '@/utils/http/status'
 import { isHttpError } from '@/utils/http/error'
 import { RouteRegistry, MenuProcessor, IframeRouteManager, RoutePermissionValidator } from '../core'
+import i18n from '@/locales'
+import { LanguageEnum } from '@/enums/appEnum'
 
 // 路由注册器实例
 let routeRegistry: RouteRegistry | null = null
@@ -373,6 +375,21 @@ async function fetchUserInfo(): Promise<void> {
   userStore.setUserInfo(data)
   // 检查并清理工作台标签页（如果是不同用户登录）
   userStore.checkAndClearWorktabs()
+  // 同步后端存储的语言偏好（仅首次加载，不触发刷新避免循环）
+  const remoteLang = data.language as LanguageEnum | undefined
+  if (
+    remoteLang &&
+    Object.values(LanguageEnum).includes(remoteLang) &&
+    remoteLang !== userStore.language
+  ) {
+    userStore.setLanguage(remoteLang)
+    const localeRef = i18n.global.locale
+    if (typeof localeRef === 'string') {
+      i18n.global.locale = remoteLang as never
+    } else {
+      localeRef.value = remoteLang
+    }
+  }
 }
 
 /**

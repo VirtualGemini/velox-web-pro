@@ -65,6 +65,16 @@ export function fetchUpdateUserAvatar(data: Api.Auth.AvatarUpdateCommand) {
 }
 
 /**
+ * 更新当前用户语言偏好
+ */
+export function fetchUpdateUserLanguage(language: string) {
+  return request.put<boolean>({
+    url: '/api/user/language',
+    data: { language }
+  })
+}
+
+/**
  * 注册
  * @param params 注册参数
  * @returns 注册响应

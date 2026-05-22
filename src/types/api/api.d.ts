@@ -116,6 +116,7 @@ declare namespace Api {
       signature?: string
       position?: string
       company?: string
+      language?: string
     }
 
     interface UserProfileUpdateCommand {
