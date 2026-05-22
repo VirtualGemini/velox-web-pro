@@ -364,6 +364,16 @@ html.dark .el-card {
 .login-out-dialog {
   padding: 30px 20px !important;
   border-radius: 10px !important;
+
+  // 屏蔽 MessageBox 打开时确认按钮自动获焦带来的轮廓边框
+  .el-button,
+  .el-button:focus,
+  .el-button:focus-visible,
+  .el-button:active {
+    outline: none !important;
+    outline-offset: 0 !important;
+    box-shadow: none !important;
+  }
 }
 
 // 修改 dialog 动画

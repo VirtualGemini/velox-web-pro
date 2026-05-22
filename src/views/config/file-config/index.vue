@@ -887,6 +887,11 @@
           formatter: (row: FileConfig) => row.remark || '-'
         },
         {
+          prop: 'createTime',
+          label: 'pages.config.fileConfig.columns.createTime',
+          minWidth: 180
+        },
+        {
           prop: 'updateTime',
           label: 'pages.config.fileConfig.columns.updateTime',
           minWidth: 180

@@ -170,6 +170,12 @@
           sortable: true
         },
         {
+          prop: 'updateTime',
+          label: 'pages.system.role.columns.updateTime',
+          minWidth: 180,
+          sortable: true
+        },
+        {
           prop: 'operation',
           label: 'pages.system.role.columns.operation',
           width: 100,

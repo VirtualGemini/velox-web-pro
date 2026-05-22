@@ -14,23 +14,21 @@ export function fetchLogin(params: Api.Auth.LoginParams) {
   })
 }
 
-export function fetchLoginRoles() {
-  return request.get<Api.Auth.LoginRole[]>({
-    url: '/api/auth/login-roles'
-  })
-}
-
 /**
- * 获取用户信息
- * @returns 用户信息
+ * 获取用户基础信息（仅含支撑系统运行的最少字段）
  */
 export function fetchGetUserInfo() {
   return request.get<Api.Auth.UserInfo>({
     url: '/api/user/info'
-    // 自定义请求头
-    // headers: {
-    //   'X-Custom-Header': 'your-custom-value'
-    // }
+  })
+}
+
+/**
+ * 获取当前用户详细信息（个人中心使用，需要 system:user-center:profile-query 权限）
+ */
+export function fetchGetUserDetail() {
+  return request.get<Api.Auth.UserDetail>({
+    url: '/api/user/detail'
   })
 }
 

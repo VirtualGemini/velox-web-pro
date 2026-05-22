@@ -31,7 +31,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { AppRouteRecord } from '@/types/router'
-import { getFirstMenuPath } from '@/utils'
+import { resolveHomePath } from '@/utils'
 import { HOME_PAGE_PATH } from '@/router'
 
 /**
@@ -54,7 +54,7 @@ export const useMenuStore = defineStore('menuStore', () => {
    */
   const setMenuList = (list: AppRouteRecord[]) => {
     menuList.value = list
-    setHomePath(HOME_PAGE_PATH || getFirstMenuPath(list))
+    setHomePath(HOME_PAGE_PATH || resolveHomePath(list))
   }
 
   /**

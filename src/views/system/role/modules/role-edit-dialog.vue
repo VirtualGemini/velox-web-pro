@@ -138,6 +138,7 @@
     type: 1,
     typeName: '',
     createTime: '',
+    updateTime: '',
     enabled: true
   })
 
@@ -178,6 +179,7 @@
         type: 1,
         typeName: '',
         createTime: '',
+        updateTime: '',
         enabled: true
       })
     }

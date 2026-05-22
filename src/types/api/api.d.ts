@@ -66,18 +66,12 @@ declare namespace Api {
     interface LoginParams {
       userName: string
       password: string
-      roleCode: string
     }
 
     /** 登录响应 */
     interface LoginResponse {
       token: string
       refreshToken: string
-    }
-
-    interface LoginRole {
-      roleName: string
-      roleCode: string
     }
 
     /** 注册参数 */
@@ -98,8 +92,20 @@ declare namespace Api {
       confirmPassword: string
     }
 
-    /** 用户信息 */
+    /** 用户基础信息（仅保留支撑系统运行所需字段） */
     interface UserInfo {
+      buttons: string[]
+      roles: string[]
+      userId: string
+      userName: string
+      email: string
+      phone?: string
+      avatar?: string
+      language?: string
+    }
+
+    /** 用户详细信息（个人中心专用） */
+    interface UserDetail {
       buttons: string[]
       roles: string[]
       tags?: string[]
@@ -199,6 +205,7 @@ declare namespace Api {
       typeName: string
       enabled: boolean
       createTime: string
+      updateTime: string
     }
 
     /** 角色搜索参数 */

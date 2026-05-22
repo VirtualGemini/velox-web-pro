@@ -151,18 +151,18 @@
     },
     "title": "欢迎回来",
     "subTitle": "输入您的账号和密码登录",
-    "roles": {
-      "super": "超级管理员",
-      "admin": "管理员",
-      "user": "普通用户"
+    "loggedIn": {
+      "title": "欢迎回来",
+      "subTitle": "继续使用已登录账号，或退出后切换其它账号登录。",
+      "continueBtn": "继续",
+      "selectTip": "请选择您要登录的账号",
+      "logoutTooltip": "退出登录"
     },
     "placeholder": {
-      "role": "请选择登录角色",
       "username": "请输入账号",
       "password": "请输入密码",
       "slider": "请拖动滑块完成验证"
     },
-    "loadRolesFailed": "获取登录角色失败",
     "sliderText": "按住滑块拖动",
     "sliderSuccessText": "验证成功",
     "rememberPwd": "记住密码",
@@ -295,7 +295,8 @@
           "userGender": "性别",
           "userPhone": "手机号",
           "status": "状态",
-          "createTime": "创建日期",
+          "createTime": "创建时间",
+          "updateTime": "编辑时间",
           "operation": "操作"
         },
         "status": {
@@ -386,7 +387,8 @@
           "type": "角色类型",
           "description": "角色描述",
           "enabled": "角色状态",
-          "createTime": "创建日期",
+          "createTime": "创建时间",
+          "updateTime": "编辑时间",
           "operation": "操作"
         },
         "dialog": {
@@ -505,6 +507,7 @@
           "type": "菜单类型",
           "route": "路由",
           "auth": "权限标识",
+          "createTime": "创建时间",
           "updateTime": "编辑时间",
           "status": "状态",
           "operation": "操作"
@@ -739,7 +742,8 @@
           "master": "主配置",
           "enabled": "状态",
           "remark": "备注",
-          "updateTime": "更新时间",
+          "createTime": "创建时间",
+          "updateTime": "编辑时间",
           "operation": "操作"
         },
         "storage": {

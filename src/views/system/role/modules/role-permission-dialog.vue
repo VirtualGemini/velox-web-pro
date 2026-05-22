@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
   import {
-    fetchGetMenuList,
+    fetchGetGrantableMenus,
     fetchGetRoleMenuPermissions,
     fetchUpdateRoleMenuPermissions
   } from '@/api/system-manage'
@@ -273,7 +273,7 @@
     if (!props.roleData?.roleId) return
 
     const [menus, permissionIds] = await Promise.all([
-      fetchGetMenuList(),
+      fetchGetGrantableMenus(),
       fetchGetRoleMenuPermissions(props.roleData.roleId)
     ])
 

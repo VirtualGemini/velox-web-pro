@@ -89,10 +89,18 @@ export function fetchUpdateRoleMenuPermissions(
   })
 }
 
-// 获取菜单列表
+// 获取菜单列表（导航渲染用，仅需登录）
 export function fetchGetMenuList() {
   return request.get<AppRouteRecord[]>({
     url: '/api/v3/system/menus/simple'
+  })
+}
+
+// 获取可授予的菜单列表（菜单管理、角色授权弹窗用，需要 system:menu:query 权限）
+// 返回数据等同于当前登录用户的可见范围——授予不能越过自己。
+export function fetchGetGrantableMenus() {
+  return request.get<AppRouteRecord[]>({
+    url: '/api/v3/system/menus'
   })
 }
 

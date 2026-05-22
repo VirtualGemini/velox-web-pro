@@ -375,7 +375,8 @@ async function fetchUserInfo(): Promise<void> {
   userStore.setUserInfo(data)
   // 检查并清理工作台标签页（如果是不同用户登录）
   userStore.checkAndClearWorktabs()
-  // 同步后端存储的语言偏好（仅首次加载，不触发刷新避免循环）
+
+  // 同步后端存储的语言偏好
   const remoteLang = data.language as LanguageEnum | undefined
   if (
     remoteLang &&
@@ -383,11 +384,11 @@ async function fetchUserInfo(): Promise<void> {
     remoteLang !== userStore.language
   ) {
     userStore.setLanguage(remoteLang)
-    const localeRef = i18n.global.locale
-    if (typeof localeRef === 'string') {
-      i18n.global.locale = remoteLang as never
+    const locale = i18n.global.locale
+    if (typeof locale === 'string') {
+      i18n.global.locale = remoteLang
     } else {
-      localeRef.value = remoteLang
+      locale.value = remoteLang
     }
   }
 }

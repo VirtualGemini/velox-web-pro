@@ -72,6 +72,10 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
   isAuthButton?: boolean
   /** 父级路径 */
   parentPath?: string
+  /** 创建时间 */
+  createTime?: string
+  /** 编辑时间 */
+  updateTime?: string
 }
 
 /**

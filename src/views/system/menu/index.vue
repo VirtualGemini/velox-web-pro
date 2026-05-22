@@ -68,7 +68,7 @@
   import {
     fetchCreateMenu,
     fetchDeleteMenu,
-    fetchGetMenuList,
+    fetchGetGrantableMenus,
     fetchUpdateMenu
   } from '@/api/system-manage'
   import { ElTag, ElMessageBox } from 'element-plus'
@@ -136,7 +136,7 @@
     loading.value = true
 
     try {
-      const list = await fetchGetMenuList()
+      const list = await fetchGetGrantableMenus()
       tableData.value = list
     } catch (error) {
       throw error instanceof Error ? error : new Error(t('pages.system.menu.messages.fetchFailed'))
@@ -216,12 +216,6 @@
       }
     },
     {
-      prop: 'date',
-      label: 'pages.system.menu.columns.updateTime',
-      minWidth: 180,
-      formatter: (row: AppRouteRecord) => row.meta?.updateTime || '-'
-    },
-    {
       prop: 'status',
       label: 'pages.system.menu.columns.status',
       minWidth: 100,
@@ -231,6 +225,18 @@
           isEnabled ? t('common.status.enabled') : t('common.status.disabled')
         )
       }
+    },
+    {
+      prop: 'meta.createTime',
+      label: 'pages.system.menu.columns.createTime',
+      minWidth: 180,
+      formatter: (row: AppRouteRecord) => row.meta?.createTime || '-'
+    },
+    {
+      prop: 'meta.updateTime',
+      label: 'pages.system.menu.columns.updateTime',
+      minWidth: 180,
+      formatter: (row: AppRouteRecord) => row.meta?.updateTime || '-'
     },
     {
       prop: 'operation',

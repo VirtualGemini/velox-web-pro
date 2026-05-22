@@ -8,103 +8,111 @@
 
       <div class="auth-right-wrap">
         <div class="form">
-          <h3 class="title">{{ $t('login.title') }}</h3>
-          <p class="sub-title">{{ $t('login.subTitle') }}</p>
-          <ElForm
-            ref="formRef"
-            :model="formData"
-            :rules="rules"
-            :key="formKey"
-            @keyup.enter="handleSubmit"
-            style="margin-top: 25px"
-          >
-            <ElFormItem prop="account">
-              <ElSelect
-                v-model="formData.account"
-                :placeholder="$t('login.placeholder.role')"
-                @change="setupAccount"
-              >
-                <ElOption
-                  v-for="account in accounts"
-                  :key="account.roleCode"
-                  :label="account.roleName"
-                  :value="account.roleCode"
-                >
-                  <span>{{ account.roleName }}</span>
-                </ElOption>
-              </ElSelect>
-            </ElFormItem>
-            <ElFormItem prop="username">
-              <ElInput
-                class="custom-height"
-                :placeholder="$t('login.placeholder.username')"
-                v-model.trim="formData.username"
+          <template v-if="showLoggedInCard">
+            <h3 class="title">{{ $t('login.loggedIn.title') }}</h3>
+            <p class="sub-title">{{ $t('login.loggedIn.subTitle') }}</p>
+            <div style="margin-top: 25px">
+              <VeloxLoggedInCard
+                :user-info="userInfo"
+                :selected="accountSelected"
+                @select="accountSelected = !accountSelected"
+                @logout="handleLogout"
               />
-            </ElFormItem>
-            <ElFormItem prop="password">
-              <ElInput
-                class="custom-height"
-                :placeholder="$t('login.placeholder.password')"
-                v-model.trim="formData.password"
-                type="password"
-                autocomplete="off"
-                show-password
-              />
-            </ElFormItem>
-
-            <!-- 推拽验证 -->
-            <div class="relative pb-5 mt-6">
-              <div
-                class="relative z-[2] overflow-hidden select-none rounded-lg border border-transparent tad-300"
-                :class="{ '!border-[#FF4E4F]': !isPassing && isClickPass }"
-              >
-                <VeloxDragVerify
-                  ref="dragVerify"
-                  v-model:value="isPassing"
-                  :text="$t('login.sliderText')"
-                  textColor="var(--velox-gray-700)"
-                  :successText="$t('login.sliderSuccessText')"
-                  progressBarBg="var(--main-color)"
-                  :background="isDark ? '#26272F' : '#F1F1F4'"
-                  handlerBg="var(--default-box-color)"
-                />
-              </div>
-              <p
-                class="absolute top-0 z-[1] px-px mt-2 text-xs text-[#f56c6c] tad-300"
-                :class="{ 'translate-y-10': !isPassing && isClickPass }"
-              >
-                {{ $t('login.placeholder.slider') }}
-              </p>
             </div>
-
-            <div class="flex-cb mt-2 text-sm">
-              <ElCheckbox v-model="formData.rememberPassword">{{
-                $t('login.rememberPwd')
-              }}</ElCheckbox>
-              <RouterLink class="text-theme" :to="{ name: 'ForgetPassword' }">{{
-                $t('login.forgetPwd')
-              }}</RouterLink>
-            </div>
-
             <div style="margin-top: 30px">
               <ElButton
                 class="w-full custom-height"
                 type="primary"
-                @click="handleSubmit"
-                :loading="loading"
+                @click="handleContinue"
                 v-ripple
               >
-                {{ $t('login.btnText') }}
+                {{ $t('login.loggedIn.continueBtn') }}
               </ElButton>
             </div>
+          </template>
+          <template v-else>
+            <h3 class="title">{{ $t('login.title') }}</h3>
+            <p class="sub-title">{{ $t('login.subTitle') }}</p>
+            <ElForm
+              ref="formRef"
+              :model="formData"
+              :rules="rules"
+              :key="formKey"
+              @keyup.enter="handleSubmit"
+              style="margin-top: 25px"
+            >
+              <ElFormItem prop="username">
+                <ElInput
+                  class="custom-height"
+                  :placeholder="$t('login.placeholder.username')"
+                  v-model.trim="formData.username"
+                />
+              </ElFormItem>
+              <ElFormItem prop="password">
+                <ElInput
+                  class="custom-height"
+                  :placeholder="$t('login.placeholder.password')"
+                  v-model.trim="formData.password"
+                  type="password"
+                  autocomplete="off"
+                  show-password
+                />
+              </ElFormItem>
 
-            <div class="mt-5 text-sm text-gray-600">
-              <span>{{ $t('login.noAccount') }}</span>
-              <RouterLink class="text-theme" :to="{ name: 'Register' }">{{
-                $t('login.register')
-              }}</RouterLink>
-            </div>
-          </ElForm>
+              <!-- 推拽验证 -->
+              <div class="relative pb-5 mt-6">
+                <div
+                  class="relative z-[2] overflow-hidden select-none rounded-lg border border-transparent tad-300"
+                  :class="{ '!border-[#FF4E4F]': !isPassing && isClickPass }"
+                >
+                  <VeloxDragVerify
+                    ref="dragVerify"
+                    v-model:value="isPassing"
+                    :text="$t('login.sliderText')"
+                    textColor="var(--velox-gray-700)"
+                    :successText="$t('login.sliderSuccessText')"
+                    progressBarBg="var(--main-color)"
+                    :background="isDark ? '#26272F' : '#F1F1F4'"
+                    handlerBg="var(--default-box-color)"
+                  />
+                </div>
+                <p
+                  class="absolute top-0 z-[1] px-px mt-2 text-xs text-[#f56c6c] tad-300"
+                  :class="{ 'translate-y-10': !isPassing && isClickPass }"
+                >
+                  {{ $t('login.placeholder.slider') }}
+                </p>
+              </div>
+
+              <div class="flex-cb mt-2 text-sm">
+                <ElCheckbox v-model="formData.rememberPassword">{{
+                  $t('login.rememberPwd')
+                }}</ElCheckbox>
+                <RouterLink class="text-theme" :to="{ name: 'ForgetPassword' }">{{
+                  $t('login.forgetPwd')
+                }}</RouterLink>
+              </div>
+
+              <div style="margin-top: 30px">
+                <ElButton
+                  class="w-full custom-height"
+                  type="primary"
+                  @click="handleSubmit"
+                  :loading="loading"
+                  v-ripple
+                >
+                  {{ $t('login.btnText') }}
+                </ElButton>
+              </div>
+
+              <div class="mt-5 text-sm text-gray-600">
+                <span>{{ $t('login.noAccount') }}</span>
+                <RouterLink class="text-theme" :to="{ name: 'Register' }">{{
+                  $t('login.register')
+                }}</RouterLink>
+              </div>
+            </ElForm>
+          </template>
         </div>
       </div>
     </div>
@@ -116,8 +124,14 @@
   import { useUserStore } from '@/store/modules/user'
   import { useI18n } from 'vue-i18n'
   import { HttpError } from '@/utils/http/error'
-  import { fetchLogin, fetchLoginRoles } from '@/api/auth'
-  import { ElMessage, ElNotification, type FormInstance, type FormRules } from 'element-plus'
+  import { fetchLogin } from '@/api/auth'
+  import {
+    ElMessage,
+    ElMessageBox,
+    ElNotification,
+    type FormInstance,
+    type FormRules
+  } from 'element-plus'
   import { useSettingStore } from '@/store/modules/setting'
 
   defineOptions({ name: 'Login' })
@@ -132,24 +146,6 @@
     formKey.value++
   })
 
-  type Account = Api.Auth.LoginRole
-  const accounts = ref<Account[]>([])
-
-  const DEFAULT_ROLE_CREDENTIALS: Record<string, { username: string; password: string }> = {
-    R_SUPER: {
-      username: 'Super',
-      password: '123456'
-    },
-    R_ADMIN: {
-      username: 'Admin',
-      password: '123456'
-    },
-    R_USER: {
-      username: 'User',
-      password: '123456'
-    }
-  }
-
   const dragVerify = ref()
 
   const userStore = useUserStore()
@@ -158,45 +154,52 @@
   const isPassing = ref(false)
   const isClickPass = ref(false)
 
+  const { getUserInfo: userInfo } = storeToRefs(userStore)
+  // 进入登录页时一次性快照：仅在挂载时已登录的情况下展示账号卡片
+  // 这样表单登录成功后 isLogin 翻转为 true 也不会在跳转前闪现卡片
+  const showLoggedInCard = ref(userStore.isLogin && !!userStore.accessToken)
+  const accountSelected = ref(false)
+
   const systemName = AppConfig.systemInfo.name
   const formRef = ref<FormInstance>()
 
   const formData = reactive({
-    account: '',
     username: '',
     password: '',
     rememberPassword: true
   })
 
   const rules = computed<FormRules>(() => ({
-    account: [{ required: true, message: t('login.placeholder.role'), trigger: 'change' }],
     username: [{ required: true, message: t('login.placeholder.username'), trigger: 'blur' }],
     password: [{ required: true, message: t('login.placeholder.password'), trigger: 'blur' }]
   }))
 
   const loading = ref(false)
 
-  onMounted(async () => {
-    try {
-      accounts.value = await fetchLoginRoles()
-    } catch (error) {
-      accounts.value = []
-      formData.account = ''
-      if (!(error instanceof HttpError)) {
-        ElMessage.error(t('login.loadRolesFailed'))
-      }
-    }
-  })
-
-  // 设置账号
-  const setupAccount = (roleCode: string) => {
-    formData.account = roleCode
-    const defaults = DEFAULT_ROLE_CREDENTIALS[roleCode]
-    if (!defaults) {
+  // 继续使用当前已登录账号
+  const handleContinue = () => {
+    if (!accountSelected.value) {
+      ElMessage.warning(t('login.loggedIn.selectTip'))
       return
     }
-    formData.username = defaults.username
-    formData.password = defaults.password
+    const redirect = route.query.redirect as string | undefined
+    router.push(redirect || '/')
+  }
+
+  // 退出当前账号，回到登录表单状态
+  const handleLogout = () => {
+    ElMessageBox.confirm(t('common.logOutTips'), t('common.tips'), {
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
+      customClass: 'login-out-dialog'
+    })
+      .then(() => {
+        showLoggedInCard.value = false
+        userStore.logOut()
+      })
+      .catch(() => {
+        // 用户取消，保持卡片显示
+      })
   }
 
   // 登录
@@ -217,12 +220,11 @@
       loading.value = true
 
       // 登录请求
-      const { username, password, account } = formData
+      const { username, password } = formData
 
       const { token, refreshToken } = await fetchLogin({
         userName: username,
-        password,
-        roleCode: account
+        password
       })
 
       // 验证token
@@ -276,10 +278,4 @@
 
 <style scoped>
   @import './style.css';
-</style>
-
-<style lang="scss" scoped>
-  :deep(.el-select__wrapper) {
-    height: 40px !important;
-  }
 </style>

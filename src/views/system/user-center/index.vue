@@ -226,6 +226,7 @@
 <script setup lang="ts">
   import avatarImg from '@imgs/user/avatar.webp'
   import {
+    fetchGetUserDetail,
     fetchUpdateUserAvatar,
     fetchUpdateUserPassword,
     fetchUpdateUserProfile
@@ -238,8 +239,18 @@
   defineOptions({ name: 'UserCenter' })
 
   const userStore = useUserStore()
-  const userInfo = computed(() => userStore.getUserInfo)
   const { t } = useI18n()
+
+  // 详细信息以本地状态承载，仅在进入个人中心时拉取，避免与 userStore 中的基础信息混淆
+  const userDetail = ref<Partial<Api.Auth.UserDetail>>({})
+  const userInfo = computed(() => userDetail.value)
+
+  const loadUserDetail = async () => {
+    const detail = await fetchGetUserDetail()
+    userDetail.value = detail
+  }
+
+  onMounted(loadUserDetail)
 
   const isEdit = ref(false)
   const isEditPwd = ref(false)
@@ -425,6 +436,7 @@
       const avatarUrl = await fetchFileUpload(options.file, 'avatar')
       const nextUserInfo = await fetchUpdateUserAvatar({ avatarUrl })
       userStore.setUserInfo(nextUserInfo)
+      userDetail.value = { ...userDetail.value, avatar: nextUserInfo.avatar }
       ElMessage.success(t('pages.system.userCenter.messages.avatarUploadSuccess'))
     } catch {
       ElMessage.error(t('pages.system.userCenter.messages.avatarUploadFailed'))
@@ -467,24 +479,27 @@
 
     await fetchUpdateUserProfile(payload)
 
+    // 同步基础信息（email/phone）到 userStore；详情字段写回本地状态
     userStore.setUserInfo({
       buttons: userInfo.value.buttons || [],
       roles: userInfo.value.roles || [],
-      tags: userInfo.value.tags || [],
       userId: userInfo.value.userId || '',
       userName: userInfo.value.userName || '',
       email: payload.email || '',
       phone: payload.phone,
-      avatar: userInfo.value.avatar,
+      avatar: userInfo.value.avatar
+    })
+
+    userDetail.value = {
+      ...userDetail.value,
+      email: payload.email || '',
+      phone: payload.phone,
       nickname: payload.nickname,
       gender: payload.gender,
       realName: payload.realName,
       address: payload.address || '',
-      introduction: payload.introduction || '',
-      signature: userInfo.value.signature || '',
-      position: userInfo.value.position || '',
-      company: userInfo.value.company || ''
-    })
+      introduction: payload.introduction || ''
+    }
 
     ElMessage.success(t('pages.system.userCenter.messages.profileSaveSuccess'))
     isEdit.value = false

@@ -151,18 +151,18 @@
     },
     "title": "Welcome back",
     "subTitle": "Please enter your account and password to login",
-    "roles": {
-      "super": "Super Admin",
-      "admin": "Admin",
-      "user": "User"
+    "loggedIn": {
+      "title": "Welcome back",
+      "subTitle": "Continue with the signed-in account, or sign out to switch to another one.",
+      "continueBtn": "Continue",
+      "selectTip": "Please select the account you want to sign in with",
+      "logoutTooltip": "Sign out"
     },
     "placeholder": {
-      "role": "Please select a login role",
       "username": "Please enter your account",
       "password": "Please enter your password",
       "slider": "Please slide to verify"
     },
-    "loadRolesFailed": "Failed to load login roles",
     "sliderText": "Please slide to verify",
     "sliderSuccessText": "Verification successful",
     "rememberPwd": "Remember password",
@@ -296,6 +296,7 @@
           "userPhone": "Phone",
           "status": "Status",
           "createTime": "Created At",
+          "updateTime": "Edited At",
           "operation": "Operation"
         },
         "status": {
@@ -387,6 +388,7 @@
           "description": "Role Description",
           "enabled": "Role Status",
           "createTime": "Created At",
+          "updateTime": "Edited At",
           "operation": "Operation"
         },
         "dialog": {
@@ -505,7 +507,8 @@
           "type": "Menu Type",
           "route": "Route",
           "auth": "Permission Mark",
-          "updateTime": "Updated At",
+          "createTime": "Created At",
+          "updateTime": "Edited At",
           "status": "Status",
           "operation": "Operation"
         },
@@ -739,7 +742,8 @@
           "master": "Master",
           "enabled": "Status",
           "remark": "Remark",
-          "updateTime": "Updated At",
+          "createTime": "Created At",
+          "updateTime": "Edited At",
           "operation": "Operation"
         },
         "storage": {
