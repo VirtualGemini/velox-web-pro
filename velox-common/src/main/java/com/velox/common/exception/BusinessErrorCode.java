@@ -81,6 +81,7 @@ public enum BusinessErrorCode implements ErrorCode {
     USER_DELETE_FORBIDDEN(22004, "无权限删除该用户"),
     USER_UPDATE_FORBIDDEN(22005, "无权限修改该用户"),
     SYSTEM_ROLE_CODE_IMMUTABLE(22006, "系统角色编码不允许修改"),
+    ROLE_MENU_GRANT_BEYOND_SCOPE(22007, "无权授予超出自身范围的菜单权限"),
     ;
 
     private final int code;

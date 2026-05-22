@@ -9,6 +9,7 @@ public class RoleListItemDTO {
     private String typeName;
     private Boolean enabled;
     private String createTime;
+    private String updateTime;
 
     public String getRoleId() {
         return roleId;
@@ -72,5 +73,13 @@ public class RoleListItemDTO {
 
     public void setCreateTime(String createTime) {
         this.createTime = createTime;
+    }
+
+    public String getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(String updateTime) {
+        this.updateTime = updateTime;
     }
 }

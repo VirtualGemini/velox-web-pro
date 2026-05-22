@@ -5,11 +5,9 @@ import com.velox.common.exception.ApiException;
 import com.velox.common.exception.BusinessErrorCode;
 import com.velox.module.system.domain.model.Menu;
 import com.velox.module.system.domain.model.Role;
-import com.velox.module.system.domain.model.User;
 import com.velox.module.system.persistence.MenuMapper;
 import com.velox.module.system.persistence.RoleMapper;
 import com.velox.module.system.persistence.RoleMenuPermissionMapper;
-import com.velox.module.system.persistence.UserMapper;
 import com.velox.module.system.persistence.support.MenuQuerySupport;
 import com.velox.framework.id.BusinessIdGenerator;
 import com.velox.framework.security.api.session.SecuritySessionService;
@@ -46,7 +44,6 @@ public class MenuServiceImpl implements MenuService {
     private final MenuMapper menuMapper;
     private final RoleMapper roleMapper;
     private final RoleMenuPermissionMapper roleMenuPermissionMapper;
-    private final UserMapper userMapper;
     private final PermissionService permissionService;
     private final BusinessIdGenerator businessIdGenerator;
     private final SecuritySessionService securitySessionService;
@@ -55,7 +52,6 @@ public class MenuServiceImpl implements MenuService {
             MenuMapper menuMapper,
             RoleMapper roleMapper,
             RoleMenuPermissionMapper roleMenuPermissionMapper,
-            UserMapper userMapper,
             PermissionService permissionService,
             BusinessIdGenerator businessIdGenerator,
             SecuritySessionService securitySessionService
@@ -63,7 +59,6 @@ public class MenuServiceImpl implements MenuService {
         this.menuMapper = menuMapper;
         this.roleMapper = roleMapper;
         this.roleMenuPermissionMapper = roleMenuPermissionMapper;
-        this.userMapper = userMapper;
         this.permissionService = permissionService;
         this.businessIdGenerator = businessIdGenerator;
         this.securitySessionService = securitySessionService;
@@ -71,16 +66,21 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuRouteDTO> getSimpleMenus() {
-        Set<String> permittedMenuIds = getCurrentUserPermittedMenuIds();
+        Set<String> permittedMenuIds = permissionService.getUserPermittedMenuIds(
+                securitySessionService.requireCurrentLoginId());
         if (permittedMenuIds.isEmpty()) {
             return List.of();
         }
+
+        // 把祖先菜单一并纳入：仅用于让路由树保持连通（譬如 /system/user-center 需要 System 父节点），
+        // 不等同于授予按钮权限——按钮鉴权仍走 PermissionService 的 authMark 集合。
+        Set<String> menuTreeIds = expandWithAncestors(permittedMenuIds);
 
         List<Menu> menus = menuMapper.selectList(
                 MenuQuerySupport.selectColumns(new LambdaQueryWrapper<Menu>())
                         .eq(Menu::getDeleted, 0)
                         .eq(Menu::getIsEnable, 1)
-                        .in(Menu::getId, permittedMenuIds)
+                        .in(Menu::getId, menuTreeIds)
                         .orderByAsc(Menu::getSort)
                         .orderByAsc(Menu::getCreateTime)
         );
@@ -246,31 +246,7 @@ public class MenuServiceImpl implements MenuService {
         }
     }
 
-    private Set<String> getCurrentUserPermittedMenuIds() {
-        String userId = securitySessionService.requireCurrentLoginId();
-        User user = userMapper.selectById(userId);
-        if (user == null) {
-            return Set.of();
-        }
 
-        if (permissionService.getUserRoleCodes(userId).stream().anyMatch(SystemRoleCode.R_SUPER::equals)) {
-            return menuMapper.selectList(MenuQuerySupport.selectColumns(new LambdaQueryWrapper<Menu>())
-                            .eq(Menu::getDeleted, 0)
-                            .eq(Menu::getIsEnable, 1))
-                    .stream()
-                    .map(Menu::getId)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
-        }
-
-        Set<String> roleIds = permissionService.getUserRoleIds(userId);
-        if (roleIds.isEmpty()) {
-            return Set.of();
-        }
-        return permissionService.getRoleMenuIds(roleIds).stream()
-                .filter(Objects::nonNull)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
 
     private void applyCommand(Menu menu, MenuSaveCommand command) {
         boolean isButton = MENU_TYPE_BUTTON.equalsIgnoreCase(command.getMenuType());
@@ -375,6 +351,36 @@ public class MenuServiceImpl implements MenuService {
             collected.addAll(frontier);
         }
         return collected;
+    }
+
+    /**
+     * 把入参菜单 ID 集合扩展为「自身 + 所有启用的祖先菜单」。
+     * 用于让前端拿到的菜单树保持连通：仅授权了 UserCenter（其 parent 为 System）时，
+     * System 节点必须出现在返回结果中，否则前端拼接出来的路径会变成 /user-center 而非 /system/user-center。
+     */
+    private Set<String> expandWithAncestors(Set<String> menuIds) {
+        if (menuIds == null || menuIds.isEmpty()) {
+            return Set.of();
+        }
+        Set<String> expanded = new LinkedHashSet<>(menuIds);
+        Set<String> frontier = new LinkedHashSet<>(menuIds);
+        while (!frontier.isEmpty()) {
+            List<Menu> menus = menuMapper.selectList(MenuQuerySupport.selectColumns(new LambdaQueryWrapper<Menu>())
+                    .eq(Menu::getDeleted, 0)
+                    .eq(Menu::getIsEnable, 1)
+                    .in(Menu::getId, frontier));
+            Set<String> nextFrontier = new LinkedHashSet<>();
+            for (Menu menu : menus) {
+                String parentId = menu.getParentId();
+                if (parentId == null || expanded.contains(parentId)) {
+                    continue;
+                }
+                expanded.add(parentId);
+                nextFrontier.add(parentId);
+            }
+            frontier = nextFrontier;
+        }
+        return expanded;
     }
 
     private Map<String, List<String>> getMenuRoleCodes(Collection<String> menuIds) {

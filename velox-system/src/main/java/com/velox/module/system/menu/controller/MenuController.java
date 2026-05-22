@@ -38,9 +38,17 @@ public class MenuController {
     }
 
     @Operation(summary = "获取简化菜单列表")
-    @RequirePermission("system:menu:query")
+    @RequireAuthenticated
     @GetMapping("/simple")
     public Result<List<MenuRouteDTO>> getSimpleMenus() {
+        return Result.ok(menuService.getSimpleMenus());
+    }
+
+    @Operation(summary = "获取可授予的菜单列表（管理 & 角色授权）",
+            description = "返回当前用户可见的菜单范围，用于菜单管理页与角色权限弹窗——授予不能越过自己的范围。")
+    @RequirePermission("system:menu:query")
+    @GetMapping
+    public Result<List<MenuRouteDTO>> getGrantableMenus() {
         return Result.ok(menuService.getSimpleMenus());
     }
 

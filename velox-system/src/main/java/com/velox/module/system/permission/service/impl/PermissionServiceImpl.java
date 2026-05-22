@@ -312,6 +312,32 @@ public class PermissionServiceImpl implements PermissionService {
                 .toList();
     }
 
+    @Override
+    public Set<String> getUserPermittedMenuIds(String userId) {
+        String normalizedUserId = normalizeId(userId);
+        if (normalizedUserId == null) {
+            return Set.of();
+        }
+
+        if (getUserRoleCodes(normalizedUserId).stream().anyMatch(SystemRoleCode.R_SUPER::equals)) {
+            return menuMapper.selectList(MenuQuerySupport.selectColumns(new LambdaQueryWrapper<Menu>())
+                            .eq(Menu::getDeleted, 0)
+                            .eq(Menu::getIsEnable, 1))
+                    .stream()
+                    .map(Menu::getId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+        }
+
+        Set<String> roleIds = getUserRoleIds(normalizedUserId);
+        if (roleIds.isEmpty()) {
+            return Set.of();
+        }
+        return getRoleMenuIds(roleIds).stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
     private RoleMenuPermission preferLatestPermission(RoleMenuPermission left, RoleMenuPermission right) {
         if (left == null) {
             return right;

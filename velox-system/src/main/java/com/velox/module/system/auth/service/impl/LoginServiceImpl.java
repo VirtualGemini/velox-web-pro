@@ -2,7 +2,6 @@ package com.velox.module.system.auth.service.impl;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
-import com.velox.module.system.common.enums.RoleTypeEnum;
 import com.velox.common.exception.ApiException;
 import com.velox.common.exception.BusinessErrorCode;
 import com.velox.email.api.builder.EmailBuilder;
@@ -22,7 +21,6 @@ import com.velox.module.system.persistence.UserMapper;
 import com.velox.module.system.auth.dto.CaptchaDTO;
 import com.velox.module.system.auth.dto.ForgotPasswordCodeCommand;
 import com.velox.module.system.auth.dto.LoginCommand;
-import com.velox.module.system.auth.dto.LoginRoleDTO;
 import com.velox.module.system.auth.dto.RegisterCommand;
 import com.velox.module.system.auth.dto.ResetPasswordCommand;
 import com.velox.module.system.auth.dto.TokenDTO;
@@ -33,10 +31,6 @@ import com.velox.module.system.auth.store.VerificationCodeStore;
 import com.wf.captcha.SpecCaptcha;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class LoginServiceImpl implements LoginService {
@@ -93,24 +87,6 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public java.util.List<LoginRoleDTO> listLoginRoles() {
-        return roleMapper.selectList(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Role>()
-                        .eq(Role::getDeleted, 0)
-                        .eq(Role::getType, RoleTypeEnum.SYSTEM.getCode())
-                        .eq(Role::getEnabled, 1)
-                        .orderByDesc(Role::getRoleLevel)
-                        .orderByAsc(Role::getId))
-                .stream()
-                .map(role -> {
-                    LoginRoleDTO dto = new LoginRoleDTO();
-                    dto.setRoleName(role.getRoleName());
-                    dto.setRoleCode(role.getRoleCode());
-                    return dto;
-                })
-                .toList();
-    }
-
-    @Override
     public TokenDTO login(LoginCommand command) {
         validateCaptchaIfPresent(command.getCaptchaCode(), command.getCaptchaCodeKey());
 
@@ -146,8 +122,6 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.ACCOUNT_DISABLED);
         }
 
-        ensureUserHasLoginRole(user.getId(), command.getRoleCode());
-
         resetLoginFailCount(user);
         upgradePasswordIfNeeded(user, password);
 
@@ -155,31 +129,6 @@ public class LoginServiceImpl implements LoginService {
         activeUserStatusService.recordLogin(user.getId());
 
         return new TokenDTO(token, null);
-    }
-
-    private void ensureUserHasLoginRole(String userId, String roleCode) {
-        if (roleCode == null || roleCode.isBlank()) {
-            throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
-        }
-
-        Set<String> roleIds = userRoleMapper.selectAllByUserId(userId).stream()
-                .filter(relation -> Integer.valueOf(0).equals(relation.getDeleted()))
-                .map(UserRole::getRoleId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-        if (roleIds.isEmpty()) {
-            throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
-        }
-
-        long matchedCount = roleMapper.selectCount(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Role>()
-                .eq(Role::getDeleted, 0)
-                .eq(Role::getType, RoleTypeEnum.SYSTEM.getCode())
-                .eq(Role::getEnabled, 1)
-                .eq(Role::getRoleCode, roleCode.trim())
-                .in(Role::getId, roleIds));
-        if (matchedCount <= 0) {
-            throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
-        }
     }
 
     @Override

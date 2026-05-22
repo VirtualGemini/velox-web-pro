@@ -15,6 +15,7 @@ import com.velox.framework.id.BusinessIdGenerator;
 import com.velox.module.system.auth.service.PasswordCipherService;
 import com.velox.module.system.permission.service.PermissionService;
 import com.velox.module.system.user.dto.UserPasswordUpdateCommand;
+import com.velox.module.system.user.dto.UserInfoBasicDTO;
 import com.velox.module.system.user.dto.UserInfoDTO;
 import com.velox.module.system.user.dto.UserProfileUpdateCommand;
 import com.velox.module.system.user.service.UserInfoService;
@@ -95,6 +96,27 @@ public class UserInfoServiceImpl implements UserInfoService {
         currentUserInfo.setRoles(permissionService.getUserRoleCodes(userId));
         currentUserInfo.setButtons(getCurrentButtons(userId));
         return currentUserInfo;
+    }
+
+    @Override
+    public UserInfoBasicDTO getUserInfoBasicDTO() {
+        String userId = securitySessionService.requireCurrentLoginId();
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new ApiException(BusinessErrorCode.USER_NOT_FOUND);
+        }
+        Profile profile = getActiveProfile(userId);
+
+        UserInfoBasicDTO dto = new UserInfoBasicDTO();
+        dto.setUserId(normalizeNullable(user.getId()));
+        dto.setUserName(user.getUsername());
+        dto.setEmail(user.getEmail() == null ? "" : user.getEmail());
+        dto.setPhone(user.getPhone() == null ? "" : user.getPhone());
+        dto.setAvatar(resolveAvatar(profile, user.getUsername()));
+        dto.setRoles(permissionService.getUserRoleCodes(userId));
+        dto.setButtons(getCurrentButtons(userId));
+        userLanguageStore.find(userId).ifPresent(dto::setLanguage);
+        return dto;
     }
 
     @Override
@@ -197,9 +219,9 @@ public class UserInfoServiceImpl implements UserInfoService {
             return List.of();
         }
 
+        // 同时返回菜单级与按钮级 auth_mark，便于前端做权限判断和路由优先级。
         return menuMapper.selectList(MenuQuerySupport.selectColumns(new LambdaQueryWrapper<Menu>())
                         .eq(Menu::getDeleted, 0)
-                        .eq(Menu::getMenuType, "button")
                         .in(Menu::getId, menuIds))
                 .stream()
                 .map(Menu::getAuthMark)

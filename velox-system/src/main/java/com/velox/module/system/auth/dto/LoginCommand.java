@@ -19,11 +19,6 @@ public class LoginCommand {
     @Size(min = 6, max = 64, message = "密码长度必须在6-64个字符之间")
     private String password;
 
-    @Schema(description = "登录角色编码", example = "R_ADMIN")
-    @NotBlank(message = "登录角色不能为空")
-    @Size(min = 2, max = 50, message = "角色编码长度应在2-50个字符之间")
-    private String roleCode;
-
     @Schema(description = "验证码", example = "aB7D")
     private String captchaCode;
 
@@ -47,14 +42,6 @@ public class LoginCommand {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getRoleCode() {
-        return roleCode;
-    }
-
-    public void setRoleCode(String roleCode) {
-        this.roleCode = roleCode;
     }
 
     public String getCaptchaCode() {

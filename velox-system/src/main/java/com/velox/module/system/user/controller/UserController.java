@@ -1,8 +1,10 @@
 package com.velox.module.system.user.controller;
 
 import com.velox.common.result.Result;
+import com.velox.framework.security.api.annotation.RequirePermission;
 import com.velox.module.system.user.dto.AvatarUpdateCommand;
 import com.velox.module.system.user.dto.LanguageUpdateCommand;
+import com.velox.module.system.user.dto.UserInfoBasicDTO;
 import com.velox.module.system.user.dto.UserInfoDTO;
 import com.velox.module.system.user.dto.UserPasswordUpdateCommand;
 import com.velox.module.system.user.dto.UserProfileUpdateCommand;
@@ -27,29 +29,39 @@ public class UserController {
         this.userInfoService = userInfoService;
     }
 
-    @Operation(summary = "获取当前登录用户信息")
+    @Operation(summary = "获取当前登录用户基础信息（权限、角色、身份）")
     @GetMapping("/info")
-    public Result<UserInfoDTO> getUserInfo() {
+    public Result<UserInfoBasicDTO> getUserInfo() {
+        return Result.ok(userInfoService.getUserInfoBasicDTO());
+    }
+
+    @Operation(summary = "获取当前登录用户详细信息")
+    @GetMapping("/detail")
+    @RequirePermission("system:user-center:profile-query")
+    public Result<UserInfoDTO> getUserDetail() {
         return Result.ok(userInfoService.getUserInfoDTO());
     }
 
     @Operation(summary = "更新当前登录用户资料")
     @PutMapping("/profile")
+    @RequirePermission("system:user-center:profile-update")
     public Result<Boolean> updateProfile(@Valid @RequestBody UserProfileUpdateCommand command) {
         return Result.ok(userInfoService.updateCurrentUserProfile(command));
     }
 
     @Operation(summary = "修改当前登录用户密码")
     @PutMapping("/password")
+    @RequirePermission("system:user-center:password-update")
     public Result<Boolean> updatePassword(@Valid @RequestBody UserPasswordUpdateCommand command) {
         return Result.ok(userInfoService.updateCurrentUserPassword(command));
     }
 
     @Operation(summary = "更新当前登录用户头像")
     @PutMapping("/avatar")
-    public Result<UserInfoDTO> updateAvatar(@RequestBody AvatarUpdateCommand command) {
+    @RequirePermission("system:user-center:avatar-update")
+    public Result<UserInfoBasicDTO> updateAvatar(@RequestBody AvatarUpdateCommand command) {
         userInfoService.updateCurrentUserAvatar(command.getAvatarUrl());
-        return Result.ok(userInfoService.getUserInfoDTO());
+        return Result.ok(userInfoService.getUserInfoBasicDTO());
     }
 
     @Operation(summary = "更新当前登录用户语言偏好")

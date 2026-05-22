@@ -4,7 +4,6 @@ import com.velox.common.result.Result;
 import com.velox.module.system.auth.dto.CaptchaDTO;
 import com.velox.module.system.auth.dto.ForgotPasswordCodeCommand;
 import com.velox.module.system.auth.dto.LoginCommand;
-import com.velox.module.system.auth.dto.LoginRoleDTO;
 import com.velox.module.system.auth.dto.RegisterCommand;
 import com.velox.module.system.auth.dto.ResetPasswordCommand;
 import com.velox.module.system.auth.dto.TokenDTO;
@@ -13,8 +12,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "登录认证", description = "登录认证相关接口")
 @RestController
@@ -31,12 +28,6 @@ public class LoginController {
     @GetMapping("/captcha")
     public Result<CaptchaDTO> getCaptcha() {
         return Result.ok(loginService.generateCaptcha());
-    }
-
-    @Operation(summary = "获取登录角色")
-    @GetMapping("/login-roles")
-    public Result<List<LoginRoleDTO>> listLoginRoles() {
-        return Result.ok(loginService.listLoginRoles());
     }
 
     @Operation(summary = "登录")

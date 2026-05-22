@@ -180,8 +180,28 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateRoleMenuPermissions(String roleId, RoleMenuPermissionUpdateCommand command) {
-        permissionService.assignRoleMenu(roleId, command == null ? List.of() : command.getMenuIds());
+        List<String> requestedMenuIds = command == null ? List.of() : command.getMenuIds();
+        ensureWithinCurrentUserScope(requestedMenuIds);
+        permissionService.assignRoleMenu(roleId, requestedMenuIds);
         return true;
+    }
+
+    /**
+     * 防止越权授权：只允许把自己拥有的菜单授给别的角色。
+     * R_SUPER 由 {@link PermissionService#getUserPermittedMenuIds} 内部直通全部菜单，天然通过。
+     */
+    private void ensureWithinCurrentUserScope(List<String> requestedMenuIds) {
+        if (requestedMenuIds == null || requestedMenuIds.isEmpty()) {
+            return;
+        }
+        String currentUserId = securitySessionService.requireCurrentLoginId();
+        Set<String> permittedMenuIds = permissionService.getUserPermittedMenuIds(currentUserId);
+        boolean hasBeyondScope = requestedMenuIds.stream()
+                .filter(Objects::nonNull)
+                .anyMatch(menuId -> !permittedMenuIds.contains(menuId));
+        if (hasBeyondScope) {
+            throw new ApiException(BusinessErrorCode.ROLE_MENU_GRANT_BEYOND_SCOPE);
+        }
     }
 
     private List<String> compressGrantedMenuIds(Set<String> grantedMenuIds) {
@@ -281,6 +301,7 @@ public class RoleServiceImpl implements RoleService {
         dto.setTypeName(RoleTypeEnum.getDesc(role.getType()));
         dto.setEnabled(Integer.valueOf(1).equals(role.getEnabled()));
         dto.setCreateTime(RequestDateTimeFormatter.format(role.getCreateTime()));
+        dto.setUpdateTime(RequestDateTimeFormatter.format(role.getUpdateTime()));
         return dto;
     }
 
