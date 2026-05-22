@@ -19,4 +19,8 @@ public final class RequestDateTimeFormatter {
     public static LocalDateTime toUtcEndOfDay(LocalDate localDate) {
         return com.velox.framework.web.api.timezone.RequestDateTimeFormatter.toUtcEndOfDay(localDate);
     }
+
+    public static LocalDateTime parseToUtc(String localDateTimeText) {
+        return com.velox.framework.web.api.timezone.RequestDateTimeFormatter.parseToUtc(localDateTimeText);
+    }
 }

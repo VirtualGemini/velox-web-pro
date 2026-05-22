@@ -38,4 +38,14 @@ public final class RequestDateTimeFormatter {
                 .toLocalDateTime()
                 .minusSeconds(1);
     }
+
+    public static LocalDateTime parseToUtc(String localDateTimeText) {
+        if (localDateTimeText == null || localDateTimeText.trim().isEmpty()) {
+            return null;
+        }
+        return LocalDateTime.parse(localDateTimeText.trim(), DATETIME_FORMATTER)
+                .atZone(RequestTimeZoneContext.getCurrentZoneId())
+                .withZoneSameInstant(UTC)
+                .toLocalDateTime();
+    }
 }
