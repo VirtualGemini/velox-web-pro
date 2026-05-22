@@ -2,6 +2,7 @@ package com.velox.common.result;
 
 import com.velox.common.exception.CommonErrorCode;
 import com.velox.common.exception.ErrorCode;
+import com.velox.common.exception.MessageUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.io.Serial;
@@ -39,11 +40,11 @@ public class Result<T> implements Serializable {
     // ==================== Success ====================
 
     public static <T> Result<T> ok() {
-        return new Result<>(CommonErrorCode.SUCCESS.code(), CommonErrorCode.SUCCESS.message(), null);
+        return new Result<>(CommonErrorCode.SUCCESS.code(), resolveMessage(CommonErrorCode.SUCCESS), null);
     }
 
     public static <T> Result<T> ok(T data) {
-        return new Result<>(CommonErrorCode.SUCCESS.code(), CommonErrorCode.SUCCESS.message(), data);
+        return new Result<>(CommonErrorCode.SUCCESS.code(), resolveMessage(CommonErrorCode.SUCCESS), data);
     }
 
     public static <T> Result<T> ok(String msg, T data) {
@@ -53,7 +54,7 @@ public class Result<T> implements Serializable {
     // ==================== Fail ====================
 
     public static <T> Result<T> fail() {
-        return new Result<>(CommonErrorCode.FAIL.code(), CommonErrorCode.FAIL.message(), null);
+        return new Result<>(CommonErrorCode.FAIL.code(), resolveMessage(CommonErrorCode.FAIL), null);
     }
 
     public static <T> Result<T> fail(String msg) {
@@ -65,7 +66,7 @@ public class Result<T> implements Serializable {
     }
 
     public static <T> Result<T> fail(ErrorCode errorCode) {
-        return new Result<>(errorCode.code(), errorCode.message(), null);
+        return new Result<>(errorCode.code(), resolveMessage(errorCode), null);
     }
 
     public static <T> Result<T> fail(ErrorCode errorCode, String msg) {
@@ -73,7 +74,15 @@ public class Result<T> implements Serializable {
     }
 
     public static <T> Result<T> fail(ErrorCode errorCode, T data) {
-        return new Result<>(errorCode.code(), errorCode.message(), data);
+        return new Result<>(errorCode.code(), resolveMessage(errorCode), data);
+    }
+
+    /**
+     * 按当前 LocaleContextHolder 解析 ErrorCode 的 i18n 消息，缺失时回退到默认 message。
+     */
+    private static String resolveMessage(ErrorCode errorCode) {
+        String i18n = MessageUtils.message(errorCode.i18nKey());
+        return i18n != null ? i18n : errorCode.message();
     }
 
     // ==================== Build ====================

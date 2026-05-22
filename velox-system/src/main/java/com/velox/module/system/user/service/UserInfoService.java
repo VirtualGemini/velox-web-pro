@@ -16,4 +16,6 @@ public interface UserInfoService {
     Boolean updateCurrentUserPassword(UserPasswordUpdateCommand command);
 
     void updateCurrentUserAvatar(String avatarUrl);
+
+    Boolean updateCurrentUserLanguage(String language);
 }

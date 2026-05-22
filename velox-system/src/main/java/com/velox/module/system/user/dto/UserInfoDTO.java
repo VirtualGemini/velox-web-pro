@@ -19,6 +19,7 @@ public class UserInfoDTO {
     private String signature;
     private String position;
     private String company;
+    private String language;
 
     public List<String> getButtons() {
         return buttons;
@@ -146,5 +147,13 @@ public class UserInfoDTO {
 
     public void setCompany(String company) {
         this.company = company;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
     }
 }

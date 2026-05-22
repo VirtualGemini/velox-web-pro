@@ -10,6 +10,8 @@ public final class WebCommonMessages {
     public static final String HTTP_SERVLET_REQUEST_MUST_NOT_BE_NULL = "HttpServletRequest must not be null";
     public static final String RESOLVED_TRACE_ID_MUST_NOT_BE_BLANK = "Resolved trace id must not be blank";
     public static final String RESOLVED_ZONE_ID_MUST_NOT_BE_NULL = "Resolved request zone id must not be null";
+    public static final String REQUEST_LOCALE_RESOLVER_MUST_NOT_BE_NULL = "Request locale resolver must not be null";
+    public static final String RESOLVED_LOCALE_MUST_NOT_BE_NULL = "Resolved request locale must not be null";
     public static final String VELOX_REQUEST_LOG_INTERCEPTOR_MUST_NOT_BE_NULL = "Velox request log interceptor must not be null";
 
     private WebCommonMessages() {

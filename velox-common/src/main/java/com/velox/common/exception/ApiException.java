@@ -17,28 +17,28 @@ public class ApiException extends RuntimeException {
 
     private final ErrorCode errorCode;
     private final String message;
-    private final String i18nMessage;
+    private final Object[] args;
     private HashMap<String, Object> payload;
 
     public ApiException(ErrorCode errorCode) {
         super(errorCode.message());
         this.errorCode = errorCode;
         this.message = errorCode.message();
-        this.i18nMessage = resolveI18n(errorCode);
+        this.args = null;
     }
 
     public ApiException(ErrorCode errorCode, Object... args) {
         super(formatMessage(errorCode.message(), args));
         this.errorCode = errorCode;
         this.message = formatMessage(errorCode.message(), args);
-        this.i18nMessage = resolveI18n(errorCode, args);
+        this.args = args;
     }
 
     public ApiException(Throwable cause, ErrorCode errorCode, Object... args) {
         super(formatMessage(errorCode.message(), args), cause);
         this.errorCode = errorCode;
         this.message = formatMessage(errorCode.message(), args);
-        this.i18nMessage = resolveI18n(errorCode, args);
+        this.args = args;
     }
 
     /**
@@ -54,7 +54,9 @@ public class ApiException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        return i18nMessage != null ? i18nMessage : message;
+        // 懒解析：每次按当前 LocaleContextHolder 解析，确保使用请求线程的 Locale
+        String i18n = resolveI18n(errorCode, args);
+        return i18n != null ? i18n : message;
     }
 
     /**
@@ -86,8 +88,7 @@ public class ApiException extends RuntimeException {
 
     private static String resolveI18n(ErrorCode errorCode, Object... args) {
         try {
-            String i18n = MessageUtils.message(errorCode.i18nKey(), args);
-            return i18n != null ? i18n : formatMessage(errorCode.message(), args);
+            return MessageUtils.message(errorCode.i18nKey(), args);
         } catch (Exception e) {
             // i18n 不可用时静默降级
             return null;
@@ -99,13 +100,12 @@ public class ApiException extends RuntimeException {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ApiException that = (ApiException) o;
-        return errorCode == that.errorCode && 
-               java.util.Objects.equals(message, that.message) && 
-               java.util.Objects.equals(i18nMessage, that.i18nMessage);
+        return errorCode == that.errorCode &&
+               java.util.Objects.equals(message, that.message);
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(errorCode, message, i18nMessage);
+        return java.util.Objects.hash(errorCode, message);
     }
 }

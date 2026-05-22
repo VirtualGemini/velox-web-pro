@@ -2,6 +2,7 @@ package com.velox.module.system.user.controller;
 
 import com.velox.common.result.Result;
 import com.velox.module.system.user.dto.AvatarUpdateCommand;
+import com.velox.module.system.user.dto.LanguageUpdateCommand;
 import com.velox.module.system.user.dto.UserInfoDTO;
 import com.velox.module.system.user.dto.UserPasswordUpdateCommand;
 import com.velox.module.system.user.dto.UserProfileUpdateCommand;
@@ -49,5 +50,11 @@ public class UserController {
     public Result<UserInfoDTO> updateAvatar(@RequestBody AvatarUpdateCommand command) {
         userInfoService.updateCurrentUserAvatar(command.getAvatarUrl());
         return Result.ok(userInfoService.getUserInfoDTO());
+    }
+
+    @Operation(summary = "更新当前登录用户语言偏好")
+    @PutMapping("/language")
+    public Result<Boolean> updateLanguage(@Valid @RequestBody LanguageUpdateCommand command) {
+        return Result.ok(userInfoService.updateCurrentUserLanguage(command.getLanguage()));
     }
 }

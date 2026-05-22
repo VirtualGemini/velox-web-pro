@@ -6,15 +6,19 @@ import com.velox.framework.web.common.servlet.WebFilterNames;
 import com.velox.framework.web.core.logging.DefaultRequestLogHandler;
 import com.velox.framework.web.core.mvc.DefaultVeloxWebMvcConfigurer;
 import com.velox.framework.web.core.path.DefaultApiPathPrefixResolver;
+import com.velox.framework.web.core.locale.DefaultRequestLocaleResolver;
+import com.velox.framework.web.core.servlet.DefaultRequestLocaleFilterRegistrationCustomizer;
 import com.velox.framework.web.core.servlet.DefaultRequestTimeZoneFilterRegistrationCustomizer;
 import com.velox.framework.web.core.servlet.DefaultTraceIdFilterRegistrationCustomizer;
 import com.velox.framework.web.core.timezone.DefaultRequestTimeZoneResolver;
 import com.velox.framework.web.core.tracing.DefaultTraceIdResolver;
 import com.velox.framework.web.properties.VeloxProperties;
 import com.velox.framework.web.properties.VeloxWebProperties;
+import com.velox.framework.web.spi.locale.RequestLocaleResolver;
 import com.velox.framework.web.spi.logging.RequestLogHandler;
 import com.velox.framework.web.spi.mvc.VeloxWebMvcConfigurer;
 import com.velox.framework.web.spi.path.ApiPathPrefixResolver;
+import com.velox.framework.web.spi.servlet.RequestLocaleFilterRegistrationCustomizer;
 import com.velox.framework.web.spi.servlet.RequestTimeZoneFilterRegistrationCustomizer;
 import com.velox.framework.web.spi.timezone.RequestTimeZoneResolver;
 import com.velox.framework.web.spi.servlet.TraceIdFilterRegistrationCustomizer;
@@ -39,6 +43,12 @@ public class VeloxWebAutoConfiguration {
     @ConditionalOnMissingBean
     public RequestTimeZoneResolver requestTimeZoneResolver() {
         return new DefaultRequestTimeZoneResolver();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public RequestLocaleResolver requestLocaleResolver() {
+        return new DefaultRequestLocaleResolver();
     }
 
     @Bean
@@ -106,5 +116,26 @@ public class VeloxWebAutoConfiguration {
             com.velox.framework.web.RequestTimeZoneFilter requestTimeZoneFilter,
             RequestTimeZoneFilterRegistrationCustomizer registrationCustomizer) {
         return registrationCustomizer.register(requestTimeZoneFilter);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(com.velox.framework.web.RequestLocaleFilter.class)
+    public com.velox.framework.web.RequestLocaleFilter veloxRequestLocaleFilter(
+            RequestLocaleResolver requestLocaleResolver) {
+        return new com.velox.framework.web.RequestLocaleFilter(requestLocaleResolver);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(RequestLocaleFilterRegistrationCustomizer.class)
+    public RequestLocaleFilterRegistrationCustomizer requestLocaleFilterRegistrationCustomizer() {
+        return new DefaultRequestLocaleFilterRegistrationCustomizer();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "requestLocaleFilterRegistration")
+    public FilterRegistrationBean<jakarta.servlet.Filter> requestLocaleFilterRegistration(
+            com.velox.framework.web.RequestLocaleFilter requestLocaleFilter,
+            RequestLocaleFilterRegistrationCustomizer registrationCustomizer) {
+        return registrationCustomizer.register(requestLocaleFilter);
     }
 }

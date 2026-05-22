@@ -18,6 +18,7 @@ import com.velox.module.system.user.dto.UserPasswordUpdateCommand;
 import com.velox.module.system.user.dto.UserInfoDTO;
 import com.velox.module.system.user.dto.UserProfileUpdateCommand;
 import com.velox.module.system.user.service.UserInfoService;
+import com.velox.module.system.user.store.UserLanguageStore;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,6 +44,7 @@ public class UserInfoServiceImpl implements UserInfoService {
     private final BusinessIdGenerator businessIdGenerator;
     private final ObjectMapper objectMapper;
     private final SecuritySessionService securitySessionService;
+    private final UserLanguageStore userLanguageStore;
 
     public UserInfoServiceImpl(
             UserMapper userMapper,
@@ -52,7 +54,8 @@ public class UserInfoServiceImpl implements UserInfoService {
             PasswordCipherService passwordCipherService,
             BusinessIdGenerator businessIdGenerator,
             ObjectMapper objectMapper,
-            SecuritySessionService securitySessionService
+            SecuritySessionService securitySessionService,
+            UserLanguageStore userLanguageStore
     ) {
         this.userMapper = userMapper;
         this.profileMapper = profileMapper;
@@ -62,6 +65,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         this.businessIdGenerator = businessIdGenerator;
         this.objectMapper = objectMapper;
         this.securitySessionService = securitySessionService;
+        this.userLanguageStore = userLanguageStore;
     }
 
     @Override
@@ -113,6 +117,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         dto.setTags(currentUserInfo.getTags());
         dto.setRoles(currentUserInfo.getRoles());
         dto.setButtons(currentUserInfo.getButtons());
+        userLanguageStore.find(currentUserInfo.getUserId()).ifPresent(dto::setLanguage);
         return dto;
     }
 
@@ -169,6 +174,13 @@ public class UserInfoServiceImpl implements UserInfoService {
         profile.setAvatar(avatarUrl);
         profile.setUpdateBy(currentOperator());
         saveProfile(profile);
+    }
+
+    @Override
+    public Boolean updateCurrentUserLanguage(String language) {
+        String userId = securitySessionService.requireCurrentLoginId();
+        userLanguageStore.save(userId, language);
+        return true;
     }
 
     private List<String> getCurrentButtons(String userId) {
