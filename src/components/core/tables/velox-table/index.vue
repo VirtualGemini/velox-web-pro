@@ -3,11 +3,15 @@
 <!-- 扩展功能：分页组件、渲染自定义列、loading、表格全局边框、斑马纹、表格尺寸、表头背景配置 -->
 <!-- 获取 ref：默认暴露了 elTableRef 外部通过 ref.value.elTableRef 可以调用 el-table 方法 -->
 <template>
-  <div class="velox-table" :class="{ 'is-empty': isEmpty }" :style="containerHeight">
+  <div
+    class="velox-table"
+    :class="{ 'is-empty': isEmpty, 'is-mobile-table': isMobileTable }"
+    :style="containerHeight"
+  >
     <ElTable ref="elTableRef" v-loading="!!loading" v-bind="mergedTableProps">
       <template v-for="col in columns" :key="col.prop || col.type">
         <!-- 渲染全局序号列 -->
-        <ElTableColumn v-if="col.type === 'globalIndex'" v-bind="{ ...col }">
+        <ElTableColumn v-if="col.type === 'globalIndex'" v-bind="resolveColumnProps(col)">
           <template #default="{ $index }">
             <span>{{ getGlobalIndex($index) }}</span>
           </template>
@@ -72,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, nextTick, watchEffect, getCurrentInstance, useAttrs } from 'vue'
+  import { ref, computed, nextTick, watchEffect, getCurrentInstance, useAttrs, watch } from 'vue'
   import type { ElTable, TableProps } from 'element-plus'
   import { storeToRefs } from 'pinia'
   import { useI18n } from 'vue-i18n'
@@ -167,6 +171,8 @@
       return LAYOUT.DESKTOP
     }
   })
+
+  const isMobileTable = computed(() => width.value < 768)
 
   // 默认分页常量
   const DEFAULT_PAGINATION_OPTIONS: PaginationOptions = {
@@ -293,14 +299,167 @@
   }
 
   // 清理列属性，移除插槽相关的自定义属性，确保它们不会被 ElTableColumn 错误解释
+  const resolveColumnProps = (col: ColumnOption) => {
+    const columnProps = { ...col, label: resolveColumnLabel(col) } as ColumnOption
+    if (isMobileTable.value) {
+      columnProps.align = 'left'
+      columnProps.headerAlign = 'left'
+    }
+    return columnProps
+  }
+
   const cleanColumnProps = (col: ColumnOption) => {
-    const columnProps = { ...col, label: resolveColumnLabel(col) }
+    const columnProps = resolveColumnProps(col)
     // 删除自定义的插槽控制属性
     delete columnProps.useHeaderSlot
     delete columnProps.headerSlotName
     delete columnProps.useSlot
     delete columnProps.slotName
     return columnProps
+  }
+
+  const MOBILE_CELL_HORIZONTAL_GAP = 96
+  const MOBILE_MIN_COLUMN_WIDTH = 80
+  const MOBILE_GUTTER_COL_SELECTOR = 'colgroup col[name="gutter"]'
+  const MOBILE_HEADER_CELL_SELECTOR =
+    '.el-table__header-wrapper th.el-table__cell:not(.gutter):not(.el-table__fixed-right-patch)'
+  const MOBILE_BODY_CELL_SELECTOR =
+    'td.el-table__cell:not(.gutter):not(.el-table__fixed-right-patch)'
+
+  const getTableRootElement = () => {
+    return (elTableRef.value as unknown as { $el?: HTMLElement })?.$el || null
+  }
+
+  const resolveDeclaredColumnWidth = (column?: ColumnOption) => {
+    if (!column) return 0
+    const candidate = column.width ?? column.minWidth
+    if (candidate == null) return 0
+    if (typeof candidate === 'number') return candidate
+    const parsed = Number.parseFloat(candidate)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+
+  const resetMobileColumnWidths = () => {
+    const root = getTableRootElement()
+    if (!root) return
+
+    root
+      .querySelectorAll<HTMLElement>(
+        '.el-table__header-wrapper colgroup col, .el-table__body-wrapper colgroup col'
+      )
+      .forEach((col) => {
+        col.style.width = ''
+        col.style.minWidth = ''
+      })
+
+    root.querySelectorAll<HTMLTableColElement>(MOBILE_GUTTER_COL_SELECTOR).forEach((col) => {
+      col.style.width = ''
+      col.style.minWidth = ''
+    })
+
+    root
+      .querySelectorAll<HTMLElement>(
+        '.el-table__header-wrapper table, .el-table__body-wrapper table, .el-table__footer-wrapper table'
+      )
+      .forEach((table) => {
+        table.style.width = ''
+        table.style.minWidth = ''
+      })
+
+    root.querySelectorAll<HTMLElement>('.el-table__cell.gutter').forEach((cell) => {
+      cell.style.width = ''
+      cell.style.minWidth = ''
+    })
+  }
+
+  const syncMobileColumnWidths = async () => {
+    if (!isMobileTable.value) {
+      resetMobileColumnWidths()
+      return
+    }
+
+    await nextTick()
+
+    const root = getTableRootElement()
+    if (!root) return
+
+    const headerTable = root.querySelector<HTMLTableElement>(
+      '.el-table__header-wrapper .el-table__header'
+    )
+    const bodyTable = root.querySelector<HTMLTableElement>(
+      '.el-table__body-wrapper .el-table__body'
+    )
+    const footerTable = root.querySelector<HTMLTableElement>(
+      '.el-table__footer-wrapper .el-table__footer'
+    )
+
+    if (!headerTable || !bodyTable) return
+
+    const headerCells = Array.from(root.querySelectorAll<HTMLElement>(MOBILE_HEADER_CELL_SELECTOR))
+    const bodyRows = Array.from(
+      root.querySelectorAll<HTMLTableRowElement>('.el-table__body-wrapper tbody tr')
+    )
+
+    if (!headerCells.length) return
+
+    const maxColumnWidth = Math.max(window.innerWidth - MOBILE_CELL_HORIZONTAL_GAP, 120)
+    const resolvedWidths = headerCells.map((headerCell, columnIndex) => {
+      const declaredWidth = resolveDeclaredColumnWidth(props.columns?.[columnIndex])
+      const headerContentWidth = Math.ceil(
+        headerCell.querySelector<HTMLElement>('.cell')?.scrollWidth || headerCell.scrollWidth || 0
+      )
+
+      let bodyContentWidth = 0
+      for (const row of bodyRows) {
+        const rowCells = Array.from(row.querySelectorAll<HTMLElement>(MOBILE_BODY_CELL_SELECTOR))
+        const cell = rowCells[columnIndex]
+        if (!cell) continue
+        const contentWidth = Math.ceil(
+          cell.querySelector<HTMLElement>('.cell')?.scrollWidth || cell.scrollWidth || 0
+        )
+        if (contentWidth > bodyContentWidth) {
+          bodyContentWidth = contentWidth
+        }
+      }
+
+      return Math.min(
+        Math.max(headerContentWidth, bodyContentWidth, declaredWidth, MOBILE_MIN_COLUMN_WIDTH),
+        Math.max(maxColumnWidth, declaredWidth)
+      )
+    })
+
+    const applyWidthToCols = (table: HTMLTableElement | null) => {
+      if (!table) return
+      const cols = Array.from(
+        table.querySelectorAll<HTMLTableColElement>('colgroup col:not([name="gutter"])')
+      )
+      resolvedWidths.forEach((width, index) => {
+        const col = cols[index]
+        if (!col) return
+        const widthText = `${width}px`
+        col.style.width = widthText
+        col.style.minWidth = widthText
+      })
+
+      table.querySelectorAll<HTMLTableColElement>(MOBILE_GUTTER_COL_SELECTOR).forEach((col) => {
+        col.style.width = '0px'
+        col.style.minWidth = '0px'
+      })
+
+      const totalWidth = resolvedWidths.reduce((sum, width) => sum + width, 0)
+      const tableWidth = `${totalWidth}px`
+      table.style.width = tableWidth
+      table.style.minWidth = tableWidth
+    }
+
+    applyWidthToCols(headerTable)
+    applyWidthToCols(bodyTable)
+    applyWidthToCols(footerTable)
+
+    root.querySelectorAll<HTMLElement>('.el-table__cell.gutter').forEach((cell) => {
+      cell.style.width = '0px'
+      cell.style.minWidth = '0px'
+    })
   }
 
   // 分页大小变化
@@ -369,6 +528,14 @@
       }
     },
     { flush: 'post' }
+  )
+
+  watch(
+    [isMobileTable, () => props.data, () => props.columns],
+    () => {
+      syncMobileColumnWidths()
+    },
+    { deep: true, flush: 'post' }
   )
 
   defineExpose({

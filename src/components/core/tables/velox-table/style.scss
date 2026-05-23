@@ -87,6 +87,115 @@
   }
 }
 
+.velox-table.is-mobile-table {
+  :deep(.el-scrollbar__wrap) {
+    overflow-x: auto !important;
+  }
+
+  :deep(.el-table th.el-table__cell),
+  :deep(.el-table td.el-table__cell),
+  :deep(.el-table th.el-table__cell .cell),
+  :deep(.el-table td.el-table__cell .cell) {
+    text-align: left !important;
+    white-space: nowrap !important;
+  }
+
+  :deep(.el-table th.el-table__cell .cell),
+  :deep(.el-table td.el-table__cell .cell) {
+    display: block !important;
+    width: 100%;
+    min-width: 0;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  :deep(.el-table th.el-table__cell.is-sortable .cell) {
+    display: flex !important;
+    gap: 4px;
+    align-items: center;
+    justify-content: flex-start !important;
+  }
+
+  :deep(.el-table th.el-table__cell .cell > *),
+  :deep(.el-table td.el-table__cell .cell > *) {
+    min-width: 0;
+  }
+
+  :deep(.el-table th.el-table__cell.is-sortable .cell .caret-wrapper) {
+    flex: 0 0 auto;
+    margin-left: 0;
+  }
+
+  :deep(.el-table th.el-table__cell .cell a),
+  :deep(.el-table td.el-table__cell .cell a),
+  :deep(.el-table th.el-table__cell .cell p),
+  :deep(.el-table td.el-table__cell .cell p) {
+    display: block;
+    width: 100%;
+    max-width: 100% !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap !important;
+  }
+
+  :deep(.el-table td.el-table__cell .cell button),
+  :deep(.el-table th.el-table__cell .cell button) {
+    display: inline-flex;
+    justify-content: flex-start;
+  }
+
+  :deep(.el-table__body-wrapper .el-table-fixed-column--right),
+  :deep(.el-table__footer-wrapper .el-table-fixed-column--right),
+  :deep(.el-table .el-table__fixed-right-patch) {
+    background: inherit !important;
+    background-clip: padding-box;
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+  }
+
+  :deep(.el-table__header-wrapper .el-table-fixed-column--right) {
+    z-index: calc(var(--el-table-index) + 2) !important;
+    background-color: var(--el-table-header-bg-color) !important;
+  }
+
+  :deep(.el-table col[name='gutter']),
+  :deep(.el-table__fixed-right-patch),
+  :deep(.el-table__cell.gutter) {
+    width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  :deep(.el-table__body-wrapper .el-table-fixed-column--right.el-table__cell),
+  :deep(.el-table__footer-wrapper .el-table-fixed-column--right.el-table__cell) {
+    right: -1px !important;
+    border-right-width: 0 !important;
+  }
+
+  :deep(.el-table__header-wrapper .el-table-fixed-column--right.el-table__cell) {
+    right: 0 !important;
+    border-right-width: 0 !important;
+  }
+
+  :deep(.el-table .el-table-fixed-column--right.is-first-column::before),
+  :deep(.el-table .el-table-fixed-column--right.is-last-column::before),
+  :deep(.el-table__fixed-right-patch),
+  :deep(.el-table__border-right-patch) {
+    display: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    box-shadow: none !important;
+  }
+
+  :deep(.el-table.el-table--border::after),
+  :deep(.el-table .el-table__border-right-patch) {
+    display: none !important;
+  }
+}
+
 // 移动端分页
 @media (width <= 640px) {
   :deep(.el-pagination) {

@@ -5,7 +5,7 @@
       <slot name="left"></slot>
     </div>
 
-    <div class="flex-c md:justify-end max-md:mt-3 max-sm:!hidden">
+    <div class="flex-c flex-wrap md:justify-end max-md:mt-3 max-md:w-full max-md:justify-start">
       <div
         v-if="showSearchBar != null"
         class="button"
@@ -123,6 +123,7 @@
 <script lang="ts" setup>
   import { computed, ref, onMounted, onUnmounted } from 'vue'
   import { storeToRefs } from 'pinia'
+  import { useWindowSize } from '@vueuse/core'
   import { TableSizeEnum } from '@/enums/formEnum'
   import { useTableStore } from '@/store/modules/table'
   import { VueDraggable } from 'vue-draggable-plus'
@@ -212,6 +213,9 @@
 
   const tableStore = useTableStore()
   const { tableSize, isZebra, isBorder, isHeaderBackground } = storeToRefs(tableStore)
+  const { width } = useWindowSize()
+
+  const isMobile = computed(() => width.value < 768)
 
   /** 解析 layout 属性，转换为数组 */
   const layoutItems = computed(() => {
@@ -224,6 +228,9 @@
    * @returns 是否显示
    */
   const shouldShow = (componentName: string) => {
+    if (componentName === 'fullscreen' && isMobile.value) {
+      return false
+    }
     return layoutItems.value.includes(componentName)
   }
 
