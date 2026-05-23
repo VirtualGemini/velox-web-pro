@@ -267,6 +267,9 @@
     "forgetPassword": {
       "title": "忘记密码"
     },
+    "codeLogin": {
+      "title": "验证码登录"
+    },
     "outside": {
       "title": "内嵌页面"
     },

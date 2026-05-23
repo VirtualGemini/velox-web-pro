@@ -37,6 +37,12 @@ export const staticRoutes: AppRouteRecordRaw[] = [
     meta: { title: 'menus.forgetPassword.title', isHideTab: true }
   },
   {
+    path: '/auth/code-login',
+    name: 'CodeLogin',
+    component: () => import('@views/auth/code-login/index.vue'),
+    meta: { title: 'menus.codeLogin.title', isHideTab: true }
+  },
+  {
     path: '/403',
     name: 'Exception403',
     component: () => import('@views/exception/403/index.vue'),

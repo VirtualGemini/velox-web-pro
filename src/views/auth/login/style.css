@@ -74,12 +74,3 @@
     transform: translateX(0);
   }
 }
-
-/* 登录模式切换过渡：与页面打开时的 slideInRight 一致 */
-.login-slide-enter-active {
-  animation: slideInRight 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.login-slide-leave-active {
-  animation: slideInRight 0.25s cubic-bezier(0.55, 0.06, 0.68, 0.19) reverse;
-}

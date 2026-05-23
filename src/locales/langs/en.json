@@ -267,6 +267,9 @@
     "forgetPassword": {
       "title": "Forget Password"
     },
+    "codeLogin": {
+      "title": "Code Login"
+    },
     "outside": {
       "title": "Outside"
     },
