@@ -126,7 +126,7 @@
   const route = useRoute()
   const { t } = useI18n()
 
-  type FileSizeUnit = 'KB' | 'MB'
+  type FileSizeUnit = 'B' | 'KB' | 'MB' | 'GB'
 
   interface FileSearchForm {
     name?: string
@@ -140,8 +140,10 @@
 
   const fileTypeOptions = ref<string[]>([])
   const fileSizeUnitOptions = computed<{ label: string; value: FileSizeUnit }[]>(() => [
+    { label: t('pages.system.fileManage.search.units.B'), value: 'B' },
     { label: t('pages.system.fileManage.search.units.KB'), value: 'KB' },
-    { label: t('pages.system.fileManage.search.units.MB'), value: 'MB' }
+    { label: t('pages.system.fileManage.search.units.MB'), value: 'MB' },
+    { label: t('pages.system.fileManage.search.units.GB'), value: 'GB' }
   ])
 
   const createDefaultSearchForm = (): FileSearchForm => ({
@@ -392,8 +394,10 @@
   function convertSizeToBytes(value: number | undefined, unit: FileSizeUnit) {
     if (value === undefined || value === null) return undefined
     const multipliers: Record<FileSizeUnit, number> = {
+      B: 1,
       KB: 1024,
-      MB: 1024 * 1024
+      MB: 1024 * 1024,
+      GB: 1024 * 1024 * 1024
     }
     return Math.floor(value * multipliers[unit])
   }
@@ -508,7 +512,7 @@
 
   :deep(.file-size-range .el-range-input) {
     width: 26%;
-    text-align: left;
+    text-align: center;
   }
 
   :deep(.file-size-range .el-range-separator) {
@@ -518,15 +522,20 @@
 
   .file-size-inline-select {
     flex-shrink: 0;
-    width: 68px;
+    width: 38px;
   }
 
   :deep(.file-size-inline-select .el-select__wrapper) {
     min-height: 30px;
-    padding-right: 4px;
+    padding-right: 2px;
     padding-left: 4px;
     background: transparent;
     box-shadow: none;
+  }
+
+  :deep(.file-size-inline-select .el-select__suffix),
+  :deep(.file-size-inline-select .el-select__caret) {
+    display: none;
   }
 
   :deep(.file-size-inline-select .el-select__selected-item),

@@ -667,14 +667,16 @@
         "search": {
           "name": "文件名",
           "type": "文件类型",
-          "sizeRange": "文件大小区间",
+          "sizeRange": "文件大小",
           "uploadTimeRange": "上传时间",
           "rangeSeparator": "至",
           "createTimeStart": "上传开始时间",
           "createTimeEnd": "上传结束时间",
           "units": {
+            "B": "B",
             "KB": "KB",
-            "MB": "MB"
+            "MB": "MB",
+            "GB": "GB"
           },
           "placeholders": {
             "type": "请选择文件类型",
@@ -696,7 +698,7 @@
         "messages": {
           "downloadUrlFailed": "获取下载地址失败",
           "invalidSizeValue": "文件大小请输入有效数字",
-          "invalidSizeRange": "文件大小区间不合法，最小值不能大于最大值",
+          "invalidSizeRange": "文件大小范围不合法，最小值不能大于最大值",
           "confirmDelete": "确定删除文件“{name}”吗？删除后无法恢复。",
           "deleteTitle": "删除确认",
           "deleteSuccess": "删除成功",

@@ -673,8 +673,10 @@
           "createTimeStart": "Uploaded From",
           "createTimeEnd": "Uploaded To",
           "units": {
+            "B": "B",
             "KB": "KB",
-            "MB": "MB"
+            "MB": "MB",
+            "GB": "GB"
           },
           "placeholders": {
             "type": "Please select a file type",

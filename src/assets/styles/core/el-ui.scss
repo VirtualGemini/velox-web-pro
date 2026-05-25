@@ -229,6 +229,171 @@ html.dark .el-card {
   .el-picker-panel__sidebar + .el-picker-panel__body {
     margin-left: 0;
   }
+
+  // ============ 移动端日期/日期时间范围选择器适配 ============
+  // 弹层定位与宽度：撑满视口宽度（留 12px 边距）
+  .el-picker__popper.el-popper {
+    left: 12px !important;
+    right: 12px !important;
+    max-width: calc(100vw - 24px) !important;
+    box-sizing: border-box;
+
+    .el-popper__arrow {
+      display: none;
+    }
+  }
+
+  // 单日期/日期时间选择器：覆盖默认 322px / 434px 固定宽度
+  .el-date-picker {
+    width: calc(100vw - 24px) !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 24px) !important;
+    box-sizing: border-box;
+
+    .el-picker-panel__content {
+      width: auto !important;
+      max-width: 100% !important;
+      box-sizing: border-box;
+    }
+  }
+
+  .el-picker-panel {
+    max-width: calc(100vw - 24px) !important;
+    box-sizing: border-box;
+  }
+
+  // 日期范围 & 日期时间范围选择器
+  // 默认 width 646px、body min-width 513px、内容 display:table-cell 50%，移动端必须强制覆盖
+  .el-date-range-picker {
+    width: calc(100vw - 24px) !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 24px) !important;
+    box-sizing: border-box;
+
+    .el-picker-panel__body-wrapper,
+    .el-picker-panel__body {
+      width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box;
+    }
+
+    // 左右两个面板上下堆叠：左侧有 prev-month/prev-year 箭头，右侧有 next-month/next-year 箭头
+    // 两个都保留，用户才能往前/往后切换月份
+    .el-date-range-picker__content {
+      display: block !important;
+      float: none !important;
+      width: 100% !important;
+      padding: 8px 10px !important;
+      box-sizing: border-box;
+
+      &.is-left {
+        border-right: none !important;
+        border-bottom: 1px solid var(--el-border-color-lighter);
+      }
+    }
+
+    // 月份/年份切换头部
+    .el-date-range-picker__header {
+      height: 24px;
+
+      div {
+        margin-right: 28px !important;
+        margin-left: 28px !important;
+        font-size: 13px;
+      }
+    }
+
+    .el-date-range-picker__header-label {
+      font-size: 13px !important;
+      line-height: 20px !important;
+    }
+
+    // 日期网格更紧凑
+    .el-date-table th {
+      padding: 4px 0 !important;
+      font-size: 11px;
+    }
+
+    .el-date-table td {
+      padding: 0 !important;
+      font-size: 12px;
+    }
+
+    .el-date-table td .el-date-table-cell {
+      height: 26px;
+      padding: 2px 0;
+    }
+
+    .el-date-table td .el-date-table-cell__text {
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
+    }
+
+    // 日期时间范围：顶部时间输入条（默认是 display:table，需要改成 flex 才能换行）
+    .el-date-range-picker__time-header {
+      display: flex !important;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 6px 8px !important;
+      gap: 6px;
+
+      > .el-icon,
+      > i {
+        display: none !important;
+      }
+
+      .el-date-range-picker__editors-wrap {
+        display: flex !important;
+        flex: 1 1 100%;
+        gap: 4px;
+        min-width: 0;
+        box-sizing: border-box;
+
+        &.is-right {
+          text-align: left !important;
+        }
+      }
+
+      .el-date-range-picker__time-picker-wrap {
+        display: flex !important;
+        flex: 1;
+        min-width: 0;
+        padding: 0 !important;
+        gap: 4px;
+
+        .el-input {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .el-input__wrapper {
+          padding: 0 6px;
+        }
+
+        .el-input__inner {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+
+  // 时间选择浮层（datetimerange 弹出的时间选择面板）
+  .el-time-panel {
+    max-width: calc(100vw - 24px) !important;
+  }
+
+  // 底部按钮区
+  .el-picker-panel__footer {
+    flex-wrap: wrap;
+    gap: 6px;
+
+    .el-button {
+      min-height: 28px;
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+  }
 }
 
 // 修改el-button样式
