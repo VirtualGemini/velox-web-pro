@@ -69,7 +69,7 @@ declare namespace Api {
     }
 
     /** 验证码登录的渠道类型 */
-    type LoginCodeChannel = 'email' | 'phone'
+    type LoginCodeChannel = 'email'
 
     /** 发送登录验证码参数 */
     interface LoginCodeSendParams {
@@ -88,6 +88,17 @@ declare namespace Api {
     interface LoginResponse {
       token: string
       refreshToken: string
+      mfaChallenge?: string
+      mfaEmailMasked?: string
+    }
+
+    interface MfaChallengeSendParams {
+      challenge: string
+    }
+
+    interface MfaChallengeVerifyParams {
+      challenge: string
+      code: string
     }
 
     /** 注册参数 */
@@ -149,6 +160,10 @@ declare namespace Api {
       address?: string
       gender: number
       introduction?: string
+      signature?: string
+      position?: string
+      company?: string
+      tags?: string[]
     }
 
     interface UserPasswordUpdateCommand {
@@ -276,6 +291,41 @@ declare namespace Api {
 
     interface RoleMenuPermissionUpdateCommand {
       menuIds: string[]
+    }
+  }
+
+  namespace User {
+    namespace Security {
+      interface MfaStatus {
+        email: boolean
+        totp: boolean
+      }
+
+      interface SecurityStatus {
+        email: string
+        emailMasked: string
+        loginMethods: string[]
+        effectiveLoginMethods: string[]
+        allowedLoginMethods: string[]
+        passwordRequired: boolean
+        mfa: MfaStatus
+        emailVerifiedAt?: string
+        lastPasswordChangeAt?: string
+      }
+
+      interface LoginMethodsUpdateCommand {
+        methods: string[]
+      }
+
+      interface EmailRebindCommand {
+        newEmail: string
+        code: string
+      }
+
+      interface MfaEmailUpdateCommand {
+        enabled: boolean
+        code?: string
+      }
     }
   }
 }

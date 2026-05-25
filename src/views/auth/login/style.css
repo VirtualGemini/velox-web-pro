@@ -29,16 +29,26 @@
 
   /* 登录方式选择卡片 */
   .channel-card {
-    @apply relative flex items-center gap-4 px-4 py-4 cursor-pointer overflow-hidden
+    @apply relative flex items-center gap-4 px-4 py-3 cursor-pointer overflow-hidden
       rounded-xl border border-g-200 bg-box text-g-900
       transition-all duration-200 select-none
       hover:border-[var(--main-color)] hover:shadow-[0_4px_18px_-8px_var(--main-color)];
   }
 
+  /* 占位卡片：不可点击，无 hover 效果 */
+  .channel-card--disabled {
+    @apply cursor-not-allowed opacity-60
+      hover:border-g-200 hover:shadow-none;
+  }
+
   .channel-icon {
-    @apply flex shrink-0 items-center justify-center size-10 rounded-lg
+    @apply flex shrink-0 items-center justify-center size-9 rounded-lg
       bg-[color-mix(in_oklab,var(--main-color)_12%,transparent)]
-      text-[var(--main-color)] text-xl;
+      text-[var(--main-color)] text-lg;
+  }
+
+  .channel-card--disabled .channel-icon {
+    @apply bg-g-100 text-g-500;
   }
 
   .channel-text {
@@ -53,12 +63,21 @@
     @apply mt-1 text-xs text-g-600;
   }
 
+  .channel-tag {
+    @apply text-xs text-g-500;
+  }
+
   .channel-arrow {
     @apply shrink-0 text-g-500 text-lg transition-transform duration-200;
   }
 
-  .channel-card:hover .channel-arrow {
+  .channel-card:not(.channel-card--disabled):hover .channel-arrow {
     @apply translate-x-1 text-[var(--main-color)];
+  }
+
+  /* 发送验证码按钮：固定最小宽度，避免文案在「发送验证码」与「60s」间切换时收缩 */
+  .code-send-btn {
+    @apply min-w-[110px];
   }
 }
 

@@ -1,4 +1,4 @@
-<!-- 验证码登录页：选择登录方式（邮箱 / 手机号） -->
+<!-- 验证码登录页：选择登录方式 -->
 <template>
   <div class="flex w-full h-screen">
     <LoginLeftView />
@@ -19,20 +19,28 @@
                 </div>
                 <div class="channel-text">
                   <div class="channel-title">{{ $t('login.channel.email') }}</div>
-                  <div class="channel-desc">{{ $t('login.placeholder.email') }}</div>
                 </div>
                 <VeloxSvgIcon icon="ri:arrow-right-s-line" class="channel-arrow" />
               </div>
 
-              <div class="channel-card" @click="selectChannel('phone')">
+              <div class="channel-card channel-card--disabled">
                 <div class="channel-icon">
-                  <VeloxSvgIcon icon="ri:smartphone-line" />
+                  <VeloxSvgIcon icon="ri:github-fill" />
                 </div>
                 <div class="channel-text">
-                  <div class="channel-title">{{ $t('login.channel.phone') }}</div>
-                  <div class="channel-desc">{{ $t('login.placeholder.phone') }}</div>
+                  <div class="channel-title">{{ $t('login.channel.github') }}</div>
                 </div>
-                <VeloxSvgIcon icon="ri:arrow-right-s-line" class="channel-arrow" />
+                <span class="channel-tag">{{ $t('login.channel.comingSoon') }}</span>
+              </div>
+
+              <div class="channel-card channel-card--disabled">
+                <div class="channel-icon">
+                  <VeloxSvgIcon icon="ri:terminal-box-line" />
+                </div>
+                <div class="channel-text">
+                  <div class="channel-title">{{ $t('login.channel.linuxdo') }}</div>
+                </div>
+                <span class="channel-tag">{{ $t('login.channel.comingSoon') }}</span>
               </div>
             </div>
 
@@ -63,5 +71,5 @@
 </script>
 
 <style scoped>
-  @import './style.css';
+  @import '../login/style.css';
 </style>

@@ -177,9 +177,12 @@
     "passwordLogin": "使用密码登录",
     "channel": {
       "title": "选择登录方式",
-      "subTitle": "选择手机号或邮箱接收验证码",
-      "email": "邮箱",
-      "phone": "手机号"
+      "subTitle": "选择第三方授权或邮箱接收验证码",
+      "email": "邮箱验证码",
+      "phone": "手机号",
+      "github": "GitHub",
+      "linuxdo": "LinuxDO",
+      "comingSoon": "敬请期待"
     },
     "code": {
       "emailTitle": "邮箱验证码登录",
@@ -190,6 +193,13 @@
       "emailInvalid": "邮箱格式不正确",
       "phoneInvalid": "手机号格式不正确",
       "phoneTodo": "手机号登录暂未开通"
+    },
+    "mfaChallenge": {
+      "title": "二段验证",
+      "subTitle": "为保护账号安全，请输入邮箱二段验证码以完成登录",
+      "subTitleWithTarget": "验证码将发送至 {target}，请查收并输入以完成登录",
+      "missingChallenge": "登录会话已失效，请重新登录",
+      "backToLogin": "返回登录"
     },
     "success": {
       "title": "登录成功",
@@ -269,6 +279,9 @@
     },
     "codeLogin": {
       "title": "验证码登录"
+    },
+    "mfaChallenge": {
+      "title": "二段验证"
     },
     "outside": {
       "title": "内嵌页面"
@@ -584,9 +597,17 @@
         }
       },
       "userCenter": {
+        "tabs": {
+          "basic": "基本信息",
+          "password": "重置密码",
+          "security": "账号安全",
+          "thirdParty": "第三方登录"
+        },
         "actions": {
           "edit": "编辑",
-          "save": "保存"
+          "save": "保存",
+          "cancel": "取消",
+          "confirm": "确认"
         },
         "profile": {
           "tags": "标签",
@@ -609,10 +630,18 @@
             "email": "邮箱",
             "mobile": "手机",
             "address": "地址",
-            "description": "个人介绍"
+            "description": "个人介绍",
+            "signature": "个性签名",
+            "position": "职位",
+            "company": "公司",
+            "tags": "个人标签"
           },
           "placeholders": {
-            "sex": "请选择性别"
+            "sex": "请选择性别",
+            "signature": "请输入个性签名",
+            "position": "请输入职位",
+            "company": "请输入所在公司",
+            "tags": "输入标签后按回车，最多 10 个"
           },
           "validation": {
             "realNameRequired": "请输入姓名",
@@ -621,7 +650,12 @@
             "emailRequired": "请输入邮箱",
             "mobileRequired": "请输入手机号码",
             "addressRequired": "请输入地址",
-            "sexRequired": "请选择性别"
+            "sexRequired": "请选择性别",
+            "signatureLength": "个性签名不能超过 255 个字符",
+            "positionLength": "职位不能超过 50 个字符",
+            "companyLength": "公司不能超过 100 个字符",
+            "tagLength": "单个标签不能超过 16 个字符",
+            "tagsLimit": "标签数量最多 10 个"
           }
         },
         "password": {
@@ -638,6 +672,109 @@
             "passwordLength": "密码长度应在 6 到 32 个字符之间",
             "passwordMismatch": "两次输入的新密码不一致"
           }
+        },
+        "security": {
+          "title": "账号安全",
+          "loading": "加载中…",
+          "email": {
+            "title": "邮箱",
+            "desc": "用于接收系统通知、找回密码、邮箱验证码登录",
+            "unbound": "尚未绑定邮箱",
+            "rebind": "更换邮箱",
+            "bind": "绑定邮箱",
+            "dialog": {
+              "title": "更换邮箱",
+              "current": "当前邮箱",
+              "newEmail": "新邮箱",
+              "newEmailPlaceholder": "请输入新邮箱地址",
+              "code": "邮箱验证码",
+              "codePlaceholder": "请输入收到的 6 位验证码",
+              "sendCode": "获取验证码",
+              "resendIn": "{seconds} 秒后可重新发送",
+              "codeSent": "验证码已发送，请到邮箱查收",
+              "emailRequired": "请输入新邮箱",
+              "emailInvalid": "邮箱格式不正确",
+              "emailSame": "新邮箱不能与当前邮箱相同",
+              "codeRequired": "请输入验证码",
+              "success": "邮箱更换成功"
+            }
+          },
+          "phone": {
+            "title": "手机号",
+            "desc": "用于登录验证、短信通知等",
+            "unbound": "尚未绑定手机号",
+            "rebind": "换绑手机",
+            "bind": "绑定手机",
+            "dialog": {
+              "title": "换绑手机号",
+              "current": "当前手机号",
+              "newPhone": "新手机号",
+              "newPhonePlaceholder": "请输入新手机号",
+              "code": "短信验证码",
+              "codePlaceholder": "请输入收到的 6 位验证码",
+              "sendCode": "获取验证码",
+              "resendIn": "{seconds} 秒后可重新发送",
+              "codeSent": "验证码已发送（mock 模式：固定为 000000）",
+              "mockHint": "短信服务未对接，验证码使用 mock 模式（000000）",
+              "phoneRequired": "请输入新手机号",
+              "phoneInvalid": "手机号格式不正确",
+              "phoneSame": "新手机号不能与当前手机号相同",
+              "codeRequired": "请输入验证码",
+              "success": "手机号换绑成功"
+            }
+          },
+          "loginMethods": {
+            "title": "登录方式",
+            "desc": "选择允许的账号登录方式，至少保留一种；超出全局策略的方式会被禁用",
+            "globalDisabled": "全局策略未开放该方式",
+            "passwordLocked": "密码登录由系统强制开启，不可关闭",
+            "atLeastOne": "至少需要保留一种登录方式",
+            "items": {
+              "password": "密码登录",
+              "email_code": "邮箱验证码登录",
+              "phone_code": "手机验证码登录"
+            },
+            "saveSuccess": "登录方式已更新"
+          },
+          "mfa": {
+            "title": "多因子认证（MFA）",
+            "desc": "登录时需额外通过验证码二次确认（仅对密码登录生效）",
+            "enabled": "已开启",
+            "disabled": "未开启",
+            "comingSoon": "敬请期待",
+            "items": {
+              "email": "邮箱二次验证",
+              "totp": "TOTP 动态口令",
+              "sms": "短信二次验证"
+            },
+            "email": {
+              "enableTitle": "开启邮箱 MFA",
+              "disableTitle": "关闭邮箱 MFA",
+              "tip": "开启后，使用账号密码登录时还需输入邮箱收到的 6 位验证码（邮箱验证码登录不受影响）",
+              "code": "邮箱验证码",
+              "codePlaceholder": "请输入收到的 6 位验证码",
+              "sendCode": "获取验证码",
+              "resendIn": "{seconds} 秒后可重新发送",
+              "codeSent": "验证码已发送到你的邮箱",
+              "codeRequired": "请输入验证码",
+              "enableSuccess": "邮箱 MFA 已开启",
+              "disableSuccess": "邮箱 MFA 已关闭",
+              "noEmail": "请先绑定邮箱"
+            }
+          }
+        },
+        "thirdParty": {
+          "title": "第三方账号绑定",
+          "desc": "绑定第三方账号后可使用其登录",
+          "providers": {
+            "github": "GitHub",
+            "google": "Google",
+            "wechat": "微信"
+          },
+          "actions": {
+            "bind": "绑定"
+          },
+          "comingSoon": "敬请期待"
         },
         "sex": {
           "unknown": "未知",

@@ -165,10 +165,24 @@
       // 登录请求
       const { username, password } = formData
 
-      const { token, refreshToken } = await fetchLogin({
+      const response = await fetchLogin({
         userName: username,
         password
       })
+
+      const { token, refreshToken, mfaChallenge, mfaEmailMasked } = response
+
+      if (mfaChallenge) {
+        router.push({
+          name: 'MfaChallenge',
+          query: {
+            challenge: mfaChallenge,
+            target: mfaEmailMasked || undefined,
+            redirect: route.query.redirect as string | undefined
+          }
+        })
+        return
+      }
 
       // 验证token
       if (!token) {

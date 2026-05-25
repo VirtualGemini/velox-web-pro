@@ -49,6 +49,12 @@ export const staticRoutes: AppRouteRecordRaw[] = [
     meta: { title: 'menus.codeLogin.title', isHideTab: true }
   },
   {
+    path: '/auth/mfa-challenge',
+    name: 'MfaChallenge',
+    component: () => import('@views/auth/mfa-challenge/index.vue'),
+    meta: { title: 'menus.mfaChallenge.title', isHideTab: true }
+  },
+  {
     path: '/403',
     name: 'Exception403',
     component: () => import('@views/exception/403/index.vue'),

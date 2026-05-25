@@ -15,7 +15,7 @@ export function fetchLogin(params: Api.Auth.LoginParams) {
 }
 
 /**
- * 发送登录验证码（邮箱/手机号）
+ * 发送登录验证码（邮箱）
  */
 export function fetchSendLoginCode(data: Api.Auth.LoginCodeSendParams) {
   return request.post<void>({
@@ -25,7 +25,7 @@ export function fetchSendLoginCode(data: Api.Auth.LoginCodeSendParams) {
 }
 
 /**
- * 验证码登录（邮箱/手机号）
+ * 验证码登录（邮箱）
  */
 export function fetchLoginByCode(data: Api.Auth.CodeLoginParams) {
   return request.post<Api.Auth.LoginResponse>({
@@ -122,5 +122,25 @@ export function fetchLogout() {
   return request.post<void>({
     url: '/api/auth/logout',
     showErrorMessage: false
+  })
+}
+
+/**
+ * 发送 MFA 二段验证邮件验证码
+ */
+export function fetchSendMfaChallengeCode(data: Api.Auth.MfaChallengeSendParams) {
+  return request.post<void>({
+    url: '/api/auth/mfa/challenge/send-code',
+    data
+  })
+}
+
+/**
+ * 校验 MFA 二段验证并完成登录
+ */
+export function fetchVerifyMfaChallenge(data: Api.Auth.MfaChallengeVerifyParams) {
+  return request.post<Api.Auth.LoginResponse>({
+    url: '/api/auth/mfa/challenge/verify',
+    data
   })
 }

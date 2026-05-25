@@ -1,4 +1,4 @@
-<!-- 验证码登录页：验证码表单（仅邮箱） -->
+<!-- 登录二段验证页：输入邮箱二段验证码 -->
 <template>
   <div class="flex w-full h-screen">
     <LoginLeftView />
@@ -9,8 +9,14 @@
       <div class="auth-right-wrap">
         <div class="form">
           <AuthLoggedInGuard>
-            <h3 class="title">{{ $t('login.code.emailTitle') }}</h3>
-            <p class="sub-title">{{ $t('login.code.subTitle') }}</p>
+            <h3 class="title">{{ $t('login.mfaChallenge.title') }}</h3>
+            <p class="sub-title">
+              {{
+                target
+                  ? $t('login.mfaChallenge.subTitleWithTarget', { target })
+                  : $t('login.mfaChallenge.subTitle')
+              }}
+            </p>
 
             <ElForm
               ref="formRef"
@@ -20,14 +26,6 @@
               @keyup.enter="handleSubmit"
               style="margin-top: 25px"
             >
-              <ElFormItem prop="target">
-                <ElInput
-                  class="custom-height"
-                  v-model.trim="formData.target"
-                  :placeholder="$t('login.placeholder.email')"
-                />
-              </ElFormItem>
-
               <ElFormItem prop="code">
                 <div class="flex gap-3 w-full">
                   <ElInput
@@ -58,12 +56,9 @@
               </div>
 
               <div class="mt-5 flex-cb text-sm text-g-600">
-                <RouterLink class="text-theme" :to="{ name: 'CodeLogin' }">{{
-                  $t('login.channel.title')
-                }}</RouterLink>
-                <RouterLink class="text-theme" :to="{ name: 'Login' }">{{
-                  $t('login.passwordLogin')
-                }}</RouterLink>
+                <RouterLink class="text-theme" :to="{ name: 'Login' }">
+                  {{ $t('login.mfaChallenge.backToLogin') }}
+                </RouterLink>
               </div>
             </ElForm>
           </AuthLoggedInGuard>
@@ -76,11 +71,11 @@
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
   import { ElNotification, type FormInstance, type FormRules } from 'element-plus'
-  import { fetchSendLoginCode, fetchLoginByCode } from '@/api/auth'
+  import { fetchSendMfaChallengeCode, fetchVerifyMfaChallenge } from '@/api/auth'
   import { useUserStore } from '@/store/modules/user'
   import { HttpError } from '@/utils/http/error'
 
-  defineOptions({ name: 'CodeLoginVerify' })
+  defineOptions({ name: 'MfaChallenge' })
 
   const { t, locale } = useI18n()
   const router = useRouter()
@@ -94,8 +89,10 @@
   const countdown = ref(0)
   const timer = ref<number | null>(null)
 
+  const challenge = computed(() => (route.query.challenge as string) || '')
+  const target = computed(() => (route.query.target as string) || '')
+
   const formData = reactive({
-    target: '',
     code: ''
   })
 
@@ -103,26 +100,7 @@
     formKey.value++
   })
 
-  const emailRegex = /^[\w.+-]+@[\w-]+\.[\w.-]+$/
-
   const rules = computed<FormRules>(() => ({
-    target: [
-      {
-        required: true,
-        message: t('login.placeholder.email'),
-        trigger: 'blur'
-      },
-      {
-        validator: (_rule, value, callback) => {
-          if (!value) return callback()
-          if (!emailRegex.test(value)) {
-            return callback(new Error(t('login.code.emailInvalid')))
-          }
-          callback()
-        },
-        trigger: 'blur'
-      }
-    ],
     code: [{ required: true, message: t('login.placeholder.code'), trigger: 'blur' }]
   }))
 
@@ -137,21 +115,25 @@
     }, 1000)
   }
 
-  const handleSendCode = async () => {
-    if (!formRef.value) return
-    try {
-      await formRef.value.validateField('target')
-    } catch {
-      return
+  const ensureChallenge = () => {
+    if (!challenge.value) {
+      ElMessage.warning(t('login.mfaChallenge.missingChallenge'))
+      router.replace({ name: 'Login' })
+      return false
     }
+    return true
+  }
+
+  const handleSendCode = async () => {
+    if (!ensureChallenge()) return
     try {
       sendingCode.value = true
-      await fetchSendLoginCode({ type: 'email', target: formData.target })
+      await fetchSendMfaChallengeCode({ challenge: challenge.value })
       ElMessage.success(t('login.code.sent'))
       startCountdown()
     } catch (error) {
       if (!(error instanceof HttpError)) {
-        console.error('[CodeLoginVerify] send code failed:', error)
+        console.error('[MfaChallenge] send code failed:', error)
       }
     } finally {
       sendingCode.value = false
@@ -160,32 +142,19 @@
 
   const handleSubmit = async () => {
     if (!formRef.value) return
+    if (!ensureChallenge()) return
     try {
       const valid = await formRef.value.validate()
       if (!valid) return
 
       loading.value = true
-      const response = await fetchLoginByCode({
-        type: 'email',
-        target: formData.target,
+      const { token, refreshToken } = await fetchVerifyMfaChallenge({
+        challenge: challenge.value,
         code: formData.code
       })
 
-      const { token, refreshToken, mfaChallenge } = response
-
-      if (mfaChallenge) {
-        router.push({
-          name: 'MfaChallenge',
-          query: {
-            challenge: mfaChallenge,
-            redirect: route.query.redirect as string | undefined
-          }
-        })
-        return
-      }
-
       if (!token) {
-        throw new Error('Login failed - no token received')
+        throw new Error('MFA verification failed - no token received')
       }
 
       userStore.setToken(token, refreshToken)
@@ -203,12 +172,16 @@
       router.push(redirect || '/')
     } catch (error) {
       if (!(error instanceof HttpError)) {
-        console.error('[CodeLoginVerify] login failed:', error)
+        console.error('[MfaChallenge] verify failed:', error)
       }
     } finally {
       loading.value = false
     }
   }
+
+  onMounted(() => {
+    ensureChallenge()
+  })
 
   onBeforeUnmount(() => {
     if (timer.value) {

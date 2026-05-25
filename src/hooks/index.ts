@@ -30,3 +30,6 @@ export { useChart, useChartComponent, useChartOps } from './core/useChart'
 
 // 布局高度
 export { useLayoutHeight, useAutoLayoutHeight } from './core/useLayoutHeight'
+
+// sessionStorage 持久化 + SWR 数据缓存
+export { useSwrCache, clearSwrCache } from './core/useSwrCache'
