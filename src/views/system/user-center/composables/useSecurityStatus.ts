@@ -1,12 +1,17 @@
 import { useSwrCache } from '@/hooks/core/useSwrCache'
 import { fetchSecurityStatus } from '@/api/security'
-
-const KEY = 'user-center:security-status'
+import { useUserStore } from '@/store/modules/user'
 
 export function useSecurityStatus() {
+  const userStore = useUserStore()
+  const activeUserId = userStore.activeUserId || userStore.info.userId || 'anonymous'
+  const key = `user-center:security-status:${activeUserId}`
   const { data, loading, load, refresh, mutate } = useSwrCache<Api.User.Security.SecurityStatus>(
-    KEY,
-    fetchSecurityStatus
+    key,
+    fetchSecurityStatus,
+    {
+      visible: () => userStore.canReadUserCache
+    }
   )
   return { status: data, loading, load, refresh, mutate }
 }

@@ -43,7 +43,6 @@ import { resetRouterState } from '@/router/guards/beforeEach'
 import { useMenuStore } from './menu'
 import { StorageConfig } from '@/utils/storage/storage-config'
 import { fetchGetUserInfo, fetchLogout } from '@/api/auth'
-import { clearSwrCache } from '@/hooks/core/useSwrCache'
 import i18n from '@/locales'
 
 /**
@@ -63,6 +62,10 @@ export const useUserStore = defineStore(
     const lockPassword = ref('')
     // 用户信息
     const info = ref<Partial<Api.Auth.UserInfo>>({})
+    // 当前激活的缓存用户 ID，仅在已登录态有效
+    const activeUserId = ref('')
+    // 登录成功后的路由跳转过渡态，避免授权页短暂闪出已登录卡片
+    const isPostLoginNavigating = ref(false)
     // 搜索历史记录
     const searchHistory = ref<AppRouteRecord[]>([])
     // 访问令牌
@@ -72,6 +75,7 @@ export const useUserStore = defineStore(
 
     // 计算属性：获取用户信息
     const getUserInfo = computed(() => info.value)
+    const canReadUserCache = computed(() => isLogin.value && !!activeUserId.value)
     // 计算属性：获取设置状态
     const getSettingState = computed(() => useSettingStore().$state)
     // 计算属性：获取工作台状态
@@ -144,11 +148,15 @@ export const useUserStore = defineStore(
      */
     const hydrateUserInfo = async (options?: { force?: boolean }) => {
       if (!options?.force && info.value.userId) {
+        if (!activeUserId.value) {
+          activeUserId.value = String(info.value.userId)
+        }
         return info.value as Api.Auth.UserInfo
       }
 
       const data = await fetchGetUserInfo()
       setUserInfo(data)
+      activeUserId.value = String(data.userId || '')
       checkAndClearWorktabs()
 
       const remoteLang = data.language as LanguageEnum | undefined
@@ -178,6 +186,12 @@ export const useUserStore = defineStore(
       lockPassword.value = ''
       accessToken.value = ''
       refreshToken.value = ''
+      activeUserId.value = ''
+      isPostLoginNavigating.value = false
+    }
+
+    const setPostLoginNavigating = (status: boolean) => {
+      isPostLoginNavigating.value = status
     }
 
     /**
@@ -206,8 +220,6 @@ export const useUserStore = defineStore(
       // 注意：不清空工作台标签页，等下次登录时根据用户判断
       // 移除iframe路由缓存
       sessionStorage.removeItem('iframeRoutes')
-      // 清空所有 SWR 缓存（个人中心、安全状态等）
-      clearSwrCache()
       // 清空主页路径
       useMenuStore().setHomePath('')
       // 重置路由状态
@@ -255,10 +267,13 @@ export const useUserStore = defineStore(
       isLock,
       lockPassword,
       info,
+      activeUserId,
+      isPostLoginNavigating,
       searchHistory,
       accessToken,
       refreshToken,
       getUserInfo,
+      canReadUserCache,
       getSettingState,
       getWorktabState,
       setUserInfo,
@@ -270,6 +285,7 @@ export const useUserStore = defineStore(
       setToken,
       hydrateUserInfo,
       clearAuthState,
+      setPostLoginNavigating,
       logOut,
       checkAndClearWorktabs
     }

@@ -3,14 +3,17 @@ import { fetchGetUserDetail } from '@/api/auth'
 import { useUserStore } from '@/store/modules/user'
 import { useSwrCache } from '@/hooks/core/useSwrCache'
 
-const KEY = 'user-center:user-detail'
-
 export function useUserDetail() {
   const userStore = useUserStore()
+  const activeUserId = userStore.activeUserId || userStore.info.userId || 'anonymous'
+  const key = `user-center:user-detail:${activeUserId}`
 
   const { data, loading, load, refresh, mutate } = useSwrCache<Partial<Api.Auth.UserDetail>>(
-    KEY,
-    fetchGetUserDetail
+    key,
+    fetchGetUserDetail,
+    {
+      visible: () => userStore.canReadUserCache
+    }
   )
 
   const detail = computed<Partial<Api.Auth.UserDetail>>(() => data.value || {})

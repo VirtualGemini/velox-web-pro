@@ -29,9 +29,11 @@ export async function completeLogin({
 
   try {
     const userInfo = await userStore.hydrateUserInfo({ force: true })
+    userStore.setPostLoginNavigating(true)
     userStore.setLoginStatus(true)
 
     await router.push(redirect || '/')
+    userStore.setPostLoginNavigating(false)
 
     window.setTimeout(() => {
       ElNotification({

@@ -33,7 +33,9 @@
   const userStore = useUserStore()
   const { getUserInfo: userInfo } = storeToRefs(userStore)
 
-  const showLoggedInCard = computed(() => userStore.isLogin && !!userStore.accessToken)
+  const showLoggedInCard = computed(
+    () => userStore.isLogin && !!userStore.accessToken && !userStore.isPostLoginNavigating
+  )
   const accountSelected = ref(false)
 
   const handleContinue = () => {

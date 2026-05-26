@@ -1,4 +1,4 @@
-import { ref, type Ref } from 'vue'
+import { computed, ref, type Ref } from 'vue'
 
 /**
  * sessionStorage 持久化 + SWR (stale-while-revalidate) 数据缓存
@@ -13,6 +13,10 @@ interface CacheEntry<T> {
   data: Ref<T | null>
   loading: Ref<boolean>
   inflight: Promise<void> | null
+}
+
+interface UseSwrCacheOptions {
+  visible?: () => boolean
 }
 
 const memoryCache = new Map<string, CacheEntry<unknown>>()
@@ -39,7 +43,11 @@ function writeStorage<T>(key: string, value: T | null): void {
   }
 }
 
-export function useSwrCache<T>(key: string, fetcher: () => Promise<T>) {
+export function useSwrCache<T>(
+  key: string,
+  fetcher: () => Promise<T>,
+  options?: UseSwrCacheOptions
+) {
   let entry = memoryCache.get(key) as CacheEntry<T> | undefined
   if (!entry) {
     entry = {
@@ -50,6 +58,7 @@ export function useSwrCache<T>(key: string, fetcher: () => Promise<T>) {
     memoryCache.set(key, entry as CacheEntry<unknown>)
   }
   const self = entry
+  const visible = options?.visible ?? (() => true)
 
   const load = (): Promise<void> => {
     const hasCache = self.data.value !== null
@@ -77,7 +86,7 @@ export function useSwrCache<T>(key: string, fetcher: () => Promise<T>) {
   }
 
   return {
-    data: self.data,
+    data: computed(() => (visible() ? self.data.value : null)) as Ref<T | null>,
     loading: self.loading,
     load,
     refresh: load,
