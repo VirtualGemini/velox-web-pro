@@ -10,6 +10,7 @@ This module provides:
 - TOTP verification
 - otpauth URI generation
 - provisioning model
+- SPI-based extension points for secret generation, code generation, URI building, and verification
 - disabled/noop behavior when `velox.totp.enabled=false`
 
 This module does not provide:
@@ -43,6 +44,21 @@ When `velox.totp.enabled=false`, the starter registers `DisabledTotpService`.
 - `isEnabled()` returns `false`
 - provisioning and verify operations reject usage
 - business modules can still inject `TotpService` and degrade explicitly
+
+## Extension Modes
+
+This starter supports three usage modes:
+
+- use the default `TotpService` directly
+- override one or more SPI beans while reusing the default `TotpService`
+- replace the whole `TotpService`
+
+Available SPI interfaces:
+
+- `TotpSecretGenerator`
+- `TotpCodeGenerator`
+- `TotpUriBuilder`
+- `TotpVerifier`
 
 ## API Surface
 
