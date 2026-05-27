@@ -14,8 +14,12 @@
 
             <div class="mt-7.5 flex flex-col gap-3">
               <div class="channel-card" @click="selectChannel('email')">
-                <div class="channel-icon">
-                  <VeloxSvgIcon icon="ri:mail-line" />
+                <div class="channel-icon channel-icon--bare">
+                  <img
+                    :src="emailIcon"
+                    :alt="$t('login.channel.email')"
+                    style="width: 24px; height: 24px"
+                  />
                 </div>
                 <div class="channel-text">
                   <div class="channel-title">{{ $t('login.channel.email') }}</div>
@@ -24,8 +28,12 @@
               </div>
 
               <div class="channel-card channel-card--disabled">
-                <div class="channel-icon">
-                  <VeloxSvgIcon icon="ri:github-fill" />
+                <div class="channel-icon channel-icon--bare">
+                  <img
+                    :src="githubIcon"
+                    :alt="$t('login.channel.github')"
+                    style="width: 24px; height: 24px"
+                  />
                 </div>
                 <div class="channel-text">
                   <div class="channel-title">{{ $t('login.channel.github') }}</div>
@@ -34,8 +42,12 @@
               </div>
 
               <div class="channel-card channel-card--disabled">
-                <div class="channel-icon">
-                  <VeloxSvgIcon icon="ri:terminal-box-line" />
+                <div class="channel-icon channel-icon--bare">
+                  <img
+                    :src="linuxdoIcon"
+                    :alt="$t('login.channel.linuxdo')"
+                    style="width: 24px; height: 24px"
+                  />
                 </div>
                 <div class="channel-text">
                   <div class="channel-title">{{ $t('login.channel.linuxdo') }}</div>
@@ -57,10 +69,22 @@
 </template>
 
 <script setup lang="ts">
+  import githubDarkIcon from '@/assets/images/svg/github.svg'
+  import githubLightIcon from '@/assets/images/svg/github-light.svg'
+  import gmailCleanerDarkIcon from '@/assets/images/svg/gmail-cleaner.svg'
+  import gmailCleanerLightIcon from '@/assets/images/svg/gmail-cleaner-light.svg'
+  import linuxdoIcon from '@/assets/images/svg/linuxdo.svg'
+  import { useSettingStore } from '@/store/modules/setting'
+
   defineOptions({ name: 'CodeLogin' })
 
+  const settingStore = useSettingStore()
+  const { isDark } = storeToRefs(settingStore)
   const router = useRouter()
   const route = useRoute()
+
+  const emailIcon = computed(() => (isDark.value ? gmailCleanerLightIcon : gmailCleanerDarkIcon))
+  const githubIcon = computed(() => (isDark.value ? githubLightIcon : githubDarkIcon))
 
   const selectChannel = (next: Api.Auth.LoginCodeChannel) => {
     router.push({

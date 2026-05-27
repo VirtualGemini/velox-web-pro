@@ -26,6 +26,7 @@ import type { App } from 'vue'
 import { createPinia } from 'pinia'
 import { createPersistedState } from 'pinia-plugin-persistedstate'
 import { StorageKeyManager } from '@/utils/storage/storage-key-manager'
+import { setupLogoutSync } from './logout-sync'
 
 export const store = createPinia()
 
@@ -49,4 +50,5 @@ store.use(
  */
 export function initStore(app: App<Element>): void {
   app.use(store)
+  setupLogoutSync()
 }

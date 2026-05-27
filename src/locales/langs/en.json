@@ -815,8 +815,7 @@
           "desc": "Bind a third-party account to sign in with it",
           "providers": {
             "github": "GitHub",
-            "google": "Google",
-            "wechat": "WeChat"
+            "linuxdo": "LinuxDo"
           },
           "actions": {
             "bind": "Bind"

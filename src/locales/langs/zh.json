@@ -815,8 +815,7 @@
           "desc": "绑定第三方账号后可使用其登录",
           "providers": {
             "github": "GitHub",
-            "google": "Google",
-            "wechat": "微信"
+            "linuxdo": "LinuxDo"
           },
           "actions": {
             "bind": "绑定"

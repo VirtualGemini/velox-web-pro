@@ -44,6 +44,7 @@ import { useMenuStore } from './menu'
 import { StorageConfig } from '@/utils/storage/storage-config'
 import { fetchGetUserInfo, fetchLogout } from '@/api/auth'
 import i18n from '@/locales'
+import { RoutesAlias } from '@/router/routesAlias'
 
 /**
  * 用户状态管理
@@ -194,13 +195,52 @@ export const useUserStore = defineStore(
       isPostLoginNavigating.value = status
     }
 
+    const syncLoginStateFromPersisted = (snapshot: Partial<Record<string, unknown>>) => {
+      const nextToken = typeof snapshot.accessToken === 'string' ? snapshot.accessToken : ''
+      const nextIsLogin = snapshot.isLogin === true
+
+      if (!nextIsLogin || !nextToken) {
+        return
+      }
+
+      const nextInfo =
+        snapshot.info && typeof snapshot.info === 'object'
+          ? (snapshot.info as Partial<Api.Auth.UserInfo>)
+          : {}
+      const nextUserId =
+        typeof snapshot.activeUserId === 'string'
+          ? snapshot.activeUserId
+          : String(nextInfo.userId || '')
+
+      const sameLoginState =
+        isLogin.value &&
+        accessToken.value === nextToken &&
+        String(info.value.userId || '') === String(nextInfo.userId || '')
+
+      if (sameLoginState) {
+        return
+      }
+
+      accessToken.value = nextToken
+      refreshToken.value = typeof snapshot.refreshToken === 'string' ? snapshot.refreshToken : ''
+      info.value = nextInfo
+      activeUserId.value = nextUserId
+      isPostLoginNavigating.value = false
+      isLogin.value = true
+    }
+
     /**
      * 退出登录
      * 清空所有用户相关状态并跳转到登录页
      * 如果是同一账号重新登录，保留工作台标签页
      */
-    const logOut = async (options?: { remote?: boolean }) => {
+    const emitLogoutSignal = () => {
+      localStorage.setItem(StorageConfig.LOGOUT_SIGNAL_KEY, String(Date.now()))
+    }
+
+    const logOut = async (options?: { remote?: boolean; broadcast?: boolean }) => {
       const shouldRemoteLogout = options?.remote !== false
+      const shouldBroadcast = options?.broadcast !== false
 
       if (shouldRemoteLogout && accessToken.value) {
         try {
@@ -217,6 +257,9 @@ export const useUserStore = defineStore(
       }
 
       clearAuthState()
+      if (shouldBroadcast) {
+        emitLogoutSignal()
+      }
       // 注意：不清空工作台标签页，等下次登录时根据用户判断
       // 移除iframe路由缓存
       sessionStorage.removeItem('iframeRoutes')
@@ -226,7 +269,7 @@ export const useUserStore = defineStore(
       resetRouterState(500)
       // 跳转到登录页，携带当前路由作为 redirect 参数
       const currentRoute = router.currentRoute.value
-      const redirect = currentRoute.path !== '/login' ? currentRoute.fullPath : undefined
+      const redirect = currentRoute.path !== RoutesAlias.Login ? currentRoute.fullPath : undefined
       router.push({
         name: 'Login',
         query: redirect ? { redirect } : undefined
@@ -286,6 +329,7 @@ export const useUserStore = defineStore(
       hydrateUserInfo,
       clearAuthState,
       setPostLoginNavigating,
+      syncLoginStateFromPersisted,
       logOut,
       checkAndClearWorktabs
     }
