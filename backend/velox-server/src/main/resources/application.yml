@@ -21,7 +21,7 @@ spring:
     import: classpath:id.yml
   profiles:
     # 当前默认激活环境
-    active: local
+    active: dev
   application:
     # 应用名称
     name: velox
