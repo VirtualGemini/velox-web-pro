@@ -1,0 +1,107 @@
+<h2 align="center" id="top">Velox Web Pro</h2>
+<p align="center">基于 Vue 3 前端与 Spring Boot 后端的全栈后台管理系统。</p>
+<div align="center"><a href="./README.md">English</a> | 简体中文</div>
+
+<br />
+
+## 项目简介
+
+`velox-web-pro` 是一个全栈管理后台项目，提供 Web 控制台、后端服务、认证鉴权、权限管理、系统管理、文件管理和基础设施能力。
+
+## 仓库架构
+
+- `frontend/`：Vue 3、TypeScript、Vite、Element Plus、Pinia、Vue Router、Axios 前端应用。
+- `backend/`：Java 25、Spring Boot、Maven 多模块后端应用。
+
+## 当前能力
+
+- 认证：登录、退出、注册、验证码、找回密码与重置密码。
+- 当前用户：资料、密码、头像和账号信息管理。
+- 系统管理：用户、角色、菜单和角色菜单权限配置。
+- 文件中心：上传、查询、删除、批量删除、预签名上传与下载。
+- 文件配置：新增、编辑、启停、主配置切换、连通性测试。
+- 基础能力：统一返回、异常处理、请求日志、链路追踪、操作日志、ID 生成、邮件发送。
+- 前端接入：动态路由、权限码绑定、Token 持久化、统一请求层和错误处理。
+
+## 环境要求
+
+- JDK 25+
+- Maven 3.9+
+- Node.js >= 20.19.0
+- pnpm >= 8.8.0
+- MySQL 8 或 PostgreSQL 14+
+- Redis 7
+- Docker 与 Docker Compose，推荐用于启动本地依赖
+
+## 本地开发
+
+启动后端依赖：
+
+```bash
+cd backend/script/docker
+docker compose up -d
+```
+
+启动后端：
+
+```bash
+cd backend
+mvn clean compile
+cd velox-server
+mvn spring-boot:run
+```
+
+启动前端：
+
+```bash
+cd frontend
+pnpm install
+pnpm dev
+```
+
+默认本地地址：
+
+- 前端：`http://localhost:3006`
+- 后端：`http://localhost:8080`
+
+前端本地开发通过 Vite Proxy 将 `/api` 请求转发到后端服务。常用环境变量：
+
+```bash
+VITE_ACCESS_MODE=backend
+VITE_API_URL=/
+VITE_API_PROXY_URL=http://localhost:8080
+VITE_WITH_CREDENTIALS=false
+```
+
+## 常用命令
+
+后端：
+
+```bash
+cd backend
+mvn clean compile
+```
+
+前端：
+
+```bash
+cd frontend
+pnpm lint
+pnpm build
+pnpm serve
+```
+
+## 文档
+
+- [Contribution Guide](./CONTRIBUTING.md) / [简体中文](./CONTRIBUTING.zh-CN.md)
+- [Development Spec](./docs/DEVELOPMENT_SPEC.md) / [简体中文](./docs/DEVELOPMENT_SPEC.zh-CN.md)
+- [Commit Spec](./docs/COMMIT_SPEC.md) / [简体中文](./docs/COMMIT_SPEC.zh-CN.md)
+- [Changelog](./CHANGELOG.md) / [简体中文](./CHANGELOG.zh-CN.md)
+
+## 许可证
+
+本项目使用 MIT License。详见 [LICENSE](./LICENSE)。
+
+<br>
+<div align="center"><a href="#top">回到顶部</a></div>
+<br>

@@ -1,0 +1,59 @@
+# Local agent workspace
+agents/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+.project
+.classpath
+.settings/
+.factorypath
+
+# Logs
+logs/
+*.log
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env.local
+.env.*.local
+*.local
+
+# Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/stats.html
+frontend/.auto-import.json
+frontend/src/types/import/auto-imports.d.ts
+frontend/src/types/import/components.d.ts
+
+# Backend
+target/
+backend/**/target/
+dependency-reduced-pom.xml
+release.properties
+surefire-reports/
+failsafe-reports/
+**/src/test/
+test-output/
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+replay_pid*
+
+# Local tooling
+.sixth/
+.cursorrules
