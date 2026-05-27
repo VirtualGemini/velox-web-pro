@@ -10,8 +10,34 @@
 
 ## 仓库架构
 
-- `frontend/`：Vue 3、TypeScript、Vite、Element Plus、Pinia、Vue Router、Axios 前端应用。
-- `backend/`：Java 25、Spring Boot、Maven 多模块后端应用。
+```text
+velox-web-pro/
+├── frontend/              # Vue 3、TypeScript、Vite 前端应用
+│   ├── public/            # 前端静态资源
+│   └── src/               # 前端源码
+│       ├── api/           # 后端接口封装
+│       ├── assets/        # 源码静态资源
+│       ├── components/    # 可复用 Vue 组件
+│       ├── config/        # 前端配置
+│       ├── directives/    # Vue 指令
+│       ├── enums/         # 前端共享枚举
+│       ├── hooks/         # 组合式 hooks
+│       ├── locales/       # 国际化资源
+│       ├── plugins/       # 前端插件
+│       ├── router/        # 静态路由与动态路由
+│       ├── store/         # Pinia 状态管理
+│       ├── types/         # TypeScript 类型定义
+│       ├── utils/         # 前端工具函数
+│       └── views/         # 页面视图
+└── backend/               # Java 25、Spring Boot、Maven 后端应用
+    ├── script/            # 本地脚本与 Docker 依赖环境
+    ├── velox-dependencies # 依赖版本治理
+    ├── velox-common       # 业务公共语言和公共模型
+    ├── velox-framework    # 可插拔能力 starter
+    ├── velox-infra        # 产品级基建装配
+    ├── velox-system       # 系统业务模块
+    └── velox-server       # 应用启动模块
+```
 
 ## 当前能力
 

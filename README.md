@@ -10,8 +10,34 @@
 
 ## Repository Architecture
 
-- `frontend/`: Vue 3, TypeScript, Vite, Element Plus, Pinia, Vue Router, and Axios frontend application.
-- `backend/`: Java 25, Spring Boot, Maven multi-module backend application.
+```text
+velox-web-pro/
+├── frontend/              # Vue 3, TypeScript, Vite frontend application
+│   ├── public/            # Static public assets
+│   └── src/               # Frontend source code
+│       ├── api/           # Backend API wrappers
+│       ├── assets/        # Static source assets
+│       ├── components/    # Reusable Vue components
+│       ├── config/        # Frontend configuration
+│       ├── directives/    # Vue directives
+│       ├── enums/         # Shared frontend enums
+│       ├── hooks/         # Composition hooks
+│       ├── locales/       # Internationalization resources
+│       ├── plugins/       # Frontend plugins
+│       ├── router/        # Static and dynamic routing
+│       ├── store/         # Pinia stores
+│       ├── types/         # TypeScript type definitions
+│       ├── utils/         # Frontend utilities
+│       └── views/         # Page views
+└── backend/               # Java 25, Spring Boot, Maven backend application
+    ├── script/            # Local scripts and Docker dependency setup
+    ├── velox-dependencies # Dependency version management
+    ├── velox-common       # Shared business language and common models
+    ├── velox-framework    # Pluggable capability starters
+    ├── velox-infra        # Product-level infrastructure wiring
+    ├── velox-system       # System business modules
+    └── velox-server       # Application startup module
+```
 
 ## Current Capabilities
 
