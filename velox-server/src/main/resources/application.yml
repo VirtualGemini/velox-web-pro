@@ -21,7 +21,7 @@ spring:
     import: classpath:id.yml
   profiles:
     # 当前默认激活环境
-    active: dev
+    active: local
   application:
     # 应用名称
     name: velox
@@ -70,16 +70,30 @@ mybatis-plus:
 
 # SpringDoc OpenAPI 配置
 springdoc:
+  cache:
+    # OpenAPI 文案按请求 Locale 解析；关闭缓存避免首次生成的语言被后续切换复用
+    disabled: true
   api-docs:
     # 是否启用 OpenAPI JSON 文档
     enabled: true
     # OpenAPI 文档访问路径
     path: /v3/api-docs
+    # 允许 @Schema 注解属性按 MessageSource 解析
+    resolve-schema-properties: true
   swagger-ui:
     # 是否启用 Swagger UI
     enabled: true
     # Swagger UI 访问路径
     path: /swagger-ui.html
+    # 隐藏默认 Petstore 地址
+    disable-swagger-default-url: true
+    # 默认选中的文档语言
+    urls-primary-name: zh-CN
+    urls:
+      - name: zh-CN
+        url: /v3/api-docs?lang=zh
+      - name: en
+        url: /v3/api-docs?lang=en
 
 # 应用自定义配置
 velox:
@@ -158,6 +172,26 @@ velox:
         write-header: true
   system:
     auth:
+      interceptor:
+        auth-exclude-suffixes:
+          - /login
+          - /login-code/send
+          - /login-code/login
+          - /captcha
+          - /register
+          - /forgot-password/code
+          - /forgot-password/reset
+          - /mfa/challenge/send-code
+          - /mfa/challenge/verify
+        public-exclude-patterns:
+          - /file/*/get/**
+        swagger-public-exclude-patterns:
+          - /swagger-ui/**
+          - /swagger-ui.html
+          - /v3/api-docs
+          - /v3/api-docs/**
+          - /doc.html
+          - /webjars/**
       login:
         # 最大登录失败次数，超过后进入锁定
         max-fail-count: 5

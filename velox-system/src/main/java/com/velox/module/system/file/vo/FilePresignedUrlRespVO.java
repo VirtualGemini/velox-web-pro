@@ -2,16 +2,16 @@ package com.velox.module.system.file.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "管理后台 - 文件预签名 URL Response VO")
+@Schema(description = "openapi.system.file.presigned_url_resp.schema")
 public class FilePresignedUrlRespVO {
 
-    @Schema(description = "配置编号")
+    @Schema(description = "openapi.system.file.presigned_url_resp.config_id")
     private String configId;
 
-    @Schema(description = "上传 URL")
+    @Schema(description = "openapi.system.file.presigned_url_resp.upload_url")
     private String uploadUrl;
 
-    @Schema(description = "文件路径")
+    @Schema(description = "openapi.system.file.presigned_url_resp.path")
     private String path;
 
     public String getConfigId() {

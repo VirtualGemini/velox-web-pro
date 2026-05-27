@@ -13,11 +13,11 @@ spring:
 
 springdoc:
   api-docs:
-    # 开发环境默认关闭 OpenAPI 文档
-    enabled: false
+    # 开发环境默认开启 OpenAPI 文档
+    enabled: true
   swagger-ui:
-    # 开发环境默认关闭 Swagger UI
-    enabled: false
+    # 开发环境默认开启 Swagger UI，便于接口调试
+    enabled: true
 
 logging:
   level:
@@ -70,8 +70,8 @@ velox:
         - "http://172.30.*:*"
         - "http://172.31.*:*"
   security:
-    # 开发环境默认不公开 Swagger
-    swagger-public-enabled: false
+    # 开发环境允许未登录访问 Swagger UI 与 OpenAPI 文档
+    swagger-public-enabled: true
   system:
     auth:
       # 验证码 HMAC 摘要密钥；开发环境可使用默认值，生产环境必须覆盖

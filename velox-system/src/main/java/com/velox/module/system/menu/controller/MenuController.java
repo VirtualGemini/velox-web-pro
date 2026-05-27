@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Tag(name = "菜单管理", description = "菜单管理相关接口")
+@Tag(name = "openapi.system.menu.tag.name", description = "openapi.system.menu.tag.description")
 @RestController
 @RequestMapping("/v3/system/menus")
 public class MenuController {
@@ -37,36 +37,36 @@ public class MenuController {
         this.frontendIdCodecSupport = frontendIdCodecSupport;
     }
 
-    @Operation(summary = "获取简化菜单列表")
+    @Operation(summary = "openapi.system.menu.get_simple_menus.summary")
     @RequireAuthenticated
     @GetMapping("/simple")
     public Result<List<MenuRouteDTO>> getSimpleMenus() {
         return Result.ok(menuService.getSimpleMenus());
     }
 
-    @Operation(summary = "获取可授予的菜单列表（管理 & 角色授权）",
-            description = "返回当前用户可见的菜单范围，用于菜单管理页与角色权限弹窗——授予不能越过自己的范围。")
+    @Operation(summary = "openapi.system.menu.get_grantable_menus.summary",
+            description = "openapi.system.menu.get_grantable_menus.description")
     @RequirePermission("system:menu:query")
     @GetMapping
     public Result<List<MenuRouteDTO>> getGrantableMenus() {
         return Result.ok(menuService.getSimpleMenus());
     }
 
-    @Operation(summary = "新增菜单")
+    @Operation(summary = "openapi.system.menu.create.summary")
     @RequirePermission("system:menu:create")
     @PostMapping
     public Result<String> create(@Valid @RequestBody MenuSaveCommand command) {
         return Result.ok(frontendIdCodecSupport.encodeIdentifier(menuService.create(command)));
     }
 
-    @Operation(summary = "编辑菜单")
+    @Operation(summary = "openapi.system.menu.update.summary")
     @RequirePermission("system:menu:update")
     @PutMapping("/{menuId}")
     public Result<Boolean> update(@PathVariable("menuId") String menuId, @Valid @RequestBody MenuSaveCommand command) {
         return Result.ok(menuService.update(menuId, command));
     }
 
-    @Operation(summary = "删除菜单")
+    @Operation(summary = "openapi.system.menu.delete.summary")
     @RequirePermission("system:menu:delete")
     @DeleteMapping("/{menuId}")
     public Result<Boolean> delete(@PathVariable("menuId") String menuId) {

@@ -2,40 +2,40 @@ package com.velox.module.system.user.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "用户查询参数")
+@Schema(description = "openapi.system.user.query.schema")
 public class UserQuery {
 
-    @Schema(description = "当前页", example = "1")
+    @Schema(description = "openapi.common.page.current", example = "1")
     private Long current = 1L;
 
-    @Schema(description = "每页大小", example = "20")
+    @Schema(description = "openapi.common.page.size", example = "20")
     private Long size = 20L;
 
-    @Schema(description = "用户名")
+    @Schema(description = "openapi.system.user.query.username")
     private String userName;
 
-    @Schema(description = "性别")
+    @Schema(description = "openapi.system.user.query.gender")
     private String userGender;
 
-    @Schema(description = "手机号")
+    @Schema(description = "openapi.system.user.query.phone")
     private String userPhone;
 
-    @Schema(description = "邮箱")
+    @Schema(description = "openapi.system.user.query.email")
     private String userEmail;
 
-    @Schema(description = "状态")
+    @Schema(description = "openapi.system.user.query.status")
     private String status;
 
-    @Schema(description = "创建开始时间", example = "2026-05-22 10:00:00")
+    @Schema(description = "openapi.common.audit.create_time_start", example = "2026-05-22 10:00:00")
     private String createTimeStart;
 
-    @Schema(description = "创建结束时间", example = "2026-05-22 18:00:00")
+    @Schema(description = "openapi.common.audit.create_time_end", example = "2026-05-22 18:00:00")
     private String createTimeEnd;
 
-    @Schema(description = "编辑开始时间", example = "2026-05-22 10:00:00")
+    @Schema(description = "openapi.common.audit.update_time_start", example = "2026-05-22 10:00:00")
     private String updateTimeStart;
 
-    @Schema(description = "编辑结束时间", example = "2026-05-22 18:00:00")
+    @Schema(description = "openapi.common.audit.update_time_end", example = "2026-05-22 18:00:00")
     private String updateTimeEnd;
 
     public Long getCurrent() {

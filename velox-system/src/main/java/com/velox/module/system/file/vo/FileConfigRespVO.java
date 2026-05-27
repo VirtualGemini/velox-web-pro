@@ -2,37 +2,37 @@ package com.velox.module.system.file.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "管理后台 - 文件配置 Response VO")
+@Schema(description = "openapi.system.file_config.resp.schema")
 public class FileConfigRespVO {
 
-    @Schema(description = "编号")
+    @Schema(description = "openapi.common.id")
     private String id;
 
-    @Schema(description = "配置名")
+    @Schema(description = "openapi.system.file_config.resp.name")
     private String name;
 
-    @Schema(description = "存储器")
+    @Schema(description = "openapi.system.file_config.resp.storage")
     private Integer storage;
 
-    @Schema(description = "存储配置")
+    @Schema(description = "openapi.system.file_config.resp.config")
     private String config;
 
-    @Schema(description = "是否主配置")
+    @Schema(description = "openapi.system.file_config.resp.master")
     private Boolean master;
 
-    @Schema(description = "备注")
+    @Schema(description = "openapi.common.remark")
     private String remark;
 
-    @Schema(description = "启用状态")
+    @Schema(description = "openapi.common.enabled")
     private Integer enabled;
 
-    @Schema(description = "创建时间")
+    @Schema(description = "openapi.common.audit.create_time")
     private String createTime;
 
-    @Schema(description = "更新时间")
+    @Schema(description = "openapi.common.audit.update_time")
     private String updateTime;
 
-    @Schema(description = "创建人")
+    @Schema(description = "openapi.common.audit.create_by")
     private String createBy;
 
     public String getId() {

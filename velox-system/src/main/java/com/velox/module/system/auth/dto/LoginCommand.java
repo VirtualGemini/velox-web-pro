@@ -5,24 +5,24 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-@Schema(description = "登录请求")
+@Schema(description = "openapi.system.auth.login_command.schema")
 public class LoginCommand {
 
-    @Schema(description = "用户名/手机号/邮箱", example = "admin")
+    @Schema(description = "openapi.system.auth.login_command.username", example = "admin")
     @JsonAlias({"userName", "account"})
-    @NotBlank(message = "账号不能为空")
-    @Size(min = 3, max = 64, message = "账号长度必须在3-64个字符之间")
+    @NotBlank(message = "{validation.system.auth.login.username.not_blank}")
+    @Size(min = 3, max = 64, message = "{validation.system.auth.login.username.size}")
     private String username;
 
-    @Schema(description = "密码", example = "123456")
-    @NotBlank(message = "密码不能为空")
-    @Size(min = 6, max = 64, message = "密码长度必须在6-64个字符之间")
+    @Schema(description = "openapi.system.auth.login_command.password", example = "123456")
+    @NotBlank(message = "{validation.system.auth.login.password.not_blank}")
+    @Size(min = 6, max = 64, message = "{validation.system.auth.login.password.size}")
     private String password;
 
-    @Schema(description = "验证码", example = "aB7D")
+    @Schema(description = "openapi.system.auth.login_command.captcha_code", example = "aB7D")
     private String captchaCode;
 
-    @Schema(description = "验证码Key")
+    @Schema(description = "openapi.system.auth.login_command.captcha_code_key")
     private String captchaCodeKey;
 
     public LoginCommand() {

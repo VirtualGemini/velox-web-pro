@@ -3,15 +3,15 @@ package com.velox.module.system.auth.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
-@Schema(description = "发送登录验证码请求")
+@Schema(description = "openapi.system.auth.login_code_send_command.schema")
 public class LoginCodeSendCommand {
 
-    @Schema(description = "登录方式：email / phone", example = "email")
-    @NotBlank(message = "登录方式不能为空")
+    @Schema(description = "openapi.system.auth.login_code_send_command.type", example = "email")
+    @NotBlank(message = "{validation.system.auth.login_code_send.type.not_blank}")
     private String type;
 
-    @Schema(description = "邮箱或手机号", example = "user@example.com")
-    @NotBlank(message = "邮箱/手机号不能为空")
+    @Schema(description = "openapi.system.auth.login_code_send_command.target", example = "user@example.com")
+    @NotBlank(message = "{validation.system.auth.login_code_send.target.not_blank}")
     private String target;
 
     public String getType() {

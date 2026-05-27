@@ -24,12 +24,15 @@ import com.velox.framework.web.spi.timezone.RequestTimeZoneResolver;
 import com.velox.framework.web.spi.servlet.TraceIdFilterRegistrationCustomizer;
 import com.velox.framework.web.spi.tracing.TraceIdResolver;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.servlet.DispatcherServlet;
+import org.springframework.web.servlet.LocaleResolver;
 
-@AutoConfiguration
+@AutoConfiguration(before = WebMvcAutoConfiguration.class)
 @EnableConfigurationProperties(VeloxProperties.class)
 public class VeloxWebAutoConfiguration {
 
@@ -49,6 +52,12 @@ public class VeloxWebAutoConfiguration {
     @ConditionalOnMissingBean
     public RequestLocaleResolver requestLocaleResolver() {
         return new DefaultRequestLocaleResolver();
+    }
+
+    @Bean(name = "localeResolver")
+    @ConditionalOnMissingBean(name = DispatcherServlet.LOCALE_RESOLVER_BEAN_NAME)
+    public LocaleResolver localeResolver(RequestLocaleResolver requestLocaleResolver) {
+        return new com.velox.framework.web.core.locale.VeloxLocaleResolver(requestLocaleResolver);
     }
 
     @Bean

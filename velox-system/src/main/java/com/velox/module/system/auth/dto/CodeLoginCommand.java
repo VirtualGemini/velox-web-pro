@@ -3,19 +3,19 @@ package com.velox.module.system.auth.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
-@Schema(description = "验证码登录请求")
+@Schema(description = "openapi.system.auth.code_login_command.schema")
 public class CodeLoginCommand {
 
-    @Schema(description = "登录方式：email / phone", example = "email")
-    @NotBlank(message = "登录方式不能为空")
+    @Schema(description = "openapi.system.auth.code_login_command.type", example = "email")
+    @NotBlank(message = "{validation.system.auth.code_login.type.not_blank}")
     private String type;
 
-    @Schema(description = "邮箱或手机号", example = "user@example.com")
-    @NotBlank(message = "邮箱/手机号不能为空")
+    @Schema(description = "openapi.system.auth.code_login_command.target", example = "user@example.com")
+    @NotBlank(message = "{validation.system.auth.code_login.target.not_blank}")
     private String target;
 
-    @Schema(description = "验证码", example = "123456")
-    @NotBlank(message = "验证码不能为空")
+    @Schema(description = "openapi.system.auth.code_login_command.code", example = "123456")
+    @NotBlank(message = "{validation.system.auth.code_login.code.not_blank}")
     private String code;
 
     public String getType() {

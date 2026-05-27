@@ -8,40 +8,40 @@ import java.util.List;
 
 public class UserProfileUpdateCommand {
 
-    @NotBlank(message = "姓名不能为空")
-    @Size(max = 50, message = "姓名长度不能超过 50 个字符")
+    @NotBlank(message = "{validation.system.user.profile.real_name.not_blank}")
+    @Size(max = 50, message = "{validation.system.user.profile.real_name.size}")
     private String realName;
 
-    @NotBlank(message = "昵称不能为空")
-    @Size(max = 50, message = "昵称长度不能超过 50 个字符")
+    @NotBlank(message = "{validation.system.user.profile.nickname.not_blank}")
+    @Size(max = 50, message = "{validation.system.user.profile.nickname.size}")
     private String nickname;
 
-    @Email(message = "邮箱格式不正确")
-    @Size(max = 100, message = "邮箱长度不能超过 100 个字符")
+    @Email(message = "{validation.system.user.profile.email.invalid}")
+    @Size(max = 100, message = "{validation.system.user.profile.email.size}")
     private String email;
 
-    @NotBlank(message = "手机号不能为空")
-    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
+    @NotBlank(message = "{validation.system.user.profile.phone.not_blank}")
+    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "{validation.system.user.profile.phone.pattern}")
     private String phone;
 
-    @Size(max = 255, message = "地址长度不能超过 255 个字符")
+    @Size(max = 255, message = "{validation.system.user.profile.address.size}")
     private String address;
 
     private Integer gender;
 
-    @Size(max = 1000, message = "个人介绍长度不能超过 1000 个字符")
+    @Size(max = 1000, message = "{validation.system.user.profile.introduction.size}")
     private String introduction;
 
-    @Size(max = 255, message = "个性签名长度不能超过 255 个字符")
+    @Size(max = 255, message = "{validation.system.user.profile.signature.size}")
     private String signature;
 
-    @Size(max = 50, message = "职位长度不能超过 50 个字符")
+    @Size(max = 50, message = "{validation.system.user.profile.position.size}")
     private String position;
 
-    @Size(max = 100, message = "公司长度不能超过 100 个字符")
+    @Size(max = 100, message = "{validation.system.user.profile.company.size}")
     private String company;
 
-    private List<@Size(max = 16, message = "单个标签长度不能超过 16 个字符") String> tags;
+    private List<@Size(max = 16, message = "{validation.system.user.profile.tags.item.size}") String> tags;
 
     public String getRealName() {
         return realName;

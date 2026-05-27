@@ -4,14 +4,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.web.multipart.MultipartFile;
 
-@Schema(description = "管理后台 - 文件上传 Request VO")
+@Schema(description = "openapi.system.file.upload_req.schema")
 public class FileUploadReqVO {
 
-    @Schema(description = "文件附件", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull(message = "文件附件不能为空")
+    @Schema(description = "openapi.system.file.upload_req.file", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull(message = "{validation.system.file.upload.file.not_null}")
     private MultipartFile file;
 
-    @Schema(description = "文件目录", example = "upload")
+    @Schema(description = "openapi.system.file.upload_req.directory", example = "upload")
     private String directory;
 
     public MultipartFile getFile() {

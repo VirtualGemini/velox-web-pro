@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.velox.common.result.PageResult;
 
-@Tag(name = "用户管理", description = "用户管理相关接口")
+@Tag(name = "openapi.system.user.manage.tag.name", description = "openapi.system.user.manage.tag.description")
 @RestController
 @RequestMapping("/user")
 public class UserManageController {
@@ -37,28 +37,28 @@ public class UserManageController {
         this.frontendIdCodecSupport = frontendIdCodecSupport;
     }
 
-    @Operation(summary = "获取用户列表")
+    @Operation(summary = "openapi.system.user.manage.list.summary")
     @RequirePermission("system:user:query")
     @GetMapping("/list")
     public Result<PageResult<UserListItemDTO>> list(UserQuery query) {
         return Result.ok(userManageService.list(query));
     }
 
-    @Operation(summary = "新增用户")
+    @Operation(summary = "openapi.system.user.manage.create.summary")
     @RequirePermission("system:user:create")
     @PostMapping
     public Result<String> create(@Valid @RequestBody UserSaveCommand command) {
         return Result.ok(frontendIdCodecSupport.encodeIdentifier(userManageService.create(command)));
     }
 
-    @Operation(summary = "编辑用户")
+    @Operation(summary = "openapi.system.user.manage.update.summary")
     @RequirePermission("system:user:update")
     @PutMapping("/{userId}")
     public Result<Boolean> update(@PathVariable("userId") String userId, @Valid @RequestBody UserSaveCommand command) {
         return Result.ok(userManageService.update(userId, command));
     }
 
-    @Operation(summary = "删除用户")
+    @Operation(summary = "openapi.system.user.manage.delete.summary")
     @RequirePermission("system:user:delete")
     @DeleteMapping("/{userId}")
     public Result<Boolean> delete(@PathVariable("userId") String userId) {

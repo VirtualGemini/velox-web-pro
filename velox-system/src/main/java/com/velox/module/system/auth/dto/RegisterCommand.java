@@ -5,22 +5,22 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-@Schema(description = "注册请求")
+@Schema(description = "openapi.system.auth.register_command.schema")
 public class RegisterCommand {
 
-    @Schema(description = "用户名", example = "admin")
-    @NotBlank(message = "用户名不能为空")
-    @Size(min = 3, max = 20, message = "用户名长度必须在3-20个字符之间")
-    @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "用户名只能包含字母、数字和下划线")
+    @Schema(description = "openapi.system.auth.register_command.username", example = "admin")
+    @NotBlank(message = "{validation.system.auth.register.username.not_blank}")
+    @Size(min = 3, max = 20, message = "{validation.system.auth.register.username.size}")
+    @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "{validation.system.auth.register.username.pattern}")
     private String username;
 
-    @Schema(description = "密码", example = "123456")
-    @NotBlank(message = "密码不能为空")
-    @Size(min = 6, max = 20, message = "密码长度必须在6-20个字符之间")
+    @Schema(description = "openapi.system.auth.register_command.password", example = "123456")
+    @NotBlank(message = "{validation.system.auth.register.password.not_blank}")
+    @Size(min = 6, max = 20, message = "{validation.system.auth.register.password.size}")
     private String password;
 
-    @Schema(description = "确认密码", example = "123456")
-    @NotBlank(message = "确认密码不能为空")
+    @Schema(description = "openapi.system.auth.register_command.confirm_password", example = "123456")
+    @NotBlank(message = "{validation.system.auth.register.confirm_password.not_blank}")
     private String confirmPassword;
 
     public String getUsername() {

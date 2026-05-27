@@ -5,8 +5,8 @@ import jakarta.validation.constraints.Pattern;
 
 public class LanguageUpdateCommand {
 
-    @NotBlank(message = "语言不能为空")
-    @Pattern(regexp = "^(zh|en)$", message = "语言仅支持 zh / en")
+    @NotBlank(message = "{validation.system.user.language.language.not_blank}")
+    @Pattern(regexp = "^(zh|en)$", message = "{validation.system.user.language.language.pattern}")
     private String language;
 
     public String getLanguage() {

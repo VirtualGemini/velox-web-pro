@@ -2,46 +2,46 @@ package com.velox.module.system.role.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "角色查询参数")
+@Schema(description = "openapi.system.role.query.schema")
 public class RoleQuery {
 
-    @Schema(description = "当前页", example = "1")
+    @Schema(description = "openapi.common.page.current", example = "1")
     private Long current = 1L;
 
-    @Schema(description = "每页大小", example = "20")
+    @Schema(description = "openapi.common.page.size", example = "20")
     private Long size = 20L;
 
-    @Schema(description = "角色名称")
+    @Schema(description = "openapi.system.role.query.role_name")
     private String roleName;
 
-    @Schema(description = "角色编码")
+    @Schema(description = "openapi.system.role.query.role_code")
     private String roleCode;
 
-    @Schema(description = "角色描述")
+    @Schema(description = "openapi.system.role.query.description")
     private String description;
 
-    @Schema(description = "角色类型：0系统角色，1自定义角色")
+    @Schema(description = "openapi.system.role.query.type")
     private Integer type;
 
-    @Schema(description = "是否启用")
+    @Schema(description = "openapi.system.role.query.enabled")
     private Boolean enabled;
 
-    @Schema(description = "开始时间", example = "2025-05-01")
+    @Schema(description = "openapi.system.role.query.start_time", example = "2025-05-01")
     private String startTime;
 
-    @Schema(description = "结束时间", example = "2025-05-31")
+    @Schema(description = "openapi.system.role.query.end_time", example = "2025-05-31")
     private String endTime;
 
-    @Schema(description = "创建开始时间", example = "2026-05-22 10:00:00")
+    @Schema(description = "openapi.common.audit.create_time_start", example = "2026-05-22 10:00:00")
     private String createTimeStart;
 
-    @Schema(description = "创建结束时间", example = "2026-05-22 18:00:00")
+    @Schema(description = "openapi.common.audit.create_time_end", example = "2026-05-22 18:00:00")
     private String createTimeEnd;
 
-    @Schema(description = "编辑开始时间", example = "2026-05-22 10:00:00")
+    @Schema(description = "openapi.common.audit.update_time_start", example = "2026-05-22 10:00:00")
     private String updateTimeStart;
 
-    @Schema(description = "编辑结束时间", example = "2026-05-22 18:00:00")
+    @Schema(description = "openapi.common.audit.update_time_end", example = "2026-05-22 18:00:00")
     private String updateTimeEnd;
 
     public Long getCurrent() {

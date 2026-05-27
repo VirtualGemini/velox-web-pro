@@ -18,7 +18,7 @@ import java.util.List;
 
 import com.velox.common.result.PageResult;
 
-@Tag(name = "角色管理", description = "角色管理相关接口")
+@Tag(name = "openapi.system.role.tag.name", description = "openapi.system.role.tag.description")
 @RestController
 @RequestMapping("/role")
 public class RoleController {
@@ -34,42 +34,42 @@ public class RoleController {
         this.frontendIdCodecSupport = frontendIdCodecSupport;
     }
 
-    @Operation(summary = "获取角色列表")
+    @Operation(summary = "openapi.system.role.list.summary")
     @RequirePermission("system:role:query")
     @GetMapping("/list")
     public Result<PageResult<RoleListItemDTO>> list(RoleQuery query) {
         return Result.ok(roleService.list(query));
     }
 
-    @Operation(summary = "新增角色")
+    @Operation(summary = "openapi.system.role.create.summary")
     @RequirePermission("system:role:create")
     @PostMapping
     public Result<String> create(@Valid @RequestBody RoleSaveCommand command) {
         return Result.ok(frontendIdCodecSupport.encodeIdentifier(roleService.create(command)));
     }
 
-    @Operation(summary = "编辑角色")
+    @Operation(summary = "openapi.system.role.update.summary")
     @RequirePermission("system:role:update")
     @PutMapping("/{roleId}")
     public Result<Boolean> update(@PathVariable("roleId") String roleId, @Valid @RequestBody RoleSaveCommand command) {
         return Result.ok(roleService.update(roleId, command));
     }
 
-    @Operation(summary = "删除角色")
+    @Operation(summary = "openapi.system.role.delete.summary")
     @RequirePermission("system:role:delete")
     @DeleteMapping("/{roleId}")
     public Result<Boolean> delete(@PathVariable("roleId") String roleId) {
         return Result.ok(roleService.delete(roleId));
     }
 
-    @Operation(summary = "获取角色菜单权限")
+    @Operation(summary = "openapi.system.role.get_menu_permissions.summary")
     @RequirePermission("system:role:query")
     @GetMapping("/{roleId}/menu-permissions")
     public Result<List<String>> getRoleMenuPermissions(@PathVariable("roleId") String roleId) {
         return Result.ok(frontendIdCodecSupport.encodeIdentifiers(roleService.getRoleMenuPermissions(roleId)));
     }
 
-    @Operation(summary = "保存角色菜单权限")
+    @Operation(summary = "openapi.system.role.update_menu_permissions.summary")
     @RequirePermission("system:role:permission")
     @PutMapping("/{roleId}/menu-permissions")
     public Result<Boolean> updateRoleMenuPermissions(

@@ -5,25 +5,25 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-@Schema(description = "邮箱重置密码请求")
+@Schema(description = "openapi.system.auth.reset_password_command.schema")
 public class ResetPasswordCommand {
 
-    @Schema(description = "邮箱", example = "user@example.com")
-    @NotBlank(message = "邮箱不能为空")
-    @Email(message = "邮箱格式不正确")
+    @Schema(description = "openapi.system.auth.reset_password_command.email", example = "user@example.com")
+    @NotBlank(message = "{validation.system.auth.reset_password.email.not_blank}")
+    @Email(message = "{validation.system.auth.reset_password.email.invalid}")
     private String email;
 
-    @Schema(description = "邮件验证码", example = "123456")
-    @NotBlank(message = "验证码不能为空")
+    @Schema(description = "openapi.system.auth.reset_password_command.code", example = "123456")
+    @NotBlank(message = "{validation.system.auth.reset_password.code.not_blank}")
     private String code;
 
-    @Schema(description = "新密码", example = "123456")
-    @NotBlank(message = "新密码不能为空")
-    @Size(min = 6, max = 20, message = "密码长度必须在6-20个字符之间")
+    @Schema(description = "openapi.system.auth.reset_password_command.new_password", example = "123456")
+    @NotBlank(message = "{validation.system.auth.reset_password.new_password.not_blank}")
+    @Size(min = 6, max = 20, message = "{validation.system.auth.reset_password.new_password.size}")
     private String newPassword;
 
-    @Schema(description = "确认新密码", example = "123456")
-    @NotBlank(message = "确认密码不能为空")
+    @Schema(description = "openapi.system.auth.reset_password_command.confirm_password", example = "123456")
+    @NotBlank(message = "{validation.system.auth.reset_password.confirm_password.not_blank}")
     private String confirmPassword;
 
     public String getEmail() {

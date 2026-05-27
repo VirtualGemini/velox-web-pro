@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "账号安全", description = "账号安全设置相关接口")
+@Tag(name = "openapi.system.user.security.tag.name", description = "openapi.system.user.security.tag.description")
 @RestController
 @RequestMapping("/user/security")
 public class AccountSecurityController {
@@ -34,14 +34,14 @@ public class AccountSecurityController {
         this.accountSecurityService = accountSecurityService;
     }
 
-    @Operation(summary = "查询账号安全状态")
+    @Operation(summary = "openapi.system.user.security.get_status.summary")
     @GetMapping("/status")
     @RequirePermission("system:user-center:security-query")
     public Result<SecurityStatusDTO> getStatus() {
         return Result.ok(accountSecurityService.getStatus());
     }
 
-    @Operation(summary = "发送邮箱换绑前置验证验证码")
+    @Operation(summary = "openapi.system.user.security.send_email_rebind_proof_code.summary")
     @PostMapping("/email/rebind/proof/send-code")
     @RequirePermission("system:user-center:email-rebind")
     public Result<Void> sendEmailRebindProofCode() {
@@ -49,7 +49,7 @@ public class AccountSecurityController {
         return Result.ok();
     }
 
-    @Operation(summary = "校验邮箱换绑前置验证")
+    @Operation(summary = "openapi.system.user.security.verify_email_rebind_proof.summary")
     @PostMapping("/email/rebind/proof/verify")
     @RequirePermission("system:user-center:email-rebind")
     public Result<EmailRebindProofDTO> verifyEmailRebindProof(
@@ -57,7 +57,7 @@ public class AccountSecurityController {
         return Result.ok(accountSecurityService.verifyEmailRebindProof(command));
     }
 
-    @Operation(summary = "发送邮箱换绑验证码")
+    @Operation(summary = "openapi.system.user.security.send_email_rebind_code.summary")
     @PostMapping("/email/rebind/send-code")
     @RequirePermission("system:user-center:email-rebind")
     public Result<Void> sendEmailRebindCode(@Valid @RequestBody EmailRebindSendCodeCommand command) {
@@ -65,21 +65,21 @@ public class AccountSecurityController {
         return Result.ok();
     }
 
-    @Operation(summary = "提交邮箱换绑")
+    @Operation(summary = "openapi.system.user.security.rebind_email.summary")
     @PutMapping("/email/rebind")
     @RequirePermission("system:user-center:email-rebind")
     public Result<Boolean> rebindEmail(@Valid @RequestBody EmailRebindCommand command) {
         return Result.ok(accountSecurityService.rebindEmail(command));
     }
 
-    @Operation(summary = "更新登录方式")
+    @Operation(summary = "openapi.system.user.security.update_login_methods.summary")
     @PutMapping("/login-methods")
     @RequirePermission("system:user-center:security-update")
     public Result<Boolean> updateLoginMethods(@Valid @RequestBody LoginMethodsUpdateCommand command) {
         return Result.ok(accountSecurityService.updateLoginMethods(command));
     }
 
-    @Operation(summary = "发送邮箱 MFA 验证码")
+    @Operation(summary = "openapi.system.user.security.send_mfa_email_code.summary")
     @PostMapping("/mfa/email/send-code")
     @RequirePermission("system:user-center:mfa-update")
     public Result<Void> sendMfaEmailCode() {
@@ -87,28 +87,28 @@ public class AccountSecurityController {
         return Result.ok();
     }
 
-    @Operation(summary = "开启或关闭邮箱二次验证")
+    @Operation(summary = "openapi.system.user.security.update_mfa_email.summary")
     @PutMapping("/mfa/email")
     @RequirePermission("system:user-center:mfa-update")
     public Result<Boolean> updateMfaEmail(@Valid @RequestBody MfaEmailUpdateCommand command) {
         return Result.ok(accountSecurityService.updateMfaEmail(command));
     }
 
-    @Operation(summary = "拉取 TOTP 绑定材料（密钥与二维码 URI）")
+    @Operation(summary = "openapi.system.user.security.provision_mfa_totp.summary")
     @PostMapping("/mfa/totp/provision")
     @RequirePermission("system:user-center:mfa-update")
     public Result<MfaTotpProvisionDTO> provisionMfaTotp() {
         return Result.ok(accountSecurityService.provisionMfaTotp());
     }
 
-    @Operation(summary = "完成 TOTP 绑定")
+    @Operation(summary = "openapi.system.user.security.enable_mfa_totp.summary")
     @PutMapping("/mfa/totp/enable")
     @RequirePermission("system:user-center:mfa-update")
     public Result<Boolean> enableMfaTotp(@Valid @RequestBody MfaTotpEnableCommand command) {
         return Result.ok(accountSecurityService.enableMfaTotp(command));
     }
 
-    @Operation(summary = "解绑 TOTP")
+    @Operation(summary = "openapi.system.user.security.disable_mfa_totp.summary")
     @PutMapping("/mfa/totp/disable")
     @RequirePermission("system:user-center:mfa-update")
     public Result<Boolean> disableMfaTotp(@Valid @RequestBody MfaTotpDisableCommand command) {

@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "工作台", description = "工作台相关接口")
+@Tag(name = "openapi.system.dashboard.console.tag.name", description = "openapi.system.dashboard.console.tag.description")
 @RestController
 @RequestMapping("/dashboard/console")
 public class ConsoleController {
 
-    @Operation(summary = "工作台访问校验")
+    @Operation(summary = "openapi.system.dashboard.console.access.summary")
     @GetMapping("/access")
     @RequirePermission("dashboard:console")
     public Result<Boolean> access() {

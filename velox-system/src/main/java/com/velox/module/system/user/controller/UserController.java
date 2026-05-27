@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "用户信息", description = "当前登录用户信息接口")
+@Tag(name = "openapi.system.user.self.tag.name", description = "openapi.system.user.self.tag.description")
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -29,34 +29,34 @@ public class UserController {
         this.userInfoService = userInfoService;
     }
 
-    @Operation(summary = "获取当前登录用户基础信息（权限、角色、身份）")
+    @Operation(summary = "openapi.system.user.self.get_info.summary")
     @GetMapping("/info")
     public Result<UserInfoBasicDTO> getUserInfo() {
         return Result.ok(userInfoService.getUserInfoBasicDTO());
     }
 
-    @Operation(summary = "获取当前登录用户详细信息")
+    @Operation(summary = "openapi.system.user.self.get_detail.summary")
     @GetMapping("/detail")
     @RequirePermission("system:user-center:profile-query")
     public Result<UserInfoDTO> getUserDetail() {
         return Result.ok(userInfoService.getUserInfoDTO());
     }
 
-    @Operation(summary = "更新当前登录用户资料")
+    @Operation(summary = "openapi.system.user.self.update_profile.summary")
     @PutMapping("/profile")
     @RequirePermission("system:user-center:profile-update")
     public Result<Boolean> updateProfile(@Valid @RequestBody UserProfileUpdateCommand command) {
         return Result.ok(userInfoService.updateCurrentUserProfile(command));
     }
 
-    @Operation(summary = "修改当前登录用户密码")
+    @Operation(summary = "openapi.system.user.self.update_password.summary")
     @PutMapping("/password")
     @RequirePermission("system:user-center:password-update")
     public Result<Boolean> updatePassword(@Valid @RequestBody UserPasswordUpdateCommand command) {
         return Result.ok(userInfoService.updateCurrentUserPassword(command));
     }
 
-    @Operation(summary = "更新当前登录用户头像")
+    @Operation(summary = "openapi.system.user.self.update_avatar.summary")
     @PutMapping("/avatar")
     @RequirePermission("system:user-center:avatar-update")
     public Result<UserInfoBasicDTO> updateAvatar(@RequestBody AvatarUpdateCommand command) {
@@ -64,7 +64,7 @@ public class UserController {
         return Result.ok(userInfoService.getUserInfoBasicDTO());
     }
 
-    @Operation(summary = "更新当前登录用户语言偏好")
+    @Operation(summary = "openapi.system.user.self.update_language.summary")
     @PutMapping("/language")
     public Result<Boolean> updateLanguage(@Valid @RequestBody LanguageUpdateCommand command) {
         return Result.ok(userInfoService.updateCurrentUserLanguage(command.getLanguage()));

@@ -30,7 +30,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-@Tag(name = "管理后台 - 文件管理")
+@Tag(name = "openapi.system.file.tag.name", description = "openapi.system.file.tag.description")
 @RestController
 @RequestMapping("/file")
 @Validated
@@ -48,7 +48,7 @@ public class FileController {
     }
 
     @PostMapping("/upload")
-    @Operation(summary = "上传文件", description = "模式一：后端上传文件")
+    @Operation(summary = "openapi.system.file.upload.summary", description = "openapi.system.file.upload.description")
     @RequirePermission("system:file:upload")
     public Result<String> uploadFile(@Valid FileUploadReqVO uploadReqVO) throws java.io.IOException {
         MultipartFile file = uploadReqVO.getFile();
@@ -62,7 +62,7 @@ public class FileController {
     }
 
     @GetMapping("/presigned-url")
-    @Operation(summary = "获取文件预签名地址", description = "模式二：前端上传文件")
+    @Operation(summary = "openapi.system.file.presign_put_url.summary", description = "openapi.system.file.presign_put_url.description")
     public Result<FilePresignedUrlRespVO> presignPutUrl(
             @RequestParam("name") String name,
             @RequestParam(value = "directory", required = false) String directory) {
@@ -70,15 +70,15 @@ public class FileController {
     }
 
     @PostMapping("/create")
-    @Operation(summary = "创建文件", description = "模式二：前端上传文件后，创建文件记录")
+    @Operation(summary = "openapi.system.file.create.summary", description = "openapi.system.file.create.description")
     @RequirePermission("system:file:create")
     public Result<String> createFile(@Valid @RequestBody FileCreateReqVO createReqVO) {
         return Result.ok(frontendIdCodecSupport.encodeIdentifier(fileService.createFile(createReqVO)));
     }
 
     @DeleteMapping("/delete")
-    @Operation(summary = "删除文件")
-    @Parameter(name = "id", description = "编号", required = true)
+    @Operation(summary = "openapi.system.file.delete.summary")
+    @Parameter(name = "id", description = "openapi.common.id", required = true)
     @RequirePermission("system:file:delete")
     public Result<Boolean> deleteFile(@RequestParam("id") String id) {
         fileService.deleteFile(id);
@@ -86,7 +86,7 @@ public class FileController {
     }
 
     @DeleteMapping("/delete-batch")
-    @Operation(summary = "批量删除文件")
+    @Operation(summary = "openapi.system.file.delete_batch.summary")
     @RequirePermission("system:file:delete")
     public Result<Boolean> deleteFileList(@RequestParam("ids") List<String> ids) {
         fileService.deleteFileList(ids);
@@ -94,30 +94,30 @@ public class FileController {
     }
 
     @GetMapping("/get")
-    @Operation(summary = "获得文件")
-    @Parameter(name = "id", description = "编号", required = true)
+    @Operation(summary = "openapi.system.file.get.summary")
+    @Parameter(name = "id", description = "openapi.common.id", required = true)
     @RequirePermission("system:file:query")
     public Result<FileRespVO> getFile(@RequestParam("id") String id) {
         return Result.ok(fileService.getFile(id));
     }
 
     @GetMapping("/page")
-    @Operation(summary = "获得文件分页")
+    @Operation(summary = "openapi.system.file.page.summary")
     @RequirePermission("system:file:query")
     public Result<PageResult<FileRespVO>> getFilePage(FilePageReqVO pageReqVO) {
         return Result.ok(fileService.getFilePage(pageReqVO));
     }
 
     @GetMapping("/types")
-    @Operation(summary = "获得文件类型列表")
+    @Operation(summary = "openapi.system.file.types.summary")
     @RequirePermission("system:file:query")
     public Result<List<String>> getFileTypes() {
         return Result.ok(fileService.getFileTypes());
     }
 
     @GetMapping("/{configId}/get/**")
-    @Operation(summary = "下载文件")
-    @Parameter(name = "configId", description = "配置编号", required = true)
+    @Operation(summary = "openapi.system.file.get_content.summary")
+    @Parameter(name = "configId", description = "openapi.system.file.file_config_id", required = true)
     public void getFileContent(HttpServletRequest request,
                                HttpServletResponse response,
                                @PathVariable("configId") String configId) throws java.io.IOException {
@@ -137,8 +137,8 @@ public class FileController {
     }
 
     @GetMapping("/download")
-    @Operation(summary = "按文件编号下载文件")
-    @Parameter(name = "id", description = "文件编号", required = true)
+    @Operation(summary = "openapi.system.file.download.summary")
+    @Parameter(name = "id", description = "openapi.system.file.file_id", required = true)
     @RequirePermission("system:file:download")
     public void downloadFile(@RequestParam("id") String id,
                              HttpServletResponse response) throws java.io.IOException {
@@ -154,7 +154,7 @@ public class FileController {
     }
 
     @GetMapping("/presigned-get-url")
-    @Operation(summary = "获取文件预签名读取地址")
+    @Operation(summary = "openapi.system.file.presign_get_url.summary")
     public Result<String> presignGetUrl(
             @RequestParam(value = "configId", required = false) String configId,
             @RequestParam("url") String url,

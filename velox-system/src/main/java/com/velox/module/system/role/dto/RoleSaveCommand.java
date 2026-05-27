@@ -6,19 +6,19 @@ import jakarta.validation.constraints.Size;
 
 public class RoleSaveCommand {
 
-    @NotBlank(message = "角色名称不能为空")
-    @Size(min = 2, max = 50, message = "角色名称长度应在 2-50 个字符之间")
+    @NotBlank(message = "{validation.system.role.save.role_name.not_blank}")
+    @Size(min = 2, max = 50, message = "{validation.system.role.save.role_name.size}")
     private String roleName;
 
-    @NotBlank(message = "角色编码不能为空")
-    @Size(min = 2, max = 50, message = "角色编码长度应在 2-50 个字符之间")
+    @NotBlank(message = "{validation.system.role.save.role_code.not_blank}")
+    @Size(min = 2, max = 50, message = "{validation.system.role.save.role_code.size}")
     private String roleCode;
 
-    @NotBlank(message = "角色描述不能为空")
-    @Size(max = 255, message = "角色描述长度不能超过 255 个字符")
+    @NotBlank(message = "{validation.system.role.save.description.not_blank}")
+    @Size(max = 255, message = "{validation.system.role.save.description.size}")
     private String description;
 
-    @NotNull(message = "角色状态不能为空")
+    @NotNull(message = "{validation.system.role.save.enabled.not_null}")
     private Boolean enabled;
 
     public String getRoleName() {

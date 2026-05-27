@@ -2,34 +2,34 @@ package com.velox.module.system.file.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "管理后台 - 文件 Response VO")
+@Schema(description = "openapi.system.file.resp.schema")
 public class FileRespVO {
 
-    @Schema(description = "文件编号")
+    @Schema(description = "openapi.system.file.resp.id")
     private String id;
 
-    @Schema(description = "配置编号")
+    @Schema(description = "openapi.system.file.resp.config_id")
     private String configId;
 
-    @Schema(description = "文件名")
+    @Schema(description = "openapi.system.file.resp.name")
     private String name;
 
-    @Schema(description = "文件路径")
+    @Schema(description = "openapi.system.file.resp.path")
     private String path;
 
-    @Schema(description = "文件 URL")
+    @Schema(description = "openapi.system.file.resp.url")
     private String url;
 
-    @Schema(description = "文件类型")
+    @Schema(description = "openapi.system.file.resp.type")
     private String type;
 
-    @Schema(description = "文件大小")
+    @Schema(description = "openapi.system.file.resp.size")
     private Long size;
 
-    @Schema(description = "上传时间")
+    @Schema(description = "openapi.system.file.resp.upload_time")
     private String uploadTime;
 
-    @Schema(description = "创建人")
+    @Schema(description = "openapi.system.file.resp.create_by")
     private String createBy;
 
     public String getId() {

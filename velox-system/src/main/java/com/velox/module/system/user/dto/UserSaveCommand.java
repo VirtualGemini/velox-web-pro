@@ -10,28 +10,28 @@ import java.util.List;
 
 public class UserSaveCommand {
 
-    @NotBlank(message = "用户名不能为空")
-    @Size(min = 2, max = 50, message = "用户名长度应在 2-50 个字符之间")
+    @NotBlank(message = "{validation.system.user.save.username.not_blank}")
+    @Size(min = 2, max = 50, message = "{validation.system.user.save.username.size}")
     private String username;
 
-    @Size(min = 6, max = 32, message = "密码长度应在 6-32 个字符之间")
+    @Size(min = 6, max = 32, message = "{validation.system.user.save.password.size}")
     private String password;
 
-    @NotBlank(message = "昵称不能为空")
-    @Size(max = 50, message = "昵称长度不能超过 50 个字符")
+    @NotBlank(message = "{validation.system.user.save.nickname.not_blank}")
+    @Size(max = 50, message = "{validation.system.user.save.nickname.size}")
     private String nickname;
 
-    @Email(message = "邮箱格式不正确")
-    @Size(max = 100, message = "邮箱长度不能超过 100 个字符")
+    @Email(message = "{validation.system.user.save.email.invalid}")
+    @Size(max = 100, message = "{validation.system.user.save.email.size}")
     private String email;
 
-    @NotBlank(message = "手机号不能为空")
-    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
+    @NotBlank(message = "{validation.system.user.save.phone.not_blank}")
+    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "{validation.system.user.save.phone.pattern}")
     private String phone;
 
     private Integer gender;
 
-    @NotEmpty(message = "至少选择一个角色")
+    @NotEmpty(message = "{validation.system.user.save.role_codes.not_empty}")
     private List<String> roleCodes;
 
     public String getUsername() {

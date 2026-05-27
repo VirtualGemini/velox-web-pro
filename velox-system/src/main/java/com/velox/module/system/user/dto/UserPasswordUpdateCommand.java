@@ -5,14 +5,14 @@ import jakarta.validation.constraints.Size;
 
 public class UserPasswordUpdateCommand {
 
-    @NotBlank(message = "当前密码不能为空")
+    @NotBlank(message = "{validation.system.user.password.current_password.not_blank}")
     private String currentPassword;
 
-    @NotBlank(message = "新密码不能为空")
-    @Size(min = 6, max = 32, message = "新密码长度应在 6-32 个字符之间")
+    @NotBlank(message = "{validation.system.user.password.new_password.not_blank}")
+    @Size(min = 6, max = 32, message = "{validation.system.user.password.new_password.size}")
     private String newPassword;
 
-    @NotBlank(message = "确认新密码不能为空")
+    @NotBlank(message = "{validation.system.user.password.confirm_password.not_blank}")
     private String confirmPassword;
 
     public String getCurrentPassword() {

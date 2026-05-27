@@ -8,54 +8,54 @@ public class MenuSaveCommand {
 
     private String parentId;
 
-    @NotBlank(message = "菜单类型不能为空")
+    @NotBlank(message = "{validation.system.menu.save.menu_type.not_blank}")
     private String menuType;
 
-    @NotBlank(message = "名称不能为空")
-    @Size(max = 100, message = "名称长度不能超过 100 个字符")
+    @NotBlank(message = "{validation.system.menu.save.name.not_blank}")
+    @Size(max = 100, message = "{validation.system.menu.save.name.size}")
     private String name;
 
-    @NotBlank(message = "标题不能为空")
-    @Size(max = 100, message = "标题长度不能超过 100 个字符")
+    @NotBlank(message = "{validation.system.menu.save.title.not_blank}")
+    @Size(max = 100, message = "{validation.system.menu.save.title.size}")
     private String title;
 
-    @Size(max = 255, message = "路由地址长度不能超过 255 个字符")
+    @Size(max = 255, message = "{validation.system.menu.save.path.size}")
     private String path;
 
-    @Size(max = 255, message = "组件路径长度不能超过 255 个字符")
+    @Size(max = 255, message = "{validation.system.menu.save.component.size}")
     private String component;
 
-    @Size(max = 255, message = "重定向地址长度不能超过 255 个字符")
+    @Size(max = 255, message = "{validation.system.menu.save.redirect.size}")
     private String redirect;
 
-    @Size(max = 100, message = "图标长度不能超过 100 个字符")
+    @Size(max = 100, message = "{validation.system.menu.save.icon.size}")
     private String icon;
 
-    @Size(max = 100, message = "权限标识长度不能超过 100 个字符")
+    @Size(max = 100, message = "{validation.system.menu.save.auth_mark.size}")
     private String authMark;
 
-    @NotNull(message = "启用状态不能为空")
+    @NotNull(message = "{validation.system.menu.save.is_enable.not_null}")
     private Boolean isEnable;
 
-    @NotNull(message = "排序不能为空")
+    @NotNull(message = "{validation.system.menu.save.sort.not_null}")
     private Integer sort;
 
     private Boolean keepAlive;
     private Boolean isHide;
     private Boolean isHideTab;
 
-    @Size(max = 255, message = "外部链接长度不能超过 255 个字符")
+    @Size(max = 255, message = "{validation.system.menu.save.link.size}")
     private String link;
 
     private Boolean isIframe;
     private Boolean showBadge;
 
-    @Size(max = 50, message = "文本徽章长度不能超过 50 个字符")
+    @Size(max = 50, message = "{validation.system.menu.save.show_text_badge.size}")
     private String showTextBadge;
 
     private Boolean fixedTab;
 
-    @Size(max = 255, message = "激活路径长度不能超过 255 个字符")
+    @Size(max = 255, message = "{validation.system.menu.save.active_path.size}")
     private String activePath;
 
     private Boolean isFullPage;

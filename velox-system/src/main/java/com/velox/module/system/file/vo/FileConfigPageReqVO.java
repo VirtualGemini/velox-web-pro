@@ -2,34 +2,34 @@ package com.velox.module.system.file.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "管理后台 - 文件配置分页 Request VO")
+@Schema(description = "openapi.system.file_config.page_req.schema")
 public class FileConfigPageReqVO {
 
-    @Schema(description = "配置名")
+    @Schema(description = "openapi.system.file_config.page_req.name")
     private String name;
 
-    @Schema(description = "存储器")
+    @Schema(description = "openapi.system.file_config.page_req.storage")
     private Integer storage;
 
-    @Schema(description = "启用状态")
+    @Schema(description = "openapi.common.enabled")
     private Integer enabled;
 
-    @Schema(description = "创建开始时间", example = "2026-05-22 10:00:00")
+    @Schema(description = "openapi.common.audit.create_time_start", example = "2026-05-22 10:00:00")
     private String createTimeStart;
 
-    @Schema(description = "创建结束时间", example = "2026-05-22 18:00:00")
+    @Schema(description = "openapi.common.audit.create_time_end", example = "2026-05-22 18:00:00")
     private String createTimeEnd;
 
-    @Schema(description = "编辑开始时间", example = "2026-05-22 10:00:00")
+    @Schema(description = "openapi.common.audit.update_time_start", example = "2026-05-22 10:00:00")
     private String updateTimeStart;
 
-    @Schema(description = "编辑结束时间", example = "2026-05-22 18:00:00")
+    @Schema(description = "openapi.common.audit.update_time_end", example = "2026-05-22 18:00:00")
     private String updateTimeEnd;
 
-    @Schema(description = "页码", example = "1")
+    @Schema(description = "openapi.common.page.page", example = "1")
     private Integer page = 1;
 
-    @Schema(description = "每页大小", example = "10")
+    @Schema(description = "openapi.common.page.size", example = "10")
     private Integer size = 10;
 
     public String getName() {

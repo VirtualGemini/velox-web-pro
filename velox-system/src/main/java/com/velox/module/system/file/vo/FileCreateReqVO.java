@@ -3,18 +3,18 @@ package com.velox.module.system.file.vo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 
-@Schema(description = "管理后台 - 文件创建 Request VO")
+@Schema(description = "openapi.system.file.create_req.schema")
 public class FileCreateReqVO {
 
-    @Schema(description = "文件配置编号", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "文件配置编号不能为空")
+    @Schema(description = "openapi.system.file.create_req.config_id", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotEmpty(message = "{validation.system.file.create.config_id.not_empty}")
     private String configId;
 
-    @Schema(description = "文件路径", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "文件路径不能为空")
+    @Schema(description = "openapi.system.file.create_req.path", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotEmpty(message = "{validation.system.file.create.path.not_empty}")
     private String path;
 
-    @Schema(description = "文件 URL")
+    @Schema(description = "openapi.system.file.create_req.url")
     private String url;
 
     public String getConfigId() {

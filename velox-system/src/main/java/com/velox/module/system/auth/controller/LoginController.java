@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "登录认证", description = "登录认证相关接口")
+@Tag(name = "openapi.system.auth.login.tag.name", description = "openapi.system.auth.login.tag.description")
 @RestController
 @RequestMapping("/auth")
 public class LoginController {
@@ -28,67 +28,67 @@ public class LoginController {
         this.loginService = loginService;
     }
 
-    @Operation(summary = "获取验证码")
+    @Operation(summary = "openapi.system.auth.login.get_captcha.summary")
     @GetMapping("/captcha")
     public Result<CaptchaDTO> getCaptcha() {
         return Result.ok(loginService.generateCaptcha());
     }
 
-    @Operation(summary = "登录")
+    @Operation(summary = "openapi.system.auth.login.login.summary")
     @PostMapping("/login")
     public Result<TokenDTO> login(@Valid @RequestBody LoginCommand command) {
         return Result.ok(loginService.login(command));
     }
 
-    @Operation(summary = "发送登录验证码")
+    @Operation(summary = "openapi.system.auth.login.send_login_code.summary")
     @PostMapping("/login-code/send")
     public Result<Void> sendLoginCode(@Valid @RequestBody LoginCodeSendCommand command) {
         loginService.sendLoginCode(command);
         return Result.ok();
     }
 
-    @Operation(summary = "验证码登录")
+    @Operation(summary = "openapi.system.auth.login.login_by_code.summary")
     @PostMapping("/login-code/login")
     public Result<TokenDTO> loginByCode(@Valid @RequestBody CodeLoginCommand command) {
         return Result.ok(loginService.loginByCode(command));
     }
 
-    @Operation(summary = "注册")
+    @Operation(summary = "openapi.system.auth.login.register.summary")
     @PostMapping("/register")
     public Result<Void> register(@Valid @RequestBody RegisterCommand command) {
         loginService.register(command);
         return Result.ok();
     }
 
-    @Operation(summary = "发送找回密码验证码")
+    @Operation(summary = "openapi.system.auth.login.send_reset_password_code.summary")
     @PostMapping("/forgot-password/code")
     public Result<Void> sendResetPasswordCode(@Valid @RequestBody ForgotPasswordCodeCommand command) {
         loginService.sendResetPasswordCode(command);
         return Result.ok();
     }
 
-    @Operation(summary = "通过邮箱验证码重置密码")
+    @Operation(summary = "openapi.system.auth.login.reset_password.summary")
     @PostMapping("/forgot-password/reset")
     public Result<Void> resetPassword(@Valid @RequestBody ResetPasswordCommand command) {
         loginService.resetPassword(command);
         return Result.ok();
     }
 
-    @Operation(summary = "登出")
+    @Operation(summary = "openapi.system.auth.login.logout.summary")
     @PostMapping("/logout")
     public Result<Void> logout() {
         loginService.logout();
         return Result.ok();
     }
 
-    @Operation(summary = "发送登录二次验证码")
+    @Operation(summary = "openapi.system.auth.login.send_mfa_challenge_code.summary")
     @PostMapping("/mfa/challenge/send-code")
     public Result<Void> sendMfaChallengeCode(@Valid @RequestBody MfaChallengeSendCodeCommand command) {
         loginService.sendMfaChallengeCode(command);
         return Result.ok();
     }
 
-    @Operation(summary = "校验登录虚拟 MFA 设备验证并完成登录")
+    @Operation(summary = "openapi.system.auth.login.verify_mfa_challenge.summary")
     @PostMapping("/mfa/challenge/verify")
     public Result<TokenDTO> verifyMfaChallenge(@Valid @RequestBody MfaChallengeVerifyCommand command) {
         return Result.ok(loginService.verifyMfaChallenge(command));

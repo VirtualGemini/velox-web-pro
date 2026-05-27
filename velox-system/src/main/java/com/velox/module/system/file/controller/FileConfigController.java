@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "管理后台 - 文件配置")
+@Tag(name = "openapi.system.file_config.tag.name", description = "openapi.system.file_config.tag.description")
 @RestController
 @RequestMapping("/file-config")
 @Validated
@@ -35,14 +35,14 @@ public class FileConfigController {
     }
 
     @PostMapping("/create")
-    @Operation(summary = "创建文件配置")
+    @Operation(summary = "openapi.system.file_config.create.summary")
     @RequirePermission("system:file-config:create")
     public Result<String> createFileConfig(@Valid @RequestBody FileConfigSaveReqVO createReqVO) {
         return Result.ok(frontendIdCodecSupport.encodeIdentifier(fileConfigService.createFileConfig(createReqVO)));
     }
 
     @PutMapping("/update")
-    @Operation(summary = "更新文件配置")
+    @Operation(summary = "openapi.system.file_config.update.summary")
     @RequirePermission("system:file-config:update")
     public Result<Boolean> updateFileConfig(@Valid @RequestBody FileConfigSaveReqVO updateReqVO) {
         fileConfigService.updateFileConfig(updateReqVO);
@@ -50,8 +50,8 @@ public class FileConfigController {
     }
 
     @PutMapping("/update-master")
-    @Operation(summary = "更新文件配置为 Master")
-    @Parameter(name = "id", description = "编号", required = true)
+    @Operation(summary = "openapi.system.file_config.update_master.summary")
+    @Parameter(name = "id", description = "openapi.common.id", required = true)
     @RequirePermission("system:file-config:update")
     public Result<Boolean> updateFileConfigMaster(@RequestParam("id") String id) {
         fileConfigService.updateFileConfigMaster(id);
@@ -59,9 +59,9 @@ public class FileConfigController {
     }
 
     @PutMapping("/update-enabled")
-    @Operation(summary = "更新文件配置启用状态")
-    @Parameter(name = "id", description = "编号", required = true)
-    @Parameter(name = "enabled", description = "是否启用", required = true)
+    @Operation(summary = "openapi.system.file_config.update_enabled.summary")
+    @Parameter(name = "id", description = "openapi.common.id", required = true)
+    @Parameter(name = "enabled", description = "openapi.common.enabled", required = true)
     @RequirePermission("system:file-config:update")
     public Result<Boolean> updateFileConfigEnabled(@RequestParam("id") String id,
                                                     @RequestParam("enabled") Integer enabled) {
@@ -70,8 +70,8 @@ public class FileConfigController {
     }
 
     @DeleteMapping("/delete")
-    @Operation(summary = "删除文件配置")
-    @Parameter(name = "id", description = "编号", required = true)
+    @Operation(summary = "openapi.system.file_config.delete.summary")
+    @Parameter(name = "id", description = "openapi.common.id", required = true)
     @RequirePermission("system:file-config:delete")
     public Result<Boolean> deleteFileConfig(@RequestParam("id") String id) {
         fileConfigService.deleteFileConfig(id);
@@ -79,7 +79,7 @@ public class FileConfigController {
     }
 
     @DeleteMapping("/delete-batch")
-    @Operation(summary = "批量删除文件配置")
+    @Operation(summary = "openapi.system.file_config.delete_batch.summary")
     @RequirePermission("system:file-config:delete")
     public Result<Boolean> deleteFileConfigList(@RequestParam("ids") List<String> ids) {
         fileConfigService.deleteFileConfigList(ids);
@@ -87,30 +87,30 @@ public class FileConfigController {
     }
 
     @GetMapping("/get")
-    @Operation(summary = "获得文件配置")
-    @Parameter(name = "id", description = "编号", required = true)
+    @Operation(summary = "openapi.system.file_config.get.summary")
+    @Parameter(name = "id", description = "openapi.common.id", required = true)
     @RequirePermission("system:file-config:query")
     public Result<FileConfigRespVO> getFileConfig(@RequestParam("id") String id) {
         return Result.ok(fileConfigService.getFileConfig(id));
     }
 
     @GetMapping("/page")
-    @Operation(summary = "获得文件配置分页")
+    @Operation(summary = "openapi.system.file_config.page.summary")
     @RequirePermission("system:file-config:query")
     public Result<PageResult<FileConfigRespVO>> getFileConfigPage(FileConfigPageReqVO pageReqVO) {
         return Result.ok(fileConfigService.getFileConfigPage(pageReqVO));
     }
 
     @GetMapping("/supported-storages")
-    @Operation(summary = "获得当前环境支持的文件存储类型")
+    @Operation(summary = "openapi.system.file_config.supported_storages.summary")
     @RequirePermission("system:file-config:query")
     public Result<List<Integer>> getSupportedStorageTypes() {
         return Result.ok(fileConfigService.getSupportedStorageTypes());
     }
 
     @GetMapping("/test")
-    @Operation(summary = "测试文件配置是否正确")
-    @Parameter(name = "id", description = "编号", required = true)
+    @Operation(summary = "openapi.system.file_config.test.summary")
+    @Parameter(name = "id", description = "openapi.common.id", required = true)
     @RequirePermission("system:file-config:query")
     public Result<String> testFileConfig(@RequestParam("id") String id) {
         return Result.ok(fileConfigService.testFileConfig(id));

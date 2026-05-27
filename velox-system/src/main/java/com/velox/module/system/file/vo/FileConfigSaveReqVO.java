@@ -4,31 +4,31 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-@Schema(description = "管理后台 - 文件配置创建/修改 Request VO")
+@Schema(description = "openapi.system.file_config.save_req.schema")
 public class FileConfigSaveReqVO {
 
-    @Schema(description = "编号")
+    @Schema(description = "openapi.common.id")
     private String id;
 
-    @Schema(description = "配置名", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "配置名不能为空")
+    @Schema(description = "openapi.system.file_config.save_req.name", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotEmpty(message = "{validation.system.file_config.name.not_empty}")
     private String name;
 
-    @Schema(description = "存储器", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull(message = "存储器不能为空")
+    @Schema(description = "openapi.system.file_config.save_req.storage", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull(message = "{validation.system.file_config.storage.not_null}")
     private Integer storage;
 
-    @Schema(description = "存储配置", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "存储配置不能为空")
+    @Schema(description = "openapi.system.file_config.save_req.config", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotEmpty(message = "{validation.system.file_config.config.not_empty}")
     private String config;
 
-    @Schema(description = "是否主配置")
+    @Schema(description = "openapi.system.file_config.save_req.master")
     private Boolean master;
 
-    @Schema(description = "是否启用")
+    @Schema(description = "openapi.common.enabled")
     private Integer enabled;
 
-    @Schema(description = "备注")
+    @Schema(description = "openapi.common.remark")
     private String remark;
 
     public String getId() {

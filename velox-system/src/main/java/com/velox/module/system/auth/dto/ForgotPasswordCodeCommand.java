@@ -4,12 +4,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-@Schema(description = "发送忘记密码邮件验证码请求")
+@Schema(description = "openapi.system.auth.forgot_password_code_command.schema")
 public class ForgotPasswordCodeCommand {
 
-    @Schema(description = "邮箱", example = "user@example.com")
-    @NotBlank(message = "邮箱不能为空")
-    @Email(message = "邮箱格式不正确")
+    @Schema(description = "openapi.system.auth.forgot_password_code_command.email", example = "user@example.com")
+    @NotBlank(message = "{validation.system.auth.forgot_password.email.not_blank}")
+    @Email(message = "{validation.system.auth.forgot_password.email.invalid}")
     private String email;
 
     public String getEmail() {

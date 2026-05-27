@@ -2,34 +2,34 @@ package com.velox.module.system.file.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "管理后台 - 文件分页 Request VO")
+@Schema(description = "openapi.system.file.page_req.schema")
 public class FilePageReqVO {
 
-    @Schema(description = "文件路径", example = "upload/2024/01")
+    @Schema(description = "openapi.system.file.page_req.path", example = "upload/2024/01")
     private String path;
 
-    @Schema(description = "文件名", example = "report.md")
+    @Schema(description = "openapi.system.file.page_req.name", example = "report.md")
     private String name;
 
-    @Schema(description = "文件类型", example = "image/jpeg")
+    @Schema(description = "openapi.system.file.page_req.type", example = "image/jpeg")
     private String type;
 
-    @Schema(description = "文件大小最小值(字节)", example = "1024")
+    @Schema(description = "openapi.system.file.page_req.size_min_bytes", example = "1024")
     private Long sizeMinBytes;
 
-    @Schema(description = "文件大小最大值(字节)", example = "1048576")
+    @Schema(description = "openapi.system.file.page_req.size_max_bytes", example = "1048576")
     private Long sizeMaxBytes;
 
-    @Schema(description = "上传开始时间", example = "2026-05-22 10:00:00")
+    @Schema(description = "openapi.system.file.page_req.upload_time_start", example = "2026-05-22 10:00:00")
     private String uploadTimeStart;
 
-    @Schema(description = "上传结束时间", example = "2026-05-22 18:00:00")
+    @Schema(description = "openapi.system.file.page_req.upload_time_end", example = "2026-05-22 18:00:00")
     private String uploadTimeEnd;
 
-    @Schema(description = "页码", example = "1")
+    @Schema(description = "openapi.common.page.page", example = "1")
     private Integer page = 1;
 
-    @Schema(description = "每页大小", example = "10")
+    @Schema(description = "openapi.common.page.size", example = "10")
     private Integer size = 10;
 
     public String getPath() {
