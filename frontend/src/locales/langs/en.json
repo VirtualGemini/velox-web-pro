@@ -718,7 +718,7 @@
             "unbound": "No email bound",
             "rebind": "Change Email",
             "bind": "Bind Email",
-            "unbind": "Unbind Email",
+            "unbind": "Remove Binding",
             "dialog": {
               "title": "Change Email",
               "bindTitle": "Bind Email",
@@ -761,8 +761,8 @@
             },
             "unbindDialog": {
               "title": "Unbind Email",
-              "tip": "After unbinding, email-code sign-in and Email MFA will no longer be available. Current email: {email}",
-              "currentEmailCode": "Current Email Code",
+              "tip": "After unbinding, email-code sign-in and Email MFA will no longer be available.",
+              "currentEmailCode": "Send a code to {email}",
               "currentEmailCodePlaceholder": "Enter the 6-digit code sent to your current email",
               "currentEmailCodeRequired": "Please enter the current email code",
               "totpCode": "TOTP Code",

@@ -122,16 +122,16 @@
     :lock-scroll="false"
   >
     <div class="mb-4 text-sm text-g-600">
-      {{
-        t('pages.system.accountCenter.security.email.unbindDialog.tip', {
-          email: email || ''
-        })
-      }}
+      {{ t('pages.system.accountCenter.security.email.unbindDialog.tip') }}
     </div>
 
     <ElForm ref="formRef" :model="form" :rules="rules" label-position="top">
       <ElFormItem
-        :label="t('pages.system.accountCenter.security.email.unbindDialog.currentEmailCode')"
+        :label="
+          t('pages.system.accountCenter.security.email.unbindDialog.currentEmailCode', {
+            email: email || ''
+          })
+        "
         prop="currentEmailCode"
       >
         <div class="flex gap-2 w-full">

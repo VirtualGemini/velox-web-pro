@@ -718,7 +718,7 @@
             "unbound": "尚未绑定邮箱",
             "rebind": "更换邮箱",
             "bind": "绑定邮箱",
-            "unbind": "解绑邮箱",
+            "unbind": "解除绑定",
             "dialog": {
               "title": "更换邮箱",
               "bindTitle": "绑定邮箱",
@@ -761,8 +761,8 @@
             },
             "unbindDialog": {
               "title": "解绑邮箱",
-              "tip": "解绑邮箱后，将无法使用邮箱验证码登录，也不可开启邮箱二次验证。当前邮箱：{email}",
-              "currentEmailCode": "当前邮箱验证码",
+              "tip": "解绑邮箱后，将无法使用邮箱验证码登录，也不可开启邮箱二次验证。",
+              "currentEmailCode": "向 {email} 发送验证码",
               "currentEmailCodePlaceholder": "请输入当前邮箱收到的 6 位验证码",
               "currentEmailCodeRequired": "请输入当前邮箱验证码",
               "totpCode": "TOTP 动态口令",

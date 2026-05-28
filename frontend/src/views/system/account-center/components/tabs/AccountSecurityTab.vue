@@ -161,8 +161,8 @@
             {{ detail.securityEmail || status?.email || t('pages.system.accountCenter.security.email.unbound') }}
           </div>
         </div>
-        <div class="setting-action">
-          <ElSpace wrap>
+        <div class="setting-action security-email-action">
+          <ElSpace>
             <ElButton @click="rebindEmailVisible = true">
               {{
                 status?.email
@@ -170,10 +170,12 @@
                   : t('pages.system.accountCenter.security.email.bind')
               }}
             </ElButton>
-            <ElButton v-if="status?.email" @click="unbindEmailVisible = true">
+          </ElSpace>
+          <div v-if="status?.email" class="security-email-unbind-row">
+            <ElButton @click="unbindEmailVisible = true">
               {{ t('pages.system.accountCenter.security.email.unbind') }}
             </ElButton>
-          </ElSpace>
+          </div>
         </div>
       </section>
 
@@ -329,6 +331,16 @@
   .setting-action {
     flex: 0 0 auto;
     margin-left: auto;
+  }
+
+  .security-email-action {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .security-email-unbind-row {
+    margin-top: 8px;
   }
 
   .setting-list {
