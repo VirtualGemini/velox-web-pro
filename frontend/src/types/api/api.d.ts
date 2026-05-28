@@ -92,6 +92,13 @@ declare namespace Api {
       mfaType?: 'email' | 'totp'
       mfaEmailMasked?: string
       mfaTotpDigits?: number
+      pendingDeletion?: boolean
+      accountId?: string
+      userName?: string
+      avatar?: string
+      email?: string
+      deletionRequestedAt?: string
+      deletionExpiresAt?: string
     }
 
     interface MfaChallengeSendParams {
@@ -122,10 +129,10 @@ declare namespace Api {
     }
 
     /** 用户基础信息（仅保留支撑系统运行所需字段） */
-    interface UserInfo {
+    interface AccountInfo {
       buttons: string[]
       roles: string[]
-      userId: string
+      accountId: string
       userName: string
       email: string
       phone?: string
@@ -134,13 +141,14 @@ declare namespace Api {
     }
 
     /** 用户详细信息（个人中心专用） */
-    interface UserDetail {
+    interface AccountDetail {
       buttons: string[]
       roles: string[]
       tags?: string[]
-      userId: string
+      accountId: string
       userName: string
       email: string
+      securityEmail?: string
       phone?: string
       avatar?: string
       nickname?: string
@@ -154,13 +162,13 @@ declare namespace Api {
       language?: string
     }
 
-    interface UserProfileUpdateCommand {
-      realName: string
-      nickname: string
+    interface AccountProfileUpdateCommand {
+      realName?: string
+      nickname?: string
       email?: string
-      phone: string
+      phone?: string
       address?: string
-      gender: number
+      gender?: number
       introduction?: string
       signature?: string
       position?: string
@@ -168,15 +176,49 @@ declare namespace Api {
       tags?: string[]
     }
 
-    interface UserPasswordUpdateCommand {
+    interface AccountPasswordUpdateCommand {
       currentPassword: string
       newPassword: string
       confirmPassword: string
+      mfaType?: 'email' | 'totp'
+      mfaEmailCode?: string
+      mfaTotpCode?: string
     }
 
     interface AvatarUpdateCommand {
       avatarUrl: string
     }
+
+    interface AccountTabInfo {
+      accountId: string
+      username: string
+      remark?: string
+      securityEmail?: string
+      emailMfaEnabled: boolean
+      totpMfaEnabled: boolean
+      pendingDeletion: boolean
+      deletionRequestedAt?: string
+      deletionExpiresAt?: string
+    }
+
+    interface AccountUsernameUpdateCommand {
+      username: string
+    }
+
+    interface AccountDeletionCommand {
+      username: string
+      emailCode?: string
+      currentPassword?: string
+    }
+
+    interface AccountRecoveryCommand {
+      username: string
+    }
+
+    type UserInfo = AccountInfo
+    type UserDetail = AccountDetail
+    type UserProfileUpdateCommand = AccountProfileUpdateCommand
+    type UserPasswordUpdateCommand = AccountPasswordUpdateCommand
   }
 
   /** 系统管理类型 */
@@ -188,30 +230,24 @@ declare namespace Api {
       roleLevel?: number
     }
 
-    /** 用户列表 */
-    type UserList = Api.Common.PaginatedResponse<UserListItem>
+    /** 账号列表 */
+    type AccountList = Api.Common.PaginatedResponse<AccountListItem>
 
-    /** 用户列表项 */
-    interface UserListItem {
-      id: string
-      userId: string
+    /** 账号列表项 */
+    interface AccountListItem {
+      accountId: string
       avatar: string
       status: string
-      userName: string
-      userGender: string
-      nickName: string
-      userPhone: string
-      userEmail: string
-      userRoles: string[]
-      createBy: string
+      username: string
+      email: string
+      remark: string
       createTime: string
-      updateBy: string
       updateTime: string
     }
 
-    /** 用户搜索参数 */
-    type UserSearchParams = Partial<
-      Pick<UserListItem, 'id' | 'userName' | 'userGender' | 'userPhone' | 'userEmail' | 'status'> &
+    /** 账号搜索参数 */
+    type AccountSearchParams = Partial<
+      Pick<AccountListItem, 'username' | 'email' | 'remark' | 'status'> &
         Api.Common.CommonSearchParams & {
           createTimeStart: string | null
           createTimeEnd: string | null
@@ -220,13 +256,10 @@ declare namespace Api {
         }
     >
 
-    interface UserSaveCommand {
+    interface AccountSaveCommand {
       username: string
       password?: string
-      nickname: string
-      phone: string
-      email?: string
-      gender: number
+      remark?: string
       roleCodes: string[]
     }
 
@@ -344,6 +377,11 @@ declare namespace Api {
         proofTicket: string
       }
 
+      interface EmailUnbindCommand {
+        currentEmailCode: string
+        totpCode?: string
+      }
+
       interface MfaEmailUpdateCommand {
         enabled: boolean
         code?: string
@@ -364,8 +402,13 @@ declare namespace Api {
         code: string
       }
 
+      interface MfaTotpEnableResult {
+        recoveryCodes: string[]
+      }
+
       interface MfaTotpDisableCommand {
-        code: string
+        code?: string
+        recoveryCode?: string
       }
     }
   }

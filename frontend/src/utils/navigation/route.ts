@@ -47,7 +47,7 @@ export const isNavigableMenuItem = (menuItem: AppRouteRecord): boolean => {
 
 /**
  * 判断菜单项是否拥有可用作落地的真实路径（忽略 isHide）。
- * 用于在没有任何可见菜单时（譬如普通用户仅授权了 UserCenter）回退寻找首页。
+ * 用于在没有任何可见菜单时（譬如普通用户仅授权了 AccountCenter）回退寻找首页。
  */
 const hasRoutablePath = (menuItem: AppRouteRecord): boolean => {
   if (!menuItem.path || !menuItem.path.trim()) {
@@ -100,7 +100,7 @@ export const getFirstMenuPath = (menuList: AppRouteRecord[]): string => {
 
 /**
  * 在菜单树中查找首个拥有真实路径的菜单（含隐藏项），作为最终兜底。
- * 仅当所有可见菜单都不存在时使用——例如普通用户仅授权了隐藏的个人中心。
+ * 仅当所有可见菜单都不存在时使用——例如普通用户仅授权了隐藏的账号中心。
  */
 const getFirstRoutablePath = (menuList: AppRouteRecord[]): string => {
   if (!Array.isArray(menuList) || menuList.length === 0) {
@@ -149,7 +149,7 @@ const findMenuByPath = (
  *
  * 优先级：
  * 1. 工作台 `/dashboard/console`
- * 2. 个人中心 `/system/user-center`（即便配置为隐藏也接受，作为普通用户的兜底首页）
+ * 2. 个人中心 `/system/account-center`（即便配置为隐藏也接受，作为普通用户的兜底首页）
  * 3. 后端返回顺序的第一个可见菜单
  * 4. 仍无落点时，使用首个拥有真实组件路径的菜单（含隐藏项），保证普通用户至少能进入个人中心
  */
@@ -158,7 +158,7 @@ export const resolveHomePath = (menuList: AppRouteRecord[]): string => {
     return ''
   }
 
-  const priorities = ['/dashboard/console', '/system/user-center']
+  const priorities = ['/dashboard/console', '/system/account-center']
   for (const path of priorities) {
     // 优先级路径属于显式指定的兜底首页，即使被标记为 isHide 也算命中。
     if (findMenuByPath(menuList, path, true)) {

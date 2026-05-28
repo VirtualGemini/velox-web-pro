@@ -50,7 +50,7 @@ import { RoutesAlias } from '@/router/routesAlias'
  * 用户状态管理
  * 管理用户登录状态、个人信息、语言设置、搜索历史、锁屏状态等
  */
-export const useUserStore = defineStore(
+export const useAccountStore = defineStore(
   'userStore',
   () => {
     // 语言设置
@@ -62,11 +62,12 @@ export const useUserStore = defineStore(
     // 锁屏密码
     const lockPassword = ref('')
     // 用户信息
-    const info = ref<Partial<Api.Auth.UserInfo>>({})
+    const info = ref<Partial<Api.Auth.AccountInfo>>({})
     // 当前激活的缓存用户 ID，仅在已登录态有效
     const activeUserId = ref('')
     // 登录成功后的路由跳转过渡态，避免授权页短暂闪出已登录卡片
     const isPostLoginNavigating = ref(false)
+    const pendingDeletionLogin = ref<Partial<Api.Auth.LoginResponse> | null>(null)
     // 搜索历史记录
     const searchHistory = ref<AppRouteRecord[]>([])
     // 访问令牌
@@ -75,7 +76,8 @@ export const useUserStore = defineStore(
     const refreshToken = ref('')
 
     // 计算属性：获取用户信息
-    const getUserInfo = computed(() => info.value)
+    const getAccountInfo = computed(() => info.value)
+    const getUserInfo = getAccountInfo
     const canReadUserCache = computed(() => isLogin.value && !!activeUserId.value)
     // 计算属性：获取设置状态
     const getSettingState = computed(() => useSettingStore().$state)
@@ -86,9 +88,10 @@ export const useUserStore = defineStore(
      * 设置用户信息
      * @param newInfo 新的用户信息
      */
-    const setUserInfo = (newInfo: Partial<Api.Auth.UserInfo>) => {
+    const setAccountInfo = (newInfo: Partial<Api.Auth.AccountInfo>) => {
       info.value = { ...info.value, ...newInfo }
     }
+    const setUserInfo = setAccountInfo
 
     /**
      * 设置登录状态
@@ -147,17 +150,17 @@ export const useUserStore = defineStore(
      * 同步当前登录用户的正式用户信息
      * 默认优先复用持久化数据，避免登录后重复请求造成界面闪烁
      */
-    const hydrateUserInfo = async (options?: { force?: boolean }) => {
-      if (!options?.force && info.value.userId) {
+    const hydrateAccountInfo = async (options?: { force?: boolean }) => {
+      if (!options?.force && info.value.accountId) {
         if (!activeUserId.value) {
-          activeUserId.value = String(info.value.userId)
+          activeUserId.value = String(info.value.accountId)
         }
-        return info.value as Api.Auth.UserInfo
+        return info.value as Api.Auth.AccountInfo
       }
 
       const data = await fetchGetUserInfo()
-      setUserInfo(data)
-      activeUserId.value = String(data.userId || '')
+      setAccountInfo(data)
+      activeUserId.value = String(data.accountId || '')
       checkAndClearWorktabs()
 
       const remoteLang = data.language as LanguageEnum | undefined
@@ -177,6 +180,7 @@ export const useUserStore = defineStore(
 
       return data
     }
+    const hydrateUserInfo = hydrateAccountInfo
 
     /**
      * 仅清理认证态，保留用户资料缓存用于静态展示与首帧消抖
@@ -189,10 +193,15 @@ export const useUserStore = defineStore(
       refreshToken.value = ''
       activeUserId.value = ''
       isPostLoginNavigating.value = false
+      pendingDeletionLogin.value = null
     }
 
     const setPostLoginNavigating = (status: boolean) => {
       isPostLoginNavigating.value = status
+    }
+
+    const setPendingDeletionLogin = (payload: Partial<Api.Auth.LoginResponse> | null) => {
+      pendingDeletionLogin.value = payload
     }
 
     const syncLoginStateFromPersisted = (snapshot: Partial<Record<string, unknown>>) => {
@@ -205,17 +214,17 @@ export const useUserStore = defineStore(
 
       const nextInfo =
         snapshot.info && typeof snapshot.info === 'object'
-          ? (snapshot.info as Partial<Api.Auth.UserInfo>)
+          ? (snapshot.info as Partial<Api.Auth.AccountInfo>)
           : {}
       const nextUserId =
         typeof snapshot.activeUserId === 'string'
           ? snapshot.activeUserId
-          : String(nextInfo.userId || '')
+          : String(nextInfo.accountId || '')
 
       const sameLoginState =
         isLogin.value &&
         accessToken.value === nextToken &&
-        String(info.value.userId || '') === String(nextInfo.userId || '')
+        String(info.value.accountId || '') === String(nextInfo.accountId || '')
 
       if (sameLoginState) {
         return
@@ -251,7 +260,7 @@ export const useUserStore = defineStore(
       }
 
       // 保存当前用户 ID，用于下次登录时判断是否为同一用户
-      const currentUserId = info.value.userId
+      const currentUserId = info.value.accountId
       if (currentUserId) {
         localStorage.setItem(StorageConfig.LAST_USER_ID_KEY, String(currentUserId))
       }
@@ -283,7 +292,7 @@ export const useUserStore = defineStore(
      */
     const checkAndClearWorktabs = () => {
       const lastUserId = localStorage.getItem(StorageConfig.LAST_USER_ID_KEY)
-      const currentUserId = info.value.userId
+      const currentUserId = info.value.accountId
 
       // 无法获取当前用户 ID，跳过检查
       if (!currentUserId) return
@@ -312,13 +321,16 @@ export const useUserStore = defineStore(
       info,
       activeUserId,
       isPostLoginNavigating,
+      pendingDeletionLogin,
       searchHistory,
       accessToken,
       refreshToken,
+      getAccountInfo,
       getUserInfo,
       canReadUserCache,
       getSettingState,
       getWorktabState,
+      setAccountInfo,
       setUserInfo,
       setLoginStatus,
       setLanguage,
@@ -326,9 +338,11 @@ export const useUserStore = defineStore(
       setLockStatus,
       setLockPassword,
       setToken,
+      hydrateAccountInfo,
       hydrateUserInfo,
       clearAuthState,
       setPostLoginNavigating,
+      setPendingDeletionLogin,
       syncLoginStateFromPersisted,
       logOut,
       checkAndClearWorktabs
@@ -341,3 +355,5 @@ export const useUserStore = defineStore(
     }
   }
 )
+
+export const useUserStore = useAccountStore

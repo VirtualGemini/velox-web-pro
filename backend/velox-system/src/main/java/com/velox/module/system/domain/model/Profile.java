@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @TableName("sys_profile")
 public class Profile extends BaseEntity {
 
-    private String userId;
+    private String accountId;
 
     private String nickname;
 
@@ -16,6 +16,10 @@ public class Profile extends BaseEntity {
     private Integer gender;
 
     private String realName;
+
+    private String email;
+
+    private String mobile;
 
     private String address;
 
@@ -29,12 +33,12 @@ public class Profile extends BaseEntity {
 
     private String tags;
 
-    public String getUserId() {
-        return userId;
+    public String getAccountId() {
+        return accountId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = normalizeIdentifier(userId);
+    public void setAccountId(String accountId) {
+        this.accountId = normalizeIdentifier(accountId);
     }
 
     public String getNickname() {
@@ -67,6 +71,22 @@ public class Profile extends BaseEntity {
 
     public void setRealName(String realName) {
         this.realName = realName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
     }
 
     public String getAddress() {

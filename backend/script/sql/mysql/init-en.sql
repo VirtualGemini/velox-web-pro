@@ -62,13 +62,13 @@ CREATE TABLE `sys_id_sequence` (
 /*!40000 ALTER TABLE `sys_id_sequence` DISABLE KEYS */;
 INSERT INTO `sys_id_sequence` (`business_type`, `current_value`) VALUES
   ('default',0),
-  ('sys_user',0),
+  ('sys_account',0),
   ('sys_role',0),
   ('sys_menu',0),
   ('sys_profile',0),
-  ('sys_user_role',0),
-  ('sys_user_session',0),
-  ('sys_user_security',0),
+  ('sys_account_role',0),
+  ('sys_account_session',0),
+  ('sys_account_security',0),
   ('sys_role_menu_permission',0),
   ('sys_file_config',0),
   ('sys_file',0),
@@ -216,12 +216,12 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `menu_type`, `name`, `title`, `path`,
   ('1900000000000000089','1900000000000000077','menu','Console','menus.dashboard.console','console','/dashboard/console',NULL,NULL,'dashboard:console',1,1,0,0,0,NULL,0,0,NULL,1,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- System
   ('1900000000000000080',NULL,'menu','System','menus.system.title','/system','/index/index',NULL,'ri:user-3-line',NULL,1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  -- System > User
-  ('1900000000000000016','1900000000000000080','menu','User','menus.system.user','user','/system/user',NULL,NULL,NULL,1,1,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000007','1900000000000000016','button','UserQuery','Query',NULL,NULL,NULL,NULL,'system:user:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000020','1900000000000000016','button','UserCreate','Create',NULL,NULL,NULL,NULL,'system:user:create',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000060','1900000000000000016','button','UserUpdate','Edit',NULL,NULL,NULL,NULL,'system:user:update',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000030','1900000000000000016','button','UserDelete','Delete',NULL,NULL,NULL,NULL,'system:user:delete',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- System > Account
+  ('1900000000000000016','1900000000000000080','menu','Account','menus.system.account','account','/system/account',NULL,NULL,NULL,1,1,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000007','1900000000000000016','button','AccountQuery','Query',NULL,NULL,NULL,NULL,'system:account:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000020','1900000000000000016','button','AccountCreate','Create',NULL,NULL,NULL,NULL,'system:account:create',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000060','1900000000000000016','button','AccountUpdate','Edit',NULL,NULL,NULL,NULL,'system:account:update',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000030','1900000000000000016','button','AccountDelete','Delete',NULL,NULL,NULL,NULL,'system:account:delete',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- System > Role
   ('1900000000000000046','1900000000000000080','menu','Role','menus.system.role','role','/system/role',NULL,NULL,NULL,1,2,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000085','1900000000000000046','button','RoleQuery','Query',NULL,NULL,NULL,NULL,'system:role:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
@@ -229,16 +229,23 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `menu_type`, `name`, `title`, `path`,
   ('1900000000000000066','1900000000000000046','button','RoleUpdate','Edit',NULL,NULL,NULL,NULL,'system:role:update',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000092','1900000000000000046','button','RoleDelete','Delete',NULL,NULL,NULL,NULL,'system:role:delete',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000053','1900000000000000046','button','RolePermission','Menu Permission',NULL,NULL,NULL,NULL,'system:role:permission',1,5,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  -- System > UserCenter
-  ('1900000000000000035','1900000000000000080','menu','UserCenter','menus.system.userCenter','user-center','/system/user-center',NULL,NULL,'system:user-center',1,3,1,1,1,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000106','1900000000000000035','button','UserCenterProfileQuery','Profile Query',NULL,NULL,NULL,NULL,'system:user-center:profile-query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000094','1900000000000000035','button','UserCenterProfileUpdate','Update Profile',NULL,NULL,NULL,NULL,'system:user-center:profile-update',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000095','1900000000000000035','button','UserCenterPasswordUpdate','Update Password',NULL,NULL,NULL,NULL,'system:user-center:password-update',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000096','1900000000000000035','button','UserCenterAvatarUpdate','Update Avatar',NULL,NULL,NULL,NULL,'system:user-center:avatar-update',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000110','1900000000000000035','button','UserCenterSecurityQuery','Security Query',NULL,NULL,NULL,NULL,'system:user-center:security-query',1,5,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000111','1900000000000000035','button','UserCenterSecurityUpdate','Security Update',NULL,NULL,NULL,NULL,'system:user-center:security-update',1,6,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000112','1900000000000000035','button','UserCenterEmailRebind','Rebind Email',NULL,NULL,NULL,NULL,'system:user-center:email-rebind',1,7,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000113','1900000000000000035','button','UserCenterMfaUpdate','MFA Management',NULL,NULL,NULL,NULL,'system:user-center:mfa-update',1,8,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- System > AccountCenter
+  ('1900000000000000035','1900000000000000080','menu','AccountCenter','menus.system.accountCenter','account-center','/system/account-center',NULL,NULL,'system:account-center',1,3,1,1,1,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000106','1900000000000000035','button','AccountCenterProfileQuery','Profile Query',NULL,NULL,NULL,NULL,'system:account-center:profile-query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000096','1900000000000000035','button','AccountCenterAvatarUpload','Avatar Upload',NULL,NULL,NULL,NULL,'system:account-center:avatar-upload',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000094','1900000000000000035','button','AccountCenterProfileUpdate','Profile Update',NULL,NULL,NULL,NULL,'system:account-center:profile-update',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000110','1900000000000000035','button','AccountCenterSecurityQuery','Security Query',NULL,NULL,NULL,NULL,'system:account-center:security-query',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000095','1900000000000000035','button','AccountCenterPasswordReset','Password Reset',NULL,NULL,NULL,NULL,'system:account-center:password-reset',1,5,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000112','1900000000000000035','button','AccountCenterEmailRebind','Email Rebind',NULL,NULL,NULL,NULL,'system:account-center:email-rebind',1,6,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000134','1900000000000000035','button','AccountCenterEmailUnbind','Unbind Email',NULL,NULL,NULL,NULL,'system:account-center:email-unbind',1,7,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000111','1900000000000000035','button','AccountCenterLoginMethodManage','Login Method Management',NULL,NULL,NULL,NULL,'system:account-center:login-method-manage',1,8,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000113','1900000000000000035','button','AccountCenterMfaManage','MFA Management',NULL,NULL,NULL,NULL,'system:account-center:mfa-manage',1,9,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000114','1900000000000000035','button','AccountCenterThirdPartyQuery','Third-Party Query',NULL,NULL,NULL,NULL,'system:account-center:third-party-query',1,10,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000115','1900000000000000035','button','AccountCenterThirdPartyManage','Third-Party Management',NULL,NULL,NULL,NULL,'system:account-center:third-party-manage',1,11,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000130','1900000000000000035','button','AccountCenterAccountQuery','Account Query',NULL,NULL,NULL,NULL,'system:account-center:account-query',1,12,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000131','1900000000000000035','button','AccountCenterAccountUpdate','Account Update',NULL,NULL,NULL,NULL,'system:account-center:account-update',1,13,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000132','1900000000000000035','button','AccountCenterAccountDelete','Account Delete',NULL,NULL,NULL,NULL,'system:account-center:account-delete',1,14,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000133','1900000000000000035','button','AccountCenterAccountRecover','Account Recover',NULL,NULL,NULL,NULL,'system:account-center:account-recover',1,15,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- System > Menus
   ('1900000000000000063','1900000000000000080','menu','Menus','menus.system.menu','menu','/system/menu',NULL,NULL,NULL,1,4,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000086','1900000000000000063','button','MenusQuery','Query',NULL,NULL,NULL,NULL,'system:menu:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
@@ -272,11 +279,13 @@ DROP TABLE IF EXISTS `sys_profile`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sys_profile` (
   `id` bigint NOT NULL COMMENT 'Primary Key ID',
-  `user_id` bigint NOT NULL COMMENT 'User ID',
+  `account_id` bigint NOT NULL COMMENT 'Account ID',
   `nickname` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Nickname',
   `avatar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Avatar',
   `gender` tinyint DEFAULT '0' COMMENT 'Gender (0-Unknown 1-Male 2-Female 3-Other)',
   `real_name` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Full Name',
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Display Email',
+  `mobile` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Display Mobile',
   `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Address',
   `introduction` text COLLATE utf8mb4_unicode_ci COMMENT 'Bio',
   `signature` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Signature',
@@ -289,8 +298,8 @@ CREATE TABLE `sys_profile` (
   `update_by` bigint DEFAULT NULL COMMENT 'Updated By',
   `deleted` tinyint DEFAULT '0' COMMENT 'Logical Delete (0-Not Deleted 1-Deleted)',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_user_id` (`user_id`),
-  CONSTRAINT `fk_sys_profile_user_id` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`)
+  UNIQUE KEY `uk_account_id` (`account_id`),
+  CONSTRAINT `fk_sys_profile_account_id` FOREIGN KEY (`account_id`) REFERENCES `sys_account` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='User Profile Table';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -300,9 +309,9 @@ CREATE TABLE `sys_profile` (
 
 /*!40000 ALTER TABLE `sys_profile` DISABLE KEYS */;
 INSERT INTO `sys_profile` VALUES
-  ('1900000000000000075','1900000000000000027','Virtual Gemini','https://api.dicebear.com/7.x/avataaars/svg?seed=Super',2,'Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','[\"Cute\", \"Very Cute\", \"Extremely Cute\"]','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000057','1900000000000000087','Virtual Gemini','https://api.dicebear.com/7.x/avataaars/svg?seed=Admin',1,'Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','[\"Cute\", \"Very Cute\", \"Extremely Cute\"]','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000014','1900000000000000048','Virtual Gemini','https://api.dicebear.com/7.x/avataaars/svg?seed=User',1,'Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','[\"Cute\", \"Very Cute\", \"Extremely Cute\"]','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+  ('1900000000000000075','1900000000000000027','Virtual Gemini','https://api.dicebear.com/7.x/avataaars/svg?seed=Super',2,'Prefer not to disclose','super.public@velox.web','15800158001','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','[\"Cute\", \"Very Cute\", \"Extremely Cute\"]','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000057','1900000000000000087','Virtual Gemini','https://api.dicebear.com/7.x/avataaars/svg?seed=Admin',1,'Prefer not to disclose','admin.public@velox.web','15800158002','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','[\"Cute\", \"Very Cute\", \"Extremely Cute\"]','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000014','1900000000000000048','Virtual Gemini','https://api.dicebear.com/7.x/avataaars/svg?seed=User',1,'Prefer not to disclose','user.public@velox.web','15800158003','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','Prefer not to disclose','[\"Cute\", \"Very Cute\", \"Extremely Cute\"]','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 /*!40000 ALTER TABLE `sys_profile` ENABLE KEYS */;
 
 --
@@ -380,7 +389,7 @@ INSERT INTO `sys_role_menu_permission` (`id`, `role_id`, `menu_id`, `create_time
   ('1900000000000000031','1900000000000000023','1900000000000000089','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- R_SUPER -> System
   ('1900000000000000068','1900000000000000023','1900000000000000080','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  -- R_SUPER -> System > User
+  -- R_SUPER -> System > Account
   ('1900000000000000043','1900000000000000023','1900000000000000016','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000002','1900000000000000023','1900000000000000007','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000082','1900000000000000023','1900000000000000020','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
@@ -393,7 +402,7 @@ INSERT INTO `sys_role_menu_permission` (`id`, `role_id`, `menu_id`, `create_time
   ('1900000000000000019','1900000000000000023','1900000000000000066','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000034','1900000000000000023','1900000000000000092','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000049','1900000000000000023','1900000000000000053','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  -- R_SUPER -> System > UserCenter
+  -- R_SUPER -> System > AccountCenter
   ('1900000000000000005','1900000000000000023','1900000000000000035','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000097','1900000000000000023','1900000000000000094','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000098','1900000000000000023','1900000000000000095','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
@@ -402,7 +411,12 @@ INSERT INTO `sys_role_menu_permission` (`id`, `role_id`, `menu_id`, `create_time
   ('1900000000000000114','1900000000000000023','1900000000000000110','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000115','1900000000000000023','1900000000000000111','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000116','1900000000000000023','1900000000000000112','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000146','1900000000000000023','1900000000000000134','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000117','1900000000000000023','1900000000000000113','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000134','1900000000000000023','1900000000000000130','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000135','1900000000000000023','1900000000000000131','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000136','1900000000000000023','1900000000000000132','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000137','1900000000000000023','1900000000000000133','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- R_SUPER -> System > Menus
   ('1900000000000000037','1900000000000000023','1900000000000000063','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000058','1900000000000000023','1900000000000000086','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
@@ -430,13 +444,13 @@ INSERT INTO `sys_role_menu_permission` (`id`, `role_id`, `menu_id`, `create_time
   ('1900000000000000033','1900000000000000073','1900000000000000089','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- R_ADMIN -> System
   ('1900000000000000022','1900000000000000073','1900000000000000080','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  -- R_ADMIN -> System > User
+  -- R_ADMIN -> System > Account
   ('1900000000000000015','1900000000000000073','1900000000000000016','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000091','1900000000000000073','1900000000000000007','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000078','1900000000000000073','1900000000000000020','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000079','1900000000000000073','1900000000000000060','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000051','1900000000000000073','1900000000000000030','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  -- R_ADMIN -> System > UserCenter
+  -- R_ADMIN -> System > AccountCenter
   ('1900000000000000070','1900000000000000073','1900000000000000035','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000100','1900000000000000073','1900000000000000094','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000101','1900000000000000073','1900000000000000095','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
@@ -445,8 +459,13 @@ INSERT INTO `sys_role_menu_permission` (`id`, `role_id`, `menu_id`, `create_time
   ('1900000000000000118','1900000000000000073','1900000000000000110','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000119','1900000000000000073','1900000000000000111','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000120','1900000000000000073','1900000000000000112','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000147','1900000000000000073','1900000000000000134','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000121','1900000000000000073','1900000000000000113','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  -- R_USER -> System > UserCenter
+  ('1900000000000000138','1900000000000000073','1900000000000000130','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000139','1900000000000000073','1900000000000000131','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000140','1900000000000000073','1900000000000000132','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000141','1900000000000000073','1900000000000000133','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- R_USER -> System > AccountCenter
   ('1900000000000000010','1900000000000000032','1900000000000000035','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000103','1900000000000000032','1900000000000000094','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000104','1900000000000000032','1900000000000000095','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
@@ -455,25 +474,31 @@ INSERT INTO `sys_role_menu_permission` (`id`, `role_id`, `menu_id`, `create_time
   ('1900000000000000122','1900000000000000032','1900000000000000110','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000123','1900000000000000032','1900000000000000111','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000124','1900000000000000032','1900000000000000112','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000125','1900000000000000032','1900000000000000113','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+  ('1900000000000000148','1900000000000000032','1900000000000000134','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000125','1900000000000000032','1900000000000000113','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000142','1900000000000000032','1900000000000000130','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000143','1900000000000000032','1900000000000000131','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000144','1900000000000000032','1900000000000000132','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000145','1900000000000000032','1900000000000000133','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 /*!40000 ALTER TABLE `sys_role_menu_permission` ENABLE KEYS */;
 
 --
--- Table structure for table `sys_user`
+-- Table structure for table `sys_account`
 --
 
-DROP TABLE IF EXISTS `sys_user`;
+DROP TABLE IF EXISTS `sys_account`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `sys_user` (
+CREATE TABLE `sys_account` (
   `id` bigint NOT NULL COMMENT 'Primary Key ID',
   `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Username',
   `password` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Password',
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Email',
-  `phone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Phone Number',
+  `remark` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Account Remark',
   `status` tinyint DEFAULT '1' COMMENT 'Status (1-Online 2-Offline 3-Abnormal 4-Deactivated)',
   `login_fail_count` int DEFAULT '0' COMMENT 'Login Failure Count',
   `login_fail_time` datetime DEFAULT NULL COMMENT 'Login Failure Time',
+  `deletion_requested_at` datetime DEFAULT NULL COMMENT 'Deletion Requested At',
+  `deletion_expires_at` datetime DEFAULT NULL COMMENT 'Deletion Cooling-Off Expires At',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Created Time',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated Time',
   `create_by` bigint DEFAULT NULL COMMENT 'Created By',
@@ -483,56 +508,56 @@ CREATE TABLE `sys_user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_username` (`active_username`),
   KEY `idx_username` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='System User Table';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='System Account Table';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `sys_user`
+-- Dumping data for table `sys_account`
 --
 
-/*!40000 ALTER TABLE `sys_user` DISABLE KEYS */;
-INSERT INTO `sys_user` (`id`, `username`, `password`, `email`, `phone`, `status`, `login_fail_count`, `login_fail_time`, `create_time`, `update_time`, `create_by`, `update_by`, `deleted`) VALUES
-  ('1900000000000000027','Super','{bcrypt}$2a$12$w9oNXS.wlWOfoHg6vMVKKuRHIASL5uTI2BtybrocyvQCMmeSIhshu','super@architecture.pro','15800158001',1,0,NULL,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000087','Admin','{bcrypt}$2a$12$w9oNXS.wlWOfoHg6vMVKKuRHIASL5uTI2BtybrocyvQCMmeSIhshu','admin@architecture.pro','15800158002',1,0,NULL,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000048','User','{bcrypt}$2a$12$w9oNXS.wlWOfoHg6vMVKKuRHIASL5uTI2BtybrocyvQCMmeSIhshu','user@architecture.pro','15800158003',1,0,NULL,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
-/*!40000 ALTER TABLE `sys_user` ENABLE KEYS */;
+/*!40000 ALTER TABLE `sys_account` DISABLE KEYS */;
+INSERT INTO `sys_account` (`id`, `username`, `password`, `remark`, `status`, `login_fail_count`, `login_fail_time`, `deletion_requested_at`, `deletion_expires_at`, `create_time`, `update_time`, `create_by`, `update_by`, `deleted`) VALUES
+  ('1900000000000000027','Super','{bcrypt}$2a$12$w9oNXS.wlWOfoHg6vMVKKuRHIASL5uTI2BtybrocyvQCMmeSIhshu','Super administrator account',1,0,NULL,NULL,NULL,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000087','Admin','{bcrypt}$2a$12$w9oNXS.wlWOfoHg6vMVKKuRHIASL5uTI2BtybrocyvQCMmeSIhshu','Administrator account',1,0,NULL,NULL,NULL,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000048','User','{bcrypt}$2a$12$w9oNXS.wlWOfoHg6vMVKKuRHIASL5uTI2BtybrocyvQCMmeSIhshu','Default member account',1,0,NULL,NULL,NULL,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+/*!40000 ALTER TABLE `sys_account` ENABLE KEYS */;
 
 --
--- Table structure for table `sys_user_role`
+-- Table structure for table `sys_account_role`
 --
 
-DROP TABLE IF EXISTS `sys_user_role`;
+DROP TABLE IF EXISTS `sys_account_role`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `sys_user_role` (
+CREATE TABLE `sys_account_role` (
   `id` bigint NOT NULL COMMENT 'Primary Key ID',
-  `user_id` bigint NOT NULL COMMENT 'User ID',
+  `account_id` bigint NOT NULL COMMENT 'Account ID',
   `role_id` bigint NOT NULL COMMENT 'Role ID',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Created Time',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated Time',
   `create_by` bigint DEFAULT NULL COMMENT 'Created By',
   `update_by` bigint DEFAULT NULL COMMENT 'Updated By',
   `deleted` tinyint DEFAULT '0' COMMENT 'Logical Delete (0-Not Deleted 1-Deleted)',
-  `active_user_role` tinyint GENERATED ALWAYS AS ((case when (`deleted` = 0) then 1 else NULL end)) STORED COMMENT 'Active Relation Marker',
+  `active_account_role` tinyint GENERATED ALWAYS AS ((case when (`deleted` = 0) then 1 else NULL end)) STORED COMMENT 'Active Relation Marker',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_user_role` (`user_id`,`role_id`,`active_user_role`),
-  KEY `idx_user_role_user_id` (`user_id`),
+  UNIQUE KEY `uk_account_role` (`account_id`,`role_id`,`active_account_role`),
+  KEY `idx_account_role_account_id` (`account_id`),
   KEY `idx_user_role_role_id` (`role_id`),
-  CONSTRAINT `fk_sys_user_role_role_id` FOREIGN KEY (`role_id`) REFERENCES `sys_role` (`id`),
-  CONSTRAINT `fk_sys_user_role_user_id` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`)
+  CONSTRAINT `fk_sys_account_role_role_id` FOREIGN KEY (`role_id`) REFERENCES `sys_role` (`id`),
+  CONSTRAINT `fk_sys_account_role_user_id` FOREIGN KEY (`account_id`) REFERENCES `sys_account` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='User Role Relation Table';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `sys_user_session`
+-- Table structure for table `sys_account_session`
 --
 
-DROP TABLE IF EXISTS `sys_user_session`;
+DROP TABLE IF EXISTS `sys_account_session`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `sys_user_session` (
+CREATE TABLE `sys_account_session` (
   `id` bigint NOT NULL COMMENT 'Primary Key ID',
-  `user_id` bigint NOT NULL COMMENT 'User ID',
+  `account_id` bigint NOT NULL COMMENT 'Account ID',
   `token_hash` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Token Digest',
   `status` tinyint NOT NULL DEFAULT '1' COMMENT 'Session Status (1-online 2-logged-out)',
   `login_time` datetime DEFAULT NULL COMMENT 'Login Time',
@@ -545,38 +570,40 @@ CREATE TABLE `sys_user_session` (
   `update_by` bigint DEFAULT NULL COMMENT 'Updated By',
   `deleted` tinyint NOT NULL DEFAULT '0' COMMENT 'Logical Delete (0-active 1-deleted)',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_user_session_token_hash` (`token_hash`),
-  KEY `idx_user_session_user_id` (`user_id`),
+  UNIQUE KEY `uk_account_session_token_hash` (`token_hash`),
+  KEY `idx_account_session_account_id` (`account_id`),
   KEY `idx_user_session_presence_expire_time` (`presence_expire_time`),
-  CONSTRAINT `fk_sys_user_session_user_id` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`)
+  CONSTRAINT `fk_sys_account_session_user_id` FOREIGN KEY (`account_id`) REFERENCES `sys_account` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='User Login Session Table';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `sys_user_role`
+-- Dumping data for table `sys_account_role`
 --
 
-/*!40000 ALTER TABLE `sys_user_role` DISABLE KEYS */;
-INSERT INTO `sys_user_role` (`id`, `user_id`, `role_id`, `create_time`, `update_time`, `create_by`, `update_by`, `deleted`) VALUES
+/*!40000 ALTER TABLE `sys_account_role` DISABLE KEYS */;
+INSERT INTO `sys_account_role` (`id`, `account_id`, `role_id`, `create_time`, `update_time`, `create_by`, `update_by`, `deleted`) VALUES
   ('1900000000000000021','1900000000000000027','1900000000000000023','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000012','1900000000000000087','1900000000000000073','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000024','1900000000000000048','1900000000000000032','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
-/*!40000 ALTER TABLE `sys_user_role` ENABLE KEYS */;
+/*!40000 ALTER TABLE `sys_account_role` ENABLE KEYS */;
 
 --
--- Table structure for table `sys_user_security`
+-- Table structure for table `sys_account_security`
 --
 
-DROP TABLE IF EXISTS `sys_user_security`;
+DROP TABLE IF EXISTS `sys_account_security`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `sys_user_security` (
+CREATE TABLE `sys_account_security` (
   `id` bigint NOT NULL COMMENT 'Primary key',
-  `user_id` bigint NOT NULL COMMENT 'User ID',
+  `account_id` bigint NOT NULL COMMENT 'Account ID',
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Bound email',
   `login_methods` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT 'password' COMMENT 'Allowed login methods (comma-separated: password,email_code)',
   `mfa_email_enabled` tinyint DEFAULT '0' COMMENT 'Email MFA enabled',
   `mfa_totp_enabled` tinyint DEFAULT '0' COMMENT 'TOTP MFA enabled (placeholder)',
   `mfa_totp_secret` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'TOTP secret (placeholder)',
+  `mfa_totp_recovery_codes` varchar(1024) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'TOTP recovery code hash list (comma-separated)',
   `email_verified_at` datetime DEFAULT NULL COMMENT 'Email last verification time',
   `last_password_change_at` datetime DEFAULT NULL COMMENT 'Last password change time',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Create time',
@@ -585,21 +612,21 @@ CREATE TABLE `sys_user_security` (
   `update_by` bigint DEFAULT NULL COMMENT 'Updater',
   `deleted` tinyint DEFAULT '0' COMMENT 'Logical delete (0-active 1-deleted)',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_user_security_user_id` (`user_id`),
-  CONSTRAINT `fk_sys_user_security_user_id` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='User account security configuration';
+  UNIQUE KEY `uk_account_security_account_id` (`account_id`),
+  CONSTRAINT `fk_sys_account_security_user_id` FOREIGN KEY (`account_id`) REFERENCES `sys_account` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Account security configuration';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `sys_user_security`
+-- Dumping data for table `sys_account_security`
 --
 
-/*!40000 ALTER TABLE `sys_user_security` DISABLE KEYS */;
-INSERT INTO `sys_user_security` (`id`, `user_id`, `login_methods`, `mfa_email_enabled`, `mfa_totp_enabled`, `mfa_totp_secret`, `email_verified_at`, `last_password_change_at`, `create_time`, `update_time`, `create_by`, `update_by`, `deleted`) VALUES
-  ('1900000000000000126','1900000000000000027','password',0,0,NULL,NULL,NULL,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000127','1900000000000000087','password',0,0,NULL,NULL,NULL,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000128','1900000000000000048','password',0,0,NULL,NULL,NULL,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
-/*!40000 ALTER TABLE `sys_user_security` ENABLE KEYS */;
+/*!40000 ALTER TABLE `sys_account_security` DISABLE KEYS */;
+INSERT INTO `sys_account_security` (`id`, `account_id`, `email`, `login_methods`, `mfa_email_enabled`, `mfa_totp_enabled`, `mfa_totp_secret`, `mfa_totp_recovery_codes`, `email_verified_at`, `last_password_change_at`, `create_time`, `update_time`, `create_by`, `update_by`, `deleted`) VALUES
+  ('1900000000000000126','1900000000000000027','super@velox.web','password',0,0,NULL,NULL,NULL,NULL,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000127','1900000000000000087','admin@velox.web','password',0,0,NULL,NULL,NULL,NULL,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000128','1900000000000000048','user@velox.web','password',0,0,NULL,NULL,NULL,NULL,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+/*!40000 ALTER TABLE `sys_account_security` ENABLE KEYS */;
 
 --
 -- Dumping routines for database 'velox'

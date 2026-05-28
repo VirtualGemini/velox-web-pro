@@ -123,6 +123,14 @@ html.dark .el-card {
   overflow: hidden;
 }
 
+@media screen and (max-width: 640px) {
+  .el-popup-parent--hidden {
+    width: 100% !important;
+    padding-right: 0 !important;
+    overflow: hidden !important;
+  }
+}
+
 .el-dialog__header {
   .el-dialog__title {
     font-size: 16px;

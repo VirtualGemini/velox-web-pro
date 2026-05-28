@@ -9,11 +9,11 @@ import com.velox.framework.security.api.session.SecuritySessionService;
 import com.velox.module.system.domain.model.Menu;
 import com.velox.module.system.domain.model.Role;
 import com.velox.module.system.domain.model.RoleMenuPermission;
-import com.velox.module.system.domain.model.UserRole;
+import com.velox.module.system.domain.model.AccountRole;
 import com.velox.module.system.persistence.MenuMapper;
 import com.velox.module.system.persistence.RoleMapper;
 import com.velox.module.system.persistence.RoleMenuPermissionMapper;
-import com.velox.module.system.persistence.UserRoleMapper;
+import com.velox.module.system.persistence.AccountRoleMapper;
 import com.velox.module.system.persistence.support.MenuQuerySupport;
 import com.velox.framework.web.RequestDateTimeFormatter;
 import com.velox.module.system.id.generator.SystemEntityIdGenerator;
@@ -47,7 +47,7 @@ public class RoleServiceImpl implements RoleService {
 
     private final MenuMapper menuMapper;
     private final RoleMapper roleMapper;
-    private final UserRoleMapper userRoleMapper;
+    private final AccountRoleMapper userRoleMapper;
     private final RoleMenuPermissionMapper roleMenuPermissionMapper;
     private final PermissionService permissionService;
     private final SystemEntityIdGenerator entityIdGenerator;
@@ -56,7 +56,7 @@ public class RoleServiceImpl implements RoleService {
     public RoleServiceImpl(
             MenuMapper menuMapper,
             RoleMapper roleMapper,
-            UserRoleMapper userRoleMapper,
+            AccountRoleMapper userRoleMapper,
             RoleMenuPermissionMapper roleMenuPermissionMapper,
             PermissionService permissionService,
             SystemEntityIdGenerator entityIdGenerator,
@@ -161,9 +161,9 @@ public class RoleServiceImpl implements RoleService {
         if (Integer.valueOf(RoleTypeEnum.SYSTEM.getCode()).equals(role.getType())) {
             throw new ApiException(BusinessErrorCode.SYSTEM_ROLE_DELETE_FORBIDDEN);
         }
-        long userBindingCount = userRoleMapper.selectCount(new LambdaQueryWrapper<UserRole>()
-                .eq(UserRole::getDeleted, 0)
-                .eq(UserRole::getRoleId, roleId));
+        long userBindingCount = userRoleMapper.selectCount(new LambdaQueryWrapper<AccountRole>()
+                .eq(AccountRole::getDeleted, 0)
+                .eq(AccountRole::getRoleId, roleId));
         if (userBindingCount > 0) {
             throw new ApiException(BusinessErrorCode.DATA_IN_USE);
         }
@@ -199,14 +199,14 @@ public class RoleServiceImpl implements RoleService {
 
     /**
      * 防止越权授权：只允许把自己拥有的菜单授给别的角色。
-     * R_SUPER 由 {@link PermissionService#getUserPermittedMenuIds} 内部直通全部菜单，天然通过。
+     * R_SUPER 由 {@link PermissionService#getAccountPermittedMenuIds} 内部直通全部菜单，天然通过。
      */
     private void ensureWithinCurrentUserScope(List<String> requestedMenuIds) {
         if (requestedMenuIds == null || requestedMenuIds.isEmpty()) {
             return;
         }
         String currentUserId = securitySessionService.requireCurrentLoginId();
-        Set<String> permittedMenuIds = permissionService.getUserPermittedMenuIds(currentUserId);
+        Set<String> permittedMenuIds = permissionService.getAccountPermittedMenuIds(currentUserId);
         boolean hasBeyondScope = requestedMenuIds.stream()
                 .filter(Objects::nonNull)
                 .anyMatch(menuId -> !permittedMenuIds.contains(menuId));

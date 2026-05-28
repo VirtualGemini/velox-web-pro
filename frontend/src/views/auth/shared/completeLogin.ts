@@ -1,9 +1,9 @@
 import { ElNotification } from 'element-plus'
 import type { Router } from 'vue-router'
-import type { useUserStore } from '@/store/modules/user'
+import type { useAccountStore } from '@/store/modules/user'
 
 interface CompleteLoginOptions {
-  userStore: ReturnType<typeof useUserStore>
+  accountStore: ReturnType<typeof useAccountStore>
   token: string
   refreshToken?: string
   redirect?: string
@@ -17,7 +17,7 @@ interface CompleteLoginOptions {
  * token 入库 -> 拉取正式用户信息 -> 标记登录态 -> 跳转 -> 展示欢迎提示
  */
 export async function completeLogin({
-  userStore,
+  accountStore,
   token,
   refreshToken,
   redirect,
@@ -25,15 +25,15 @@ export async function completeLogin({
   successTitle,
   successMessage
 }: CompleteLoginOptions): Promise<void> {
-  userStore.setToken(token, refreshToken)
+  accountStore.setToken(token, refreshToken)
 
   try {
-    const userInfo = await userStore.hydrateUserInfo({ force: true })
-    userStore.setPostLoginNavigating(true)
-    userStore.setLoginStatus(true)
+    const accountInfo = await accountStore.hydrateAccountInfo({ force: true })
+    accountStore.setPostLoginNavigating(true)
+    accountStore.setLoginStatus(true)
 
     await router.push(redirect || '/')
-    userStore.setPostLoginNavigating(false)
+    accountStore.setPostLoginNavigating(false)
 
     window.setTimeout(() => {
       ElNotification({
@@ -41,11 +41,11 @@ export async function completeLogin({
         type: 'success',
         duration: 2500,
         zIndex: 10000,
-        message: userInfo.userName ? `${successMessage}, ${userInfo.userName}!` : successMessage
+        message: accountInfo.userName ? `${successMessage}, ${accountInfo.userName}!` : successMessage
       })
     }, 80)
   } catch (error) {
-    userStore.clearAuthState()
+    accountStore.clearAuthState()
     throw error
   }
 }

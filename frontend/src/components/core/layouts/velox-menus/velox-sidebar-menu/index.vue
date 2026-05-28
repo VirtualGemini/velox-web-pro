@@ -36,6 +36,7 @@
                 }"
               >
                 <VeloxSvgIcon
+                  v-if="menu.meta.icon"
                   class="menu-icon text-g-700 dark:text-g-800"
                   :icon="menu.meta.icon"
                   :style="{

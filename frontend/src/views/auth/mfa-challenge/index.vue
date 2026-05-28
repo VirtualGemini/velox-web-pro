@@ -178,7 +178,7 @@
       }
 
       await completeLogin({
-        userStore,
+        accountStore: userStore,
         token,
         refreshToken,
         redirect: route.query.redirect as string | undefined,

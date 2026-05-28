@@ -17,20 +17,20 @@ public class VeloxSecurityPermissionProvider implements SecurityPermissionProvid
 
     @Override
     public List<String> getPermissions(String loginId) {
-        String userId = normalizeLoginId(loginId);
-        if (userId == null) {
+        String accountId = normalizeLoginId(loginId);
+        if (accountId == null) {
             return List.of();
         }
-        return permissionService.getUserPermissionMarks(userId);
+        return permissionService.getAccountPermissionMarks(accountId);
     }
 
     @Override
     public List<String> getRoles(String loginId) {
-        String userId = normalizeLoginId(loginId);
-        if (userId == null) {
+        String accountId = normalizeLoginId(loginId);
+        if (accountId == null) {
             return List.of();
         }
-        return permissionService.getUserRoleCodes(userId);
+        return permissionService.getAccountRoleCodes(accountId);
     }
 
     private String normalizeLoginId(String loginId) {

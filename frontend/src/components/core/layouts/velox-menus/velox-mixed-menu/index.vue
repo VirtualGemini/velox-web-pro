@@ -27,6 +27,7 @@
             @click="handleMenuJump(item, true)"
           >
             <VeloxSvgIcon
+              v-if="item.meta.icon"
               :icon="item.meta.icon"
               class="text-lg text-g-700 dark:text-g-800 mr-1"
               :class="item.isActive && '!text-theme'"

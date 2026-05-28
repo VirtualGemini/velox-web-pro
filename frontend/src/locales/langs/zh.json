@@ -35,6 +35,8 @@
   "common": {
     "tips": "提示",
     "cancel": "取消",
+    "previous": "上一步",
+    "next": "下一步",
     "confirm": "确定",
     "logOutTips": "您是否要退出登录?",
     "iconPicker": {
@@ -156,10 +158,14 @@
       "subTitle": "继续使用已登录账号，或退出后切换其它账号登录。",
       "continueBtn": "继续",
       "selectTip": "请选择您要登录的账号",
-      "logoutTooltip": "退出登录"
+      "logoutTooltip": "退出登录",
+      "pendingDeletionWarning": "以下账号已被删除，继续可恢复账号",
+      "pendingDeletionConfirmTitle": "恢复账号",
+      "pendingDeletionConfirmDesc": "请输入账号名 {username} 以恢复并继续登录",
+      "pendingDeletionConfirmError": "输入的账号名不正确"
     },
     "placeholder": {
-      "username": "请输入账号/手机号/邮箱",
+      "username": "请输入账号或邮箱",
       "password": "请输入密码",
       "slider": "请拖动滑块完成验证",
       "email": "请输入邮箱",
@@ -179,20 +185,16 @@
       "title": "选择登录方式",
       "subTitle": "选择第三方授权或邮箱接收验证码",
       "email": "邮箱验证码",
-      "phone": "手机号",
       "github": "GitHub",
       "linuxdo": "LinuxDO",
       "comingSoon": "敬请期待"
     },
     "code": {
       "emailTitle": "邮箱验证码登录",
-      "phoneTitle": "手机号验证码登录",
       "subTitle": "输入接收到的验证码完成登录",
       "sendBtn": "发送验证码",
       "sent": "验证码已发送，请查收",
-      "emailInvalid": "邮箱格式不正确",
-      "phoneInvalid": "手机号格式不正确",
-      "phoneTodo": "手机号登录暂未开通"
+      "emailInvalid": "邮箱格式不正确"
     },
     "mfaChallenge": {
       "title": "虚拟 MFA 设备验证",
@@ -305,9 +307,9 @@
     },
     "system": {
       "title": "系统管理",
-      "user": "用户管理",
+      "account": "账号管理",
       "role": "角色管理",
-      "userCenter": "个人中心",
+      "accountCenter": "账号中心",
       "menu": "菜单管理",
       "fileManage": "文件管理"
     },
@@ -318,16 +320,16 @@
   },
   "pages": {
     "system": {
-      "user": {
+      "account": {
         "actions": {
-          "addUser": "新增用户"
+          "addAccount": "新增账号",
+          "accountInfo": "账号信息"
         },
         "search": {
-          "userName": "用户名",
-          "userPhone": "手机号",
-          "userEmail": "邮箱",
+          "username": "账号",
+          "email": "邮箱",
+          "remark": "备注",
           "status": "状态",
-          "userGender": "性别",
           "createTimeRange": "创建时间",
           "updateTimeRange": "编辑时间",
           "rangeSeparator": "至",
@@ -341,9 +343,9 @@
           "updateTimeEnd": "编辑结束时间"
         },
         "columns": {
-          "userInfo": "用户信息",
-          "userGender": "性别",
-          "userPhone": "手机号",
+          "accountInfo": "账号信息",
+          "email": "邮箱",
+          "remark": "备注",
           "status": "状态",
           "createTime": "创建时间",
           "updateTime": "编辑时间",
@@ -355,52 +357,48 @@
           "abnormal": "异常",
           "revoked": "注销"
         },
-        "gender": {
-          "male": "男",
-          "female": "女",
-          "other": "其它"
-        },
         "dialog": {
-          "addTitle": "添加用户",
-          "editTitle": "编辑用户",
+          "addTitle": "新增账号",
+          "editTitle": "编辑账号",
           "fields": {
-            "username": "用户名",
-            "nickname": "昵称",
-            "email": "邮箱",
-            "phone": "手机号",
+            "username": "账号",
             "password": "密码",
-            "gender": "性别",
+            "remark": "备注",
             "roleCodes": "角色"
           },
           "placeholders": {
-            "username": "请输入用户名",
-            "nickname": "请输入昵称",
-            "email": "请输入邮箱",
-            "phone": "请输入手机号",
+            "username": "请输入账号",
             "initialPassword": "请输入初始密码",
-            "passwordOptional": "留空表示不修改密码"
+            "passwordOptional": "留空表示不修改密码",
+            "remark": "请输入账号备注，用于后台识别和管理"
           },
           "validation": {
-            "usernameRequired": "请输入用户名",
-            "usernameLength": "长度在 2 到 20 个字符",
-            "nicknameRequired": "请输入昵称",
-            "emailInvalid": "请输入正确的邮箱格式",
-            "phoneRequired": "请输入手机号",
-            "phoneInvalid": "请输入正确的手机号格式",
+            "usernameRequired": "请输入账号",
+            "usernameLength": "长度在 2 到 50 个字符",
             "passwordRequired": "请输入密码",
             "passwordLength": "密码长度应在 6 到 32 个字符之间",
-            "genderRequired": "请选择性别",
+            "remarkLength": "备注不能超过 255 个字符",
             "roleRequired": "请选择角色"
           }
         },
+        "detail": {
+          "title": "账号信息",
+          "accountCard": "账号身份",
+          "roles": "账号角色",
+          "audit": "审计信息",
+          "emailBound": "已绑定",
+          "emailUnbound": "未绑定",
+          "noRemark": "暂无备注信息",
+          "noRoles": "暂无角色"
+        },
         "messages": {
-          "missingUserId": "当前用户数据缺少 userId，请确认列表接口返回内容",
-          "cannotOperateCurrentUser": "不可操作当前登录用户",
-          "cannotEditUser": "无权限修改该用户",
+          "missingAccountId": "当前账号数据缺少 accountId，请确认列表接口返回内容",
+          "cannotOperateCurrentAccount": "不可操作当前登录账号",
+          "cannotEditAccount": "无权限修改该账号",
           "cannotDeleteSelf": "当前登录用户不能删除自己",
-          "cannotDeleteUser": "无权限删除该用户",
-          "confirmDelete": "确定要注销该用户吗？",
-          "deleteTitle": "注销用户",
+          "cannotDeleteAccount": "无权限删除该账号",
+          "confirmDelete": "确定要注销该账号吗？",
+          "deleteTitle": "注销账号",
           "deleteSuccess": "注销成功",
           "createSuccess": "添加成功",
           "updateSuccess": "更新成功"
@@ -527,18 +525,18 @@
             "name": "请输入菜单名称",
             "path": "如：/dashboard 或 console",
             "label": "如：User",
-            "component": "如：/system/user 或留空",
+            "component": "如：/system/account 或留空",
             "icon": "请选择图标",
             "roles": "输入角色标识后按回车，如：R_SUPER",
             "link": "如：https://www.example.com",
             "showTextBadge": "如：New、Hot",
-            "activePath": "如：/system/user",
+            "activePath": "如：/system/account",
             "authName": "如：新增、编辑、删除",
             "authLabel": "如：add、edit、delete"
           },
           "tooltips": {
             "path": "一级菜单：以 / 开头的绝对路径（如 /dashboard）\n二级及以下：相对路径（如 console、user）",
-            "component": "一级父级菜单：填写 /index/index\n具体页面：填写组件路径（如 /system/user）\n目录菜单：留空",
+            "component": "一级父级菜单：填写 /index/index\n具体页面：填写组件路径（如 /system/account）\n目录菜单：留空",
             "icon": "可选择项目内支持的图标，选择后会自动写入 ri: 图标代码",
             "roles": "仅用于前端权限模式：配置角色标识（如 R_SUPER、R_ADMIN）\n后端权限模式：无需配置",
             "activePath": "用于详情页等隐藏菜单，指定高亮显示的父级菜单路径\n例如：用户详情页高亮显示“用户管理”菜单"
@@ -598,10 +596,10 @@
           "deleteFailed": "删除失败"
         }
       },
-      "userCenter": {
+      "accountCenter": {
         "tabs": {
-          "basic": "基本信息",
-          "password": "重置密码",
+          "profile": "个人资料",
+          "account": "账号设置",
           "security": "账号安全",
           "thirdParty": "第三方登录"
         },
@@ -614,6 +612,16 @@
         "profile": {
           "tags": "标签",
           "noTags": "暂无标签",
+          "formDesc": "维护你的基础资料、联系方式和个人介绍",
+          "avatar": {
+            "title": "头像",
+            "desc": "建议使用清晰的正方形图片，头像会显示在你的账号菜单和个人资料中。",
+            "action": "更换头像"
+          },
+          "sections": {
+            "public": "基本资料",
+            "private": "个人资料"
+          },
           "defaults": {
             "nickname": "未设置昵称",
             "email": "未设置邮箱",
@@ -676,14 +684,41 @@
           }
         },
         "security": {
-          "title": "账号安全",
+          "title": "安全",
+          "desc": "维护你的密码、登录方式和多因子认证设置，保护账号访问安全。",
           "loading": "加载中…",
+          "passwordReset": {
+            "entryTitle": "密码",
+            "entryDesc": "定期更新登录密码，提升账号安全性。",
+            "action": "重置密码",
+            "title": "重置密码",
+            "lastChangedAt": "上次修改时间：{time}",
+            "tabs": {
+              "password": "密码",
+              "mfa": "MFA 验证"
+            },
+            "mfa": {
+              "type": "验证方式",
+              "totp": "动态口令",
+              "email": "邮箱验证码",
+              "totpCode": "动态口令",
+              "emailCode": "邮箱验证码",
+              "totpPlaceholder": "请输入认证器当前生成的 6 位动态口令",
+              "emailPlaceholder": "请输入邮箱收到的 6 位验证码",
+              "sendEmailCode": "发送验证码"
+            },
+            "validation": {
+              "emailCodeRequired": "请输入邮箱验证码",
+              "totpCodeRequired": "请输入动态口令"
+            }
+          },
           "email": {
             "title": "邮箱",
             "desc": "用于接收系统通知、找回密码、邮箱验证码登录",
             "unbound": "尚未绑定邮箱",
             "rebind": "更换邮箱",
             "bind": "绑定邮箱",
+            "unbind": "解绑邮箱",
             "dialog": {
               "title": "更换邮箱",
               "bindTitle": "绑定邮箱",
@@ -693,6 +728,7 @@
               "currentMasked": "当前邮箱：{email}",
               "proofTypeLabel": "验证方式",
               "proofCurrentEmail": "当前邮箱验证码",
+              "sendToCurrentEmail": "向 {email} 发送验证码",
               "proofTotp": "TOTP 动态口令",
               "proofPassword": "当前密码",
               "proofTip": "完成当前身份验证后，才能继续绑定新邮箱。",
@@ -722,6 +758,19 @@
               "success": "邮箱更换成功",
               "bindSuccess": "邮箱绑定成功",
               "next": "下一步"
+            },
+            "unbindDialog": {
+              "title": "解绑邮箱",
+              "tip": "解绑邮箱后，将无法使用邮箱验证码登录，也不可开启邮箱二次验证。当前邮箱：{email}",
+              "currentEmailCode": "当前邮箱验证码",
+              "currentEmailCodePlaceholder": "请输入当前邮箱收到的 6 位验证码",
+              "currentEmailCodeRequired": "请输入当前邮箱验证码",
+              "totpCode": "TOTP 动态口令",
+              "totpCodePlaceholder": "请输入认证器当前生成的 6 位动态口令",
+              "totpCodeRequired": "请输入 TOTP 动态口令",
+              "sendCode": "发送验证码",
+              "codeSent": "验证码已发送，请到邮箱查收",
+              "success": "邮箱解绑成功"
             }
           },
           "phone": {
@@ -752,7 +801,6 @@
             "title": "登录方式",
             "desc": "选择允许的账号登录方式，至少保留一种；超出全局策略的方式会被禁用",
             "globalDisabled": "全局策略未开放该方式",
-            "passwordLocked": "密码登录由系统强制开启，不可关闭",
             "atLeastOne": "至少需要保留一种登录方式",
             "items": {
               "password": "密码登录",
@@ -778,6 +826,9 @@
               "enableTitle": "开启邮箱 MFA",
               "disableTitle": "关闭邮箱 MFA",
               "tip": "开启后，登录时还需输入邮箱收到的 6 位验证码",
+              "hint": "开启后，登录和敏感操作会额外校验邮箱验证码，请确保当前邮箱可正常接收邮件。",
+              "enableTip": "开启后，登录时还需输入邮箱收到的 6 位验证码。",
+              "disableTip": "关闭邮箱 MFA 前，需要先通过邮箱验证码确认是你本人操作。",
               "code": "邮箱验证码",
               "codePlaceholder": "请输入收到的 6 位验证码",
               "sendCode": "获取验证码",
@@ -804,9 +855,75 @@
               "codePlaceholder": "请输入认证器生成的 {digits} 位口令",
               "codeRequired": "请输入动态口令",
               "codeFormat": "请输入 {digits} 位数字口令",
+              "recoveryCodesTitle": "请保存恢复码",
+              "recoveryCodesTip": "以下恢复码仅展示一次。认证器不可用时，你可以在“关闭 TOTP 动态口令”中选择“恢复码”来使用。每个恢复码只能使用一次，请立即保存。",
+              "recoveryCodesListTitle": "恢复码列表",
+              "recoveryCodesCopied": "恢复码已复制",
+              "recoveryCodesConfirm": "我已保存恢复码",
+              "disableMethod": "验证方式",
+              "recoveryCode": "恢复码",
+              "codeHint": "使用认证器 App 当前显示的动态口令完成关闭。",
+              "recoveryCodeHint": "请输入你在开启 TOTP 成功后保存的恢复码。每个恢复码只能使用一次。",
+              "recoveryCodePlaceholder": "请输入形如 ABCD-1234 的恢复码",
+              "recoveryCodeRequired": "请输入恢复码",
+              "recoveryCodeFormat": "请输入形如 ABCD-1234 的恢复码",
               "enableSuccess": "TOTP 已开启",
-              "disableTip": "请输入当前认证器生成的动态口令，以确认关闭 TOTP",
+              "disableTip": "你可以输入当前认证器生成的动态口令，或使用之前保存的恢复码来关闭 TOTP。",
               "disableSuccess": "TOTP 已关闭"
+            }
+          }
+        },
+        "account": {
+          "title": "账号设置",
+          "desc": "管理你的登录账号名称与账号注销设置。",
+          "generalTitle": "通用",
+          "username": {
+            "title": "登录账号",
+            "desc": "修改登录时使用的账号名称，保存前会检查唯一性。",
+            "action": "重命名",
+            "dialogTitle": "修改账号名",
+            "label": "账号名",
+            "success": "账号名修改成功",
+            "validation": {
+              "required": "请输入账号名",
+              "length": "账号名长度应在 3 到 12 个字符之间"
+            }
+          },
+          "deletion": {
+            "title": "删除账号",
+            "desc": "账号一旦删除，就无法恢复。请务必谨慎操作。",
+            "action": "确认删除账号",
+            "button": "删除您的账号",
+            "dialogTitle": "删除账号",
+            "alertTitle": "这是一项极其重要的操作。",
+            "impactPrimary": "账号删除后，系统会立即退出该账号的所有登录会话。",
+            "impactSecondary": "账号会进入 14 天冷静期，期间可在登录页恢复；超过 14 天后将不再支持恢复。",
+            "impactHint": "继续前，请先完成身份验证，并准确输入当前账号名进行确认。",
+            "withEmailDesc": "当前已绑定安全邮箱 {email}，请先完成邮箱验证码验证，再输入账号名确认删除。",
+            "withPasswordDesc": "当前未绑定安全邮箱，请先验证当前密码，再输入账号名确认删除。",
+            "currentPassword": "当前密码",
+            "emailCode": "邮箱验证码",
+            "sendCode": "发送验证码",
+            "usernameConfirm": "请输入您的用户名“{username}”以确认删除账号",
+            "codeSent": "验证码已发送，请查收邮箱",
+            "mfaBlocking": "请先前往“账号安全”关闭已启用的 MFA，再删除账号。",
+            "mfaBlockingDialog": {
+              "title": "无法删除账号",
+              "content": "当前账号已启用 MFA<br>请先前往“账号中心 - 账号安全 - MFA”关闭二次校验，然后再删除账号。",
+              "confirm": "我知道了"
+            },
+            "pendingTip": "账号已处于注销冷静期内。",
+            "pendingStatus": "账号已进入冷静期，将于 {time} 到期。",
+            "success": "账号已进入 14 天冷静期",
+            "steps": {
+              "verify": "步骤 1/2：身份验证",
+              "confirm": "步骤 2/2：输入账号名确认"
+            },
+            "validation": {
+              "currentPasswordRequired": "请输入当前密码",
+              "emailCodeRequired": "请输入邮箱验证码",
+              "usernameRequired": "请输入账号名",
+              "usernameMismatch": "输入的账号名不正确"
             }
           }
         },

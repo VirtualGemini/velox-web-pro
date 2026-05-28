@@ -9,9 +9,9 @@ velox:
         ignored-tables: [sys_id_sequence]
         # 声明式身份域：只有这里注册的主键域才参与数据库 ID 治理
         domains:
-          - table: sys_user
+          - table: sys_account
             id-column: id
-            business-type: sys_user
+            business-type: sys_account
           - table: sys_role
             id-column: id
             business-type: sys_role
@@ -21,12 +21,12 @@ velox:
           - table: sys_profile
             id-column: id
             business-type: sys_profile
-          - table: sys_user_role
+          - table: sys_account_role
             id-column: id
-            business-type: sys_user_role
-          - table: sys_user_session
+            business-type: sys_account_role
+          - table: sys_account_session
             id-column: id
-            business-type: sys_user_session
+            business-type: sys_account_session
           - table: sys_role_menu_permission
             id-column: id
             business-type: sys_role_menu_permission
@@ -39,26 +39,26 @@ velox:
           - table: sys_file_content
             id-column: id
             business-type: sys_file_content
-          - table: sys_user_security
+          - table: sys_account_security
             id-column: id
-            business-type: sys_user_security
+            business-type: sys_account_security
         # 声明式引用图：只有这里注册的引用列才会跟随身份域一起迁移
         references:
-          - table: sys_user
+          - table: sys_account
             mappings:
               - column: create_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
               - column: update_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
           - table: sys_role
             mappings:
               - column: create_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
               - column: update_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
           - table: sys_menu
             mappings:
@@ -66,46 +66,46 @@ velox:
                 target-business-type: sys_menu
                 kind: self
               - column: create_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
               - column: update_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
           - table: sys_profile
             mappings:
-              - column: user_id
-                target-business-type: sys_user
+              - column: account_id
+                target-business-type: sys_account
                 kind: fk
               - column: create_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
               - column: update_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
-          - table: sys_user_role
+          - table: sys_account_role
             mappings:
-              - column: user_id
-                target-business-type: sys_user
+              - column: account_id
+                target-business-type: sys_account
                 kind: fk
               - column: role_id
                 target-business-type: sys_role
                 kind: fk
               - column: create_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
               - column: update_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
-          - table: sys_user_session
+          - table: sys_account_session
             mappings:
-              - column: user_id
-                target-business-type: sys_user
+              - column: account_id
+                target-business-type: sys_account
                 kind: fk
               - column: create_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
               - column: update_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
           - table: sys_role_menu_permission
             mappings:
@@ -116,18 +116,18 @@ velox:
                 target-business-type: sys_menu
                 kind: fk
               - column: create_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
               - column: update_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
           - table: sys_file_config
             mappings:
               - column: create_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
               - column: update_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
           - table: sys_file
             mappings:
@@ -135,10 +135,10 @@ velox:
                 target-business-type: sys_file_config
                 kind: explicit
               - column: create_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
               - column: update_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
           - table: sys_file_content
             mappings:
@@ -146,19 +146,19 @@ velox:
                 target-business-type: sys_file_config
                 kind: explicit
               - column: create_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
               - column: update_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
-          - table: sys_user_security
+          - table: sys_account_security
             mappings:
-              - column: user_id
-                target-business-type: sys_user
+              - column: account_id
+                target-business-type: sys_account
                 kind: fk
               - column: create_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit
               - column: update_by
-                target-business-type: sys_user
+                target-business-type: sys_account
                 kind: audit

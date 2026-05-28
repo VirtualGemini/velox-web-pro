@@ -37,27 +37,33 @@ export function fetchLoginByCode(data: Api.Auth.CodeLoginParams) {
 /**
  * 获取用户基础信息（仅含支撑系统运行的最少字段）
  */
-export function fetchGetUserInfo() {
-  return request.get<Api.Auth.UserInfo>({
-    url: '/api/user/info'
+export function fetchGetAccountInfo() {
+  return request.get<Api.Auth.AccountInfo>({
+    url: '/api/account/info'
   })
 }
 
 /**
- * 获取当前用户详细信息（个人中心使用，需要 system:user-center:profile-query 权限）
+ * 获取当前用户详细信息（个人中心使用，需要 system:account-center:profile-query 权限）
  */
-export function fetchGetUserDetail() {
-  return request.get<Api.Auth.UserDetail>({
-    url: '/api/user/detail'
+export function fetchGetAccountDetail() {
+  return request.get<Api.Auth.AccountDetail>({
+    url: '/api/account/detail'
+  })
+}
+
+export function fetchGetAccountTabInfo() {
+  return request.get<Api.Auth.AccountTabInfo>({
+    url: '/api/account/tab'
   })
 }
 
 /**
  * 更新当前用户资料
  */
-export function fetchUpdateUserProfile(data: Api.Auth.UserProfileUpdateCommand) {
+export function fetchUpdateAccountProfile(data: Api.Auth.AccountProfileUpdateCommand) {
   return request.put<boolean>({
-    url: '/api/user/profile',
+    url: '/api/account/profile',
     data
   })
 }
@@ -65,9 +71,30 @@ export function fetchUpdateUserProfile(data: Api.Auth.UserProfileUpdateCommand) 
 /**
  * 修改当前用户密码
  */
-export function fetchUpdateUserPassword(data: Api.Auth.UserPasswordUpdateCommand) {
+export function fetchUpdateAccountPassword(data: Api.Auth.AccountPasswordUpdateCommand) {
   return request.put<boolean>({
-    url: '/api/user/password',
+    url: '/api/account/password',
+    data
+  })
+}
+
+export function fetchUpdateAccountUsername(data: Api.Auth.AccountUsernameUpdateCommand) {
+  return request.put<boolean>({
+    url: '/api/account/username',
+    data
+  })
+}
+
+export function fetchRequestAccountDeletion(data: Api.Auth.AccountDeletionCommand) {
+  return request.post<boolean>({
+    url: '/api/account/deletion',
+    data
+  })
+}
+
+export function fetchRecoverAccount(data: Api.Auth.AccountRecoveryCommand) {
+  return request.post<boolean>({
+    url: '/api/account/recovery',
     data
   })
 }
@@ -75,9 +102,9 @@ export function fetchUpdateUserPassword(data: Api.Auth.UserPasswordUpdateCommand
 /**
  * 更新当前用户头像
  */
-export function fetchUpdateUserAvatar(data: Api.Auth.AvatarUpdateCommand) {
-  return request.put<Api.Auth.UserInfo>({
-    url: '/api/user/avatar',
+export function fetchUpdateAccountAvatar(data: Api.Auth.AvatarUpdateCommand) {
+  return request.put<Api.Auth.AccountInfo>({
+    url: '/api/account/avatar',
     data
   })
 }
@@ -87,10 +114,16 @@ export function fetchUpdateUserAvatar(data: Api.Auth.AvatarUpdateCommand) {
  */
 export function fetchUpdateUserLanguage(language: string) {
   return request.put<boolean>({
-    url: '/api/user/language',
+    url: '/api/account/language',
     data: { language }
   })
 }
+
+export const fetchGetUserInfo = fetchGetAccountInfo
+export const fetchGetUserDetail = fetchGetAccountDetail
+export const fetchUpdateUserProfile = fetchUpdateAccountProfile
+export const fetchUpdateUserPassword = fetchUpdateAccountPassword
+export const fetchUpdateUserAvatar = fetchUpdateAccountAvatar
 
 /**
  * 注册

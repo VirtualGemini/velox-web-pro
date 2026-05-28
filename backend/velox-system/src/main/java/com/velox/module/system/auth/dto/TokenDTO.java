@@ -22,6 +22,20 @@ public class TokenDTO {
      */
     private Integer mfaTotpDigits;
 
+    private String accountId;
+
+    private String userName;
+
+    private String avatar;
+
+    private String email;
+
+    private Boolean pendingDeletion;
+
+    private String deletionRequestedAt;
+
+    private String deletionExpiresAt;
+
     public TokenDTO() {
     }
 
@@ -82,5 +96,61 @@ public class TokenDTO {
 
     public void setMfaTotpDigits(Integer mfaTotpDigits) {
         this.mfaTotpDigits = mfaTotpDigits;
+    }
+
+    public String getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Boolean getPendingDeletion() {
+        return pendingDeletion;
+    }
+
+    public void setPendingDeletion(Boolean pendingDeletion) {
+        this.pendingDeletion = pendingDeletion;
+    }
+
+    public String getDeletionRequestedAt() {
+        return deletionRequestedAt;
+    }
+
+    public void setDeletionRequestedAt(String deletionRequestedAt) {
+        this.deletionRequestedAt = deletionRequestedAt;
+    }
+
+    public String getDeletionExpiresAt() {
+        return deletionExpiresAt;
+    }
+
+    public void setDeletionExpiresAt(String deletionExpiresAt) {
+        this.deletionExpiresAt = deletionExpiresAt;
     }
 }

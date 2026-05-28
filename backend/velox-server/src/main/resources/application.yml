@@ -226,7 +226,7 @@ velox:
         enabled:
           - password
           - email_code
-        # 注册时初始化到 sys_user_security.login_methods 的默认值
+        # 注册时初始化到 sys_account_security.login_methods 的默认值
         defaults:
           - password
         # 是否禁止用户关闭密码登录

@@ -28,6 +28,17 @@ import { useSettingStore } from '@/store/modules/setting'
 import { IframeRouteManager } from '@/router/core'
 import { useCommon } from '@/hooks/core/useCommon'
 
+const WORKTAB_VISIBLE_HIDDEN_ROUTE_NAMES = new Set(['AccountCenter'])
+
+const shouldShowWorktab = (to: RouteLocationNormalized): boolean => {
+  if (!to.meta.isHideTab) return true
+  return WORKTAB_VISIBLE_HIDDEN_ROUTE_NAMES.has(String(to.name || ''))
+}
+
+const normalizeIcon = (icon: unknown): string | undefined => {
+  return typeof icon === 'string' && icon.trim() ? icon : undefined
+}
+
 /**
  * 根据当前路由信息设置工作标签页（worktab）
  * @param to 当前路由对象
@@ -35,7 +46,8 @@ import { useCommon } from '@/hooks/core/useCommon'
 export const setWorktab = (to: RouteLocationNormalized): void => {
   const worktabStore = useWorktabStore()
   const { meta, path, name, params, query } = to
-  if (!meta.isHideTab) {
+  const routeMeta = to.matched[to.matched.length - 1]?.meta ?? meta
+  if (shouldShowWorktab(to)) {
     // 如果是 iframe 页面，则特殊处理工作标签页
     if (isIframe(path)) {
       const iframeRoute = IframeRouteManager.getInstance().findByPath(to.path)
@@ -43,7 +55,7 @@ export const setWorktab = (to: RouteLocationNormalized): void => {
       if (iframeRoute?.meta) {
         worktabStore.openTab({
           title: iframeRoute.meta.title,
-          icon: meta.icon as string,
+          icon: normalizeIcon(iframeRoute.meta.icon),
           path,
           name: name as string,
           keepAlive: meta.keepAlive as boolean,
@@ -54,7 +66,7 @@ export const setWorktab = (to: RouteLocationNormalized): void => {
     } else if (useSettingStore().showWorkTab || path === useCommon().homePath.value) {
       worktabStore.openTab({
         title: meta.title as string,
-        icon: meta.icon as string,
+        icon: normalizeIcon(routeMeta.icon),
         path,
         name: name as string,
         keepAlive: meta.keepAlive as boolean,

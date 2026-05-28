@@ -156,7 +156,7 @@ export const useWorktabStore = defineStore(
           fixedTab: tab.fixedTab ?? existingTab.fixedTab,
           keepAlive: tab.keepAlive ?? existingTab.keepAlive,
           name: tab.name || existingTab.name,
-          icon: tab.icon || existingTab.icon
+          icon: tab.icon
         }
 
         current.value = opened.value[existingIndex]

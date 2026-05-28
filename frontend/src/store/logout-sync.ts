@@ -1,4 +1,4 @@
-import { useUserStore } from './modules/user'
+import { useAccountStore } from './modules/user'
 import { StorageConfig } from '@/utils/storage/storage-config'
 import { router } from '@/router'
 import { RoutesAlias } from '@/router/routesAlias'
@@ -11,7 +11,7 @@ function handleLogoutSignal(event: StorageEvent) {
     return
   }
 
-  useUserStore().logOut({ remote: false, broadcast: false })
+  useAccountStore().logOut({ remote: false, broadcast: false })
 }
 
 function handleUserStoreChange(event: StorageEvent) {
@@ -25,7 +25,7 @@ function handleUserStoreChange(event: StorageEvent) {
 
   try {
     const snapshot = JSON.parse(event.newValue) as Partial<Record<string, unknown>>
-    useUserStore().syncLoginStateFromPersisted(snapshot)
+    useAccountStore().syncLoginStateFromPersisted(snapshot)
   } catch (error) {
     console.warn('[AuthSync] Failed to parse persisted user snapshot', error)
   }

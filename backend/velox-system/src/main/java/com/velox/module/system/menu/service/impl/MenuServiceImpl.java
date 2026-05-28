@@ -66,13 +66,13 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuRouteDTO> getSimpleMenus() {
-        Set<String> permittedMenuIds = permissionService.getUserPermittedMenuIds(
+        Set<String> permittedMenuIds = permissionService.getAccountPermittedMenuIds(
                 securitySessionService.requireCurrentLoginId());
         if (permittedMenuIds.isEmpty()) {
             return List.of();
         }
 
-        // 把祖先菜单一并纳入：仅用于让路由树保持连通（譬如 /system/user-center 需要 System 父节点），
+        // 把祖先菜单一并纳入：仅用于让路由树保持连通（譬如 /system/account-center 需要 System 父节点），
         // 不等同于授予按钮权限——按钮鉴权仍走 PermissionService 的 authMark 集合。
         Set<String> menuTreeIds = expandWithAncestors(permittedMenuIds);
 
@@ -356,7 +356,7 @@ public class MenuServiceImpl implements MenuService {
     /**
      * 把入参菜单 ID 集合扩展为「自身 + 所有启用的祖先菜单」。
      * 用于让前端拿到的菜单树保持连通：仅授权了 UserCenter（其 parent 为 System）时，
-     * System 节点必须出现在返回结果中，否则前端拼接出来的路径会变成 /user-center 而非 /system/user-center。
+     * System 节点必须出现在返回结果中，否则前端拼接出来的路径会变成 /account-center 而非 /system/account-center。
      */
     private Set<String> expandWithAncestors(Set<String> menuIds) {
         if (menuIds == null || menuIds.isEmpty()) {

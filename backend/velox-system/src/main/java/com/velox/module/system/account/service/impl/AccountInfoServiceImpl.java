@@ -1,0 +1,602 @@
+package com.velox.module.system.account.service.impl;
+
+import com.velox.common.exception.ApiException;
+import com.velox.common.exception.BusinessErrorCode;
+import com.velox.framework.security.api.session.SecuritySessionService;
+import com.velox.module.system.auth.session.AccountSessionService;
+import com.velox.module.system.domain.model.CurrentUserInfo;
+import com.velox.module.system.domain.model.Menu;
+import com.velox.module.system.domain.model.Profile;
+import com.velox.module.system.domain.model.Account;
+import com.velox.module.system.domain.model.AccountSecurity;
+import com.velox.module.system.persistence.MenuMapper;
+import com.velox.module.system.persistence.ProfileMapper;
+import com.velox.module.system.persistence.AccountMapper;
+import com.velox.module.system.persistence.AccountSecurityMapper;
+import com.velox.module.system.persistence.support.MenuQuerySupport;
+import com.velox.module.system.auth.service.PasswordCipherService;
+import com.velox.module.system.auth.store.VerificationCodeStore;
+import com.velox.module.system.id.generator.SystemEntityIdGenerator;
+import com.velox.module.system.permission.service.PermissionService;
+import com.velox.module.system.account.dto.AccountPasswordUpdateCommand;
+import com.velox.module.system.account.dto.AccountDeletionCommand;
+import com.velox.module.system.account.dto.AccountInfoBasicDTO;
+import com.velox.module.system.account.dto.AccountInfoDTO;
+import com.velox.module.system.account.dto.AccountProfileUpdateCommand;
+import com.velox.module.system.account.dto.AccountRecoveryCommand;
+import com.velox.module.system.account.dto.AccountTabInfoDTO;
+import com.velox.module.system.account.dto.AccountUsernameUpdateCommand;
+import com.velox.module.system.account.service.AccountInfoService;
+import com.velox.module.system.account.store.AccountLanguageStore;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.velox.framework.totp.api.model.TotpVerifyResult;
+import com.velox.framework.totp.api.service.TotpService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+public class AccountInfoServiceImpl implements AccountInfoService {
+
+    private final AccountMapper userMapper;
+    private final AccountSecurityMapper userSecurityMapper;
+    private final ProfileMapper profileMapper;
+    private final PermissionService permissionService;
+    private final MenuMapper menuMapper;
+    private final PasswordCipherService passwordCipherService;
+    private final SystemEntityIdGenerator entityIdGenerator;
+    private final ObjectMapper objectMapper;
+    private final SecuritySessionService securitySessionService;
+    private final AccountSessionService accountSessionService;
+    private final AccountLanguageStore userLanguageStore;
+    private final VerificationCodeStore verificationCodeStore;
+    private final TotpService totpService;
+
+    public AccountInfoServiceImpl(
+            AccountMapper userMapper,
+            AccountSecurityMapper userSecurityMapper,
+            ProfileMapper profileMapper,
+            PermissionService permissionService,
+            MenuMapper menuMapper,
+            PasswordCipherService passwordCipherService,
+            SystemEntityIdGenerator entityIdGenerator,
+            ObjectMapper objectMapper,
+            SecuritySessionService securitySessionService,
+            AccountSessionService accountSessionService,
+            AccountLanguageStore userLanguageStore,
+            VerificationCodeStore verificationCodeStore,
+            TotpService totpService
+    ) {
+        this.userMapper = userMapper;
+        this.userSecurityMapper = userSecurityMapper;
+        this.profileMapper = profileMapper;
+        this.permissionService = permissionService;
+        this.menuMapper = menuMapper;
+        this.passwordCipherService = passwordCipherService;
+        this.entityIdGenerator = entityIdGenerator;
+        this.objectMapper = objectMapper;
+        this.securitySessionService = securitySessionService;
+        this.accountSessionService = accountSessionService;
+        this.userLanguageStore = userLanguageStore;
+        this.verificationCodeStore = verificationCodeStore;
+        this.totpService = totpService;
+    }
+
+    @Override
+    public CurrentUserInfo getCurrentUserInfo() {
+        String userId = securitySessionService.requireCurrentLoginId();
+        Account user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new ApiException(BusinessErrorCode.USER_NOT_FOUND);
+        }
+        Profile profile = getActiveProfile(userId);
+        AccountSecurity security = getActiveSecurity(userId);
+
+        CurrentUserInfo currentUserInfo = new CurrentUserInfo();
+        currentUserInfo.setAccountId(normalizeNullable(user.getId()));
+        currentUserInfo.setUserName(user.getUsername());
+        currentUserInfo.setEmail(security == null ? "" : defaultString(security.getEmail()));
+        currentUserInfo.setPhone(profile == null ? "" : defaultString(profile.getMobile()));
+        currentUserInfo.setAvatar(resolveAvatar(profile, user.getUsername()));
+        currentUserInfo.setNickname(profile == null ? "" : defaultString(profile.getNickname()));
+        currentUserInfo.setGender(profile == null ? 0 : normalizeGender(profile.getGender()));
+        currentUserInfo.setRealName(profile == null ? "" : defaultString(profile.getRealName()));
+        currentUserInfo.setAddress(profile == null ? "" : defaultString(profile.getAddress()));
+        currentUserInfo.setIntroduction(profile == null ? "" : defaultString(profile.getIntroduction()));
+        currentUserInfo.setSignature(profile == null ? "" : defaultString(profile.getSignature()));
+        currentUserInfo.setPosition(profile == null ? "" : defaultString(profile.getPosition()));
+        currentUserInfo.setCompany(profile == null ? "" : defaultString(profile.getCompany()));
+        currentUserInfo.setTags(parseTags(profile == null ? null : profile.getTags()));
+        currentUserInfo.setRoles(permissionService.getAccountRoleCodes(userId));
+        currentUserInfo.setButtons(getCurrentButtons(userId));
+        return currentUserInfo;
+    }
+
+    @Override
+    public AccountInfoBasicDTO getAccountInfoBasicDTO() {
+        String userId = securitySessionService.requireCurrentLoginId();
+        Account user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new ApiException(BusinessErrorCode.USER_NOT_FOUND);
+        }
+        Profile profile = getActiveProfile(userId);
+        AccountSecurity security = getActiveSecurity(userId);
+
+        AccountInfoBasicDTO dto = new AccountInfoBasicDTO();
+        dto.setAccountId(normalizeNullable(user.getId()));
+        dto.setUserName(user.getUsername());
+        dto.setEmail(security == null ? "" : defaultString(security.getEmail()));
+        dto.setPhone(profile == null ? "" : defaultString(profile.getMobile()));
+        dto.setAvatar(resolveAvatar(profile, user.getUsername()));
+        dto.setRoles(permissionService.getAccountRoleCodes(userId));
+        dto.setButtons(getCurrentButtons(userId));
+        userLanguageStore.find(userId).ifPresent(dto::setLanguage);
+        return dto;
+    }
+
+    @Override
+    public AccountInfoDTO getAccountInfoDTO() {
+        String userId = securitySessionService.requireCurrentLoginId();
+        Account user = requireCurrentUser(userId);
+        Profile profile = getActiveProfile(userId);
+        AccountSecurity security = getActiveSecurity(userId);
+        CurrentUserInfo currentUserInfo = getCurrentUserInfo();
+        AccountInfoDTO dto = new AccountInfoDTO();
+        dto.setAccountId(currentUserInfo.getAccountId());
+        dto.setUserName(currentUserInfo.getUserName());
+        dto.setEmail(profile == null ? "" : defaultString(profile.getEmail()));
+        dto.setSecurityEmail(security == null ? "" : defaultString(security.getEmail()));
+        dto.setPhone(currentUserInfo.getPhone());
+        dto.setAvatar(currentUserInfo.getAvatar());
+        dto.setNickname(currentUserInfo.getNickname());
+        dto.setGender(currentUserInfo.getGender());
+        dto.setRealName(currentUserInfo.getRealName());
+        dto.setAddress(currentUserInfo.getAddress());
+        dto.setIntroduction(currentUserInfo.getIntroduction());
+        dto.setSignature(currentUserInfo.getSignature());
+        dto.setPosition(currentUserInfo.getPosition());
+        dto.setCompany(currentUserInfo.getCompany());
+        dto.setTags(currentUserInfo.getTags());
+        dto.setRoles(currentUserInfo.getRoles());
+        dto.setButtons(currentUserInfo.getButtons());
+        userLanguageStore.find(currentUserInfo.getAccountId()).ifPresent(dto::setLanguage);
+        return dto;
+    }
+
+    @Override
+    public AccountTabInfoDTO getCurrentAccountTabInfo() {
+        String userId = securitySessionService.requireCurrentLoginId();
+        Account user = requireCurrentUser(userId);
+        AccountSecurity security = getActiveSecurity(userId);
+        AccountTabInfoDTO dto = new AccountTabInfoDTO();
+        dto.setAccountId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setRemark(defaultString(user.getRemark()));
+        dto.setDeletionRequestedAt(formatTime(user.getDeletionRequestedAt()));
+        dto.setDeletionExpiresAt(formatTime(user.getDeletionExpiresAt()));
+        dto.setPendingDeletion(isPendingDeletion(user));
+        dto.setSecurityEmail(security == null ? "" : defaultString(security.getEmail()));
+        dto.setEmailMfaEnabled(security != null && Integer.valueOf(1).equals(security.getMfaEmailEnabled()));
+        dto.setTotpMfaEnabled(security != null && Integer.valueOf(1).equals(security.getMfaTotpEnabled()));
+        return dto;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateCurrentUserProfile(AccountProfileUpdateCommand command) {
+        String userId = securitySessionService.requireCurrentLoginId();
+        Account user = requireCurrentUser(userId);
+        Profile profile = getOrInitProfile(user, currentOperator());
+
+        profile.setNickname(normalizeNullable(command.getNickname()));
+        profile.setRealName(normalizeNullable(command.getRealName()));
+        profile.setEmail(normalizeNullable(command.getEmail()));
+        profile.setMobile(normalizeNullable(command.getPhone()));
+        profile.setAddress(normalizeNullable(command.getAddress()));
+        profile.setGender(normalizeGender(command.getGender()));
+        profile.setIntroduction(normalizeNullable(command.getIntroduction()));
+        profile.setSignature(normalizeNullable(command.getSignature()));
+        profile.setPosition(normalizeNullable(command.getPosition()));
+        profile.setCompany(normalizeNullable(command.getCompany()));
+        profile.setTags(serializeTags(command.getTags()));
+        profile.setUpdateBy(currentOperator());
+        saveProfile(profile);
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateCurrentUsername(AccountUsernameUpdateCommand command) {
+        String userId = securitySessionService.requireCurrentLoginId();
+        Account user = requireCurrentUser(userId);
+        String username = normalizeNullable(command.getUsername());
+        if (!StringUtils.hasText(username)) {
+            throw new ApiException(BusinessErrorCode.USER_ALREADY_EXISTS);
+        }
+        Account existing = userMapper.selectOne(new LambdaQueryWrapper<Account>()
+                .eq(Account::getDeleted, 0)
+                .eq(Account::getUsername, username)
+                .ne(Account::getId, userId)
+                .last("limit 1"));
+        if (existing != null) {
+            throw new ApiException(BusinessErrorCode.USER_ALREADY_EXISTS);
+        }
+        user.setUsername(username);
+        user.setUpdateBy(currentOperator());
+        userMapper.updateById(user);
+        return true;
+    }
+
+    private String serializeTags(List<String> tags) {
+        if (tags == null) {
+            return null;
+        }
+        List<String> normalized = tags.stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .limit(10)
+                .toList();
+        if (normalized.isEmpty()) {
+            return "[]";
+        }
+        try {
+            return objectMapper.writeValueAsString(normalized);
+        } catch (Exception ex) {
+            throw new ApiException(BusinessErrorCode.OPERATION_FAILED);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateCurrentUserPassword(AccountPasswordUpdateCommand command) {
+        if (!Objects.equals(command.getNewPassword(), command.getConfirmPassword())) {
+            throw new ApiException(BusinessErrorCode.PASSWORD_MISMATCH);
+        }
+
+        String userId = securitySessionService.requireCurrentLoginId();
+        Account user = requireCurrentUser(userId);
+        if (!passwordCipherService.matches(command.getCurrentPassword(), user.getPassword())) {
+            throw new ApiException(BusinessErrorCode.PASSWORD_ERROR);
+        }
+        AccountSecurity security = getActiveSecurity(userId);
+        verifyPasswordMfaIfRequired(security, command);
+        if (Objects.equals(command.getCurrentPassword(), command.getNewPassword())) {
+            throw new ApiException(BusinessErrorCode.PASSWORD_SAME_AS_OLD);
+        }
+
+        user.setPassword(passwordCipherService.encode(command.getNewPassword().trim()));
+        user.setUpdateBy(currentOperator());
+        userMapper.updateById(user);
+        if (security != null) {
+            security.setLastPasswordChangeAt(LocalDateTime.now(ZoneOffset.UTC));
+            security.setUpdateBy(currentOperator());
+            userSecurityMapper.updateById(security);
+        }
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateCurrentUserAvatar(String avatarUrl) {
+        String userId = securitySessionService.requireCurrentLoginId();
+        Account user = requireCurrentUser(userId);
+        Profile profile = getOrInitProfile(user, currentOperator());
+        profile.setAvatar(avatarUrl);
+        profile.setUpdateBy(currentOperator());
+        saveProfile(profile);
+    }
+
+    @Override
+    public Boolean updateCurrentUserLanguage(String language) {
+        String userId = securitySessionService.requireCurrentLoginId();
+        userLanguageStore.save(userId, language);
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean requestAccountDeletion(AccountDeletionCommand command) {
+        String userId = securitySessionService.requireCurrentLoginId();
+        Account user = requireCurrentUser(userId);
+        AccountSecurity security = getActiveSecurity(userId);
+        if (security != null && (Integer.valueOf(1).equals(security.getMfaEmailEnabled())
+                || Integer.valueOf(1).equals(security.getMfaTotpEnabled()))) {
+            throw new ApiException(BusinessErrorCode.ACCOUNT_DELETION_MFA_DISABLE_REQUIRED);
+        }
+        if (!Objects.equals(user.getUsername(), normalizeNullable(command.getUsername()))) {
+            throw new ApiException(BusinessErrorCode.ACCOUNT_RECOVERY_USERNAME_MISMATCH);
+        }
+        String securityEmail = security == null ? null : normalizeNullable(security.getEmail());
+        if (StringUtils.hasText(securityEmail)) {
+            VerificationCodeStore.VerificationResult result =
+                    verificationCodeStore.verifyMfaCode(userId, command.getEmailCode());
+            if (result == VerificationCodeStore.VerificationResult.EXPIRED) {
+                throw new ApiException(BusinessErrorCode.ACCOUNT_DELETION_EMAIL_CODE_EXPIRED);
+            }
+            if (result == VerificationCodeStore.VerificationResult.INVALID) {
+                throw new ApiException(BusinessErrorCode.ACCOUNT_DELETION_EMAIL_CODE_ERROR);
+            }
+        } else {
+            if (!StringUtils.hasText(command.getCurrentPassword())) {
+                throw new ApiException(BusinessErrorCode.ACCOUNT_DELETION_PASSWORD_REQUIRED);
+            }
+            if (!passwordCipherService.matches(command.getCurrentPassword(), user.getPassword())) {
+                throw new ApiException(BusinessErrorCode.PASSWORD_ERROR);
+            }
+        }
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        user.setStatus(4);
+        user.setDeletionRequestedAt(now);
+        user.setDeletionExpiresAt(now.plusDays(14));
+        user.setUpdateBy(currentOperator());
+        userMapper.updateById(user);
+        accountSessionService.forceLogoutAll(userId);
+        securitySessionService.logoutByLoginId(userId);
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean recoverCurrentAccount(AccountRecoveryCommand command) {
+        String userId = securitySessionService.requireCurrentLoginId();
+        Account user = requireCurrentUser(userId);
+        if (!isPendingDeletion(user)) {
+            throw new ApiException(BusinessErrorCode.ACCOUNT_RECOVERY_EXPIRED);
+        }
+        if (!Objects.equals(user.getUsername(), normalizeNullable(command.getUsername()))) {
+            throw new ApiException(BusinessErrorCode.ACCOUNT_RECOVERY_USERNAME_MISMATCH);
+        }
+        user.setStatus(1);
+        user.setDeletionRequestedAt(null);
+        user.setDeletionExpiresAt(null);
+        user.setUpdateBy(currentOperator());
+        userMapper.updateById(user);
+        return true;
+    }
+
+    private List<String> getCurrentButtons(String userId) {
+        Set<String> roleIds = permissionService.getAccountRoleIds(userId);
+        if (roleIds.isEmpty()) {
+            return List.of();
+        }
+
+        Set<String> menuIds = permissionService.getRoleMenuIds(roleIds).stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        if (menuIds.isEmpty()) {
+            return List.of();
+        }
+
+        // 同时返回菜单级与按钮级 auth_mark，便于前端做权限判断和路由优先级。
+        return menuMapper.selectList(MenuQuerySupport.selectColumns(new LambdaQueryWrapper<Menu>())
+                        .eq(Menu::getDeleted, 0)
+                        .in(Menu::getId, menuIds))
+                .stream()
+                .map(Menu::getAuthMark)
+                .filter(mark -> mark != null && !mark.isBlank())
+                .distinct()
+                .toList();
+    }
+
+    private Account requireCurrentUser(String userId) {
+        Account user = userMapper.selectOne(new LambdaQueryWrapper<Account>()
+                .eq(Account::getId, userId)
+                .eq(Account::getDeleted, 0)
+                .last("limit 1"));
+        if (user == null) {
+            throw new ApiException(BusinessErrorCode.USER_NOT_FOUND);
+        }
+        return user;
+    }
+
+    private Profile getActiveProfile(String userId) {
+        return profileMapper.selectOne(new LambdaQueryWrapper<Profile>()
+                .eq(Profile::getAccountId, userId)
+                .eq(Profile::getDeleted, 0)
+                .last("limit 1"));
+    }
+
+    private AccountSecurity getActiveSecurity(String userId) {
+        return userSecurityMapper.selectOne(new LambdaQueryWrapper<AccountSecurity>()
+                .eq(AccountSecurity::getAccountId, userId)
+                .eq(AccountSecurity::getDeleted, 0)
+                .last("limit 1"));
+    }
+
+    private void verifyPasswordMfaIfRequired(AccountSecurity security, AccountPasswordUpdateCommand command) {
+        if (security == null) {
+            return;
+        }
+        boolean totpEnabled = Integer.valueOf(1).equals(security.getMfaTotpEnabled());
+        boolean emailEnabled = Integer.valueOf(1).equals(security.getMfaEmailEnabled());
+        if (!totpEnabled && !emailEnabled) {
+            return;
+        }
+        String mfaType = normalizeMfaType(command.getMfaType());
+        if ("totp".equals(mfaType)) {
+            if (!totpEnabled) {
+                throw new ApiException(BusinessErrorCode.MFA_TOTP_NOT_ENABLED);
+            }
+            verifyPasswordTotp(security, command.getMfaTotpCode());
+            return;
+        }
+        if ("email".equals(mfaType)) {
+            if (!emailEnabled) {
+                throw new ApiException(BusinessErrorCode.MFA_NOT_ENABLED);
+            }
+            verifyPasswordMfaEmail(security.getAccountId(), command.getMfaEmailCode());
+            return;
+        }
+        throw new ApiException(BusinessErrorCode.MFA_PROOF_REQUIRED);
+    }
+
+    private void verifyPasswordTotp(AccountSecurity security, String code) {
+        if (!StringUtils.hasText(security.getMfaTotpSecret())) {
+            throw new ApiException(BusinessErrorCode.MFA_TOTP_NOT_PROVISIONED);
+        }
+        if (!totpService.isEnabled()) {
+            throw new ApiException(BusinessErrorCode.MFA_TOTP_SERVICE_DISABLED);
+        }
+        TotpVerifyResult result = totpService.verify(security.getMfaTotpSecret(), code);
+        if (!result.matched()) {
+            throw new ApiException(BusinessErrorCode.MFA_TOTP_CODE_ERROR);
+        }
+    }
+
+    private void verifyPasswordMfaEmail(String userId, String code) {
+        VerificationCodeStore.VerificationResult result = verificationCodeStore.verifyMfaCode(userId, code);
+        if (result == VerificationCodeStore.VerificationResult.EXPIRED) {
+            throw new ApiException(BusinessErrorCode.MFA_CODE_EXPIRED);
+        }
+        if (result == VerificationCodeStore.VerificationResult.INVALID) {
+            throw new ApiException(BusinessErrorCode.MFA_CODE_ERROR);
+        }
+    }
+
+    private String normalizeMfaType(String mfaType) {
+        if (!StringUtils.hasText(mfaType)) {
+            return "";
+        }
+        return mfaType.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private Profile getOrInitProfile(Account user, String operator) {
+        Profile profile = profileMapper.selectOne(new LambdaQueryWrapper<Profile>()
+                .eq(Profile::getAccountId, user.getId())
+                .last("limit 1"));
+        if (profile != null) {
+            if (!StringUtils.hasText(profile.getAvatar())) {
+                profile.setAvatar(buildDefaultAvatar(user.getUsername()));
+            }
+            return profile;
+        }
+
+        Profile created = new Profile();
+        created.setId(entityIdGenerator.nextId(Profile.class));
+        created.setAccountId(user.getId());
+        created.setNickname(user.getUsername());
+        created.setAvatar(buildDefaultAvatar(user.getUsername()));
+        created.setGender(0);
+        created.setDeleted(0);
+        created.setCreateBy(operator);
+        created.setUpdateBy(operator);
+        return created;
+    }
+
+    private void saveProfile(Profile profile) {
+        profile.setDeleted(0);
+        if (profileMapper.selectById(profile.getId()) == null) {
+            profileMapper.insert(profile);
+            return;
+        }
+        profileMapper.updateById(profile);
+    }
+
+    private AccountSecurity getOrInitSecurity(Account user, String operator) {
+        AccountSecurity security = getActiveSecurity(user.getId());
+        if (security != null) {
+            return security;
+        }
+        AccountSecurity created = new AccountSecurity();
+        created.setId(entityIdGenerator.nextId(AccountSecurity.class));
+        created.setAccountId(user.getId());
+        created.setLoginMethods("password");
+        created.setMfaEmailEnabled(0);
+        created.setMfaTotpEnabled(0);
+        created.setDeleted(0);
+        created.setCreateBy(operator);
+        created.setUpdateBy(operator);
+        return created;
+    }
+
+    private void saveSecurity(AccountSecurity security) {
+        security.setDeleted(0);
+        if (userSecurityMapper.selectById(security.getId()) == null) {
+            userSecurityMapper.insert(security);
+            return;
+        }
+        userSecurityMapper.updateById(security);
+    }
+
+    private String resolveAvatar(Profile profile, String username) {
+        if (profile != null && StringUtils.hasText(profile.getAvatar())) {
+            String avatar = profile.getAvatar();
+            // 如果是完整 URL（http/https 开头）或已带路径前缀，直接返回
+            if (avatar.startsWith("http://") || avatar.startsWith("https://") || avatar.startsWith("/")) {
+                return avatar;
+            }
+            // 否则视为 DB 存储的文件 ID（如 F0000001），补全为可访问的 URL
+            // 注意：如果文件不存在会返回 404，但这比返回无效 URL 更好
+            return "/api/file/db/" + avatar;
+        }
+        return buildDefaultAvatar(username);
+    }
+
+    private String buildDefaultAvatar(String username) {
+        String seed = StringUtils.hasText(username) ? username.trim() : "user";
+        return "https://api.dicebear.com/7.x/avataaars/svg?seed=" + seed;
+    }
+
+    private List<String> parseTags(String tags) {
+        if (!StringUtils.hasText(tags)) {
+            return List.of();
+        }
+        try {
+            List<String> values = objectMapper.readValue(tags, new TypeReference<List<String>>() {
+            });
+            return values == null ? List.of() : values;
+        } catch (Exception ex) {
+            return Collections.emptyList();
+        }
+    }
+
+    private boolean isPendingDeletion(Account user) {
+        if (user == null || !Integer.valueOf(4).equals(user.getStatus())) {
+            return false;
+        }
+        return user.getDeletionExpiresAt() != null
+                && user.getDeletionExpiresAt().isAfter(LocalDateTime.now(ZoneOffset.UTC));
+    }
+
+    private String formatTime(LocalDateTime value) {
+        return value == null ? "" : value.toString();
+    }
+
+    private Integer normalizeGender(Integer gender) {
+        if (gender == null) {
+            return 0;
+        }
+        return switch (gender) {
+            case 1, 2, 3 -> gender;
+            default -> 0;
+        };
+    }
+
+    private String normalizeNullable(String value) {
+        return StringUtils.hasText(value) ? value.trim() : null;
+    }
+
+    private String defaultString(String value) {
+        return value == null ? "" : value;
+    }
+
+    private String currentOperator() {
+        String loginId = securitySessionService.currentLoginIdOrNull();
+        return StringUtils.hasText(loginId) ? loginId : "system";
+    }
+}

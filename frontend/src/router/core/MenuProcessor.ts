@@ -8,7 +8,7 @@
  */
 
 import type { AppRouteRecord } from '@/types/router'
-import { useUserStore } from '@/store/modules/user'
+import { useAccountStore } from '@/store/modules/user'
 import { useAppMode } from '@/hooks/core/useAppMode'
 import { fetchGetMenuList } from '@/api/system-manage'
 import { asyncRoutes } from '../routes/asyncRoutes'
@@ -40,8 +40,8 @@ export class MenuProcessor {
    * 处理前端控制模式的菜单
    */
   private async processFrontendMenu(): Promise<AppRouteRecord[]> {
-    const userStore = useUserStore()
-    const roles = userStore.info?.roles
+    const accountStore = useAccountStore()
+    const roles = accountStore.info?.roles
 
     let menuList = [...asyncRoutes]
 

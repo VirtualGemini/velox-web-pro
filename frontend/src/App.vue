@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-  import { useUserStore } from './store/modules/user'
+  import { useAccountStore } from './store/modules/user'
   import zh from 'element-plus/es/locale/lang/zh-cn'
   import en from 'element-plus/es/locale/lang/en'
   import { systemUpgrade } from './utils/sys'
@@ -20,8 +20,8 @@
   import { checkStorageCompatibility } from './utils/storage'
   import { initializeTheme } from './hooks/core/useTheme'
 
-  const userStore = useUserStore()
-  const { language } = storeToRefs(userStore)
+  const accountStore = useAccountStore()
+  const { language } = storeToRefs(accountStore)
 
   const locales = {
     zh: zh,

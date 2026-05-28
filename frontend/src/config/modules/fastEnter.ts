@@ -110,10 +110,10 @@ const fastEnterConfig: FastEnterConfig = {
       routeName: 'Pricing'
     },
     {
-      name: '个人中心',
+      name: '账号中心',
       enabled: true,
       order: 5,
-      routeName: 'UserCenter'
+      routeName: 'AccountCenter'
     },
     {
       name: '留言管理',

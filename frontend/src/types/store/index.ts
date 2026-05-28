@@ -104,7 +104,7 @@ export interface WorkTab {
 // 用户Store状态
 export interface UserState {
   /** 用户信息 */
-  userInfo: Api.Auth.UserInfo | null
+  userInfo: Api.Auth.AccountInfo | null
   /** 认证令牌 */
   token: string | null
   /** 用户角色列表 */

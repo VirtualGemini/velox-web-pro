@@ -43,6 +43,18 @@ public class SaTokenSecuritySessionService implements SecuritySessionService {
     }
 
     @Override
+    public void logoutByLoginId(String loginId) {
+        if (!StringUtils.hasText(loginId)) {
+            return;
+        }
+        try {
+            StpUtil.logout(loginId.trim());
+        } catch (SaTokenException exception) {
+            throw new SecurityAuthenticationException(SecurityCommonMessages.SECURITY_LOGOUT_FAILED, exception);
+        }
+    }
+
+    @Override
     public boolean isAuthenticated() {
         return StpUtil.isLogin();
     }

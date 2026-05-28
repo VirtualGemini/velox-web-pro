@@ -68,10 +68,10 @@ const fastEnterConfig: FastEnterConfig = {
       routeName: 'ForgetPassword'
     },
     {
-      name: '个人中心',
+      name: '账号中心',
       enabled: true,
       order: 4,
-      routeName: 'UserCenter'
+      routeName: 'AccountCenter'
     }
   ]
 }

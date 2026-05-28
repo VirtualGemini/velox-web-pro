@@ -7,12 +7,12 @@ import com.velox.framework.security.api.session.SecuritySessionService;
 import com.velox.module.system.domain.model.Menu;
 import com.velox.module.system.domain.model.Role;
 import com.velox.module.system.domain.model.RoleMenuPermission;
-import com.velox.module.system.domain.model.UserRole;
+import com.velox.module.system.domain.model.AccountRole;
 import com.velox.module.system.id.generator.SystemEntityIdGenerator;
 import com.velox.module.system.persistence.MenuMapper;
 import com.velox.module.system.persistence.RoleMapper;
 import com.velox.module.system.persistence.RoleMenuPermissionMapper;
-import com.velox.module.system.persistence.UserRoleMapper;
+import com.velox.module.system.persistence.AccountRoleMapper;
 import com.velox.module.system.persistence.support.MenuQuerySupport;
 import com.velox.module.system.permission.service.PermissionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -35,14 +35,14 @@ public class PermissionServiceImpl implements PermissionService {
     private final RoleMapper roleMapper;
     private final MenuMapper menuMapper;
     private final RoleMenuPermissionMapper roleMenuPermissionMapper;
-    private final UserRoleMapper userRoleMapper;
+    private final AccountRoleMapper userRoleMapper;
     private final SystemEntityIdGenerator entityIdGenerator;
     private final SecuritySessionService securitySessionService;
 
     public PermissionServiceImpl(RoleMapper roleMapper,
                                  MenuMapper menuMapper,
                                  RoleMenuPermissionMapper roleMenuPermissionMapper,
-                                 UserRoleMapper userRoleMapper,
+                                 AccountRoleMapper userRoleMapper,
                                  SystemEntityIdGenerator entityIdGenerator,
                                  SecuritySessionService securitySessionService) {
         this.roleMapper = roleMapper;
@@ -162,52 +162,52 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public Set<String> getUserRoleIds(String userId) {
-        String normalizedUserId = normalizeId(userId);
-        if (normalizedUserId == null) {
+    public Set<String> getAccountRoleIds(String accountId) {
+        String normalizedAccountId = normalizeId(accountId);
+        if (normalizedAccountId == null) {
             return Set.of();
         }
-        return getUserRoleIds(Set.of(normalizedUserId)).getOrDefault(normalizedUserId, Set.of());
+        return getAccountRoleIds(Set.of(normalizedAccountId)).getOrDefault(normalizedAccountId, Set.of());
     }
 
     @Override
-    public Map<String, Set<String>> getUserRoleIds(Collection<String> userIds) {
-        Set<String> normalizedUserIds = normalizeIds(userIds);
-        if (normalizedUserIds.isEmpty()) {
+    public Map<String, Set<String>> getAccountRoleIds(Collection<String> accountIds) {
+        Set<String> normalizedAccountIds = normalizeIds(accountIds);
+        if (normalizedAccountIds.isEmpty()) {
             return Map.of();
         }
-        Map<String, Set<String>> userRoles = new LinkedHashMap<>();
-        userRoleMapper.selectList(new LambdaQueryWrapper<UserRole>()
-                        .eq(UserRole::getDeleted, 0)
-                        .in(UserRole::getUserId, normalizedUserIds))
+        Map<String, Set<String>> accountRoles = new LinkedHashMap<>();
+        userRoleMapper.selectList(new LambdaQueryWrapper<AccountRole>()
+                        .eq(AccountRole::getDeleted, 0)
+                        .in(AccountRole::getAccountId, normalizedAccountIds))
                 .forEach(item -> {
-                    String normalizedUserId = normalizeId(item.getUserId());
+                    String normalizedAccountId = normalizeId(item.getAccountId());
                     String normalizedRoleId = normalizeId(item.getRoleId());
-                    if (normalizedUserId == null || normalizedRoleId == null) {
+                    if (normalizedAccountId == null || normalizedRoleId == null) {
                         return;
                     }
-                    userRoles.computeIfAbsent(normalizedUserId, key -> new LinkedHashSet<>()).add(normalizedRoleId);
+                    accountRoles.computeIfAbsent(normalizedAccountId, key -> new LinkedHashSet<>()).add(normalizedRoleId);
                 });
-        return userRoles;
+        return accountRoles;
     }
 
     @Override
-    public List<String> getUserRoleCodes(String userId) {
-        String normalizedUserId = normalizeId(userId);
-        if (normalizedUserId == null) {
+    public List<String> getAccountRoleCodes(String accountId) {
+        String normalizedAccountId = normalizeId(accountId);
+        if (normalizedAccountId == null) {
             return List.of();
         }
-        return getUserRoleCodes(Set.of(normalizedUserId)).getOrDefault(normalizedUserId, List.of());
+        return getAccountRoleCodes(Set.of(normalizedAccountId)).getOrDefault(normalizedAccountId, List.of());
     }
 
     @Override
-    public Map<String, List<String>> getUserRoleCodes(Collection<String> userIds) {
-        Set<String> normalizedUserIds = normalizeIds(userIds);
-        if (normalizedUserIds.isEmpty()) {
+    public Map<String, List<String>> getAccountRoleCodes(Collection<String> accountIds) {
+        Set<String> normalizedAccountIds = normalizeIds(accountIds);
+        if (normalizedAccountIds.isEmpty()) {
             return Map.of();
         }
-        Map<String, Set<String>> userRoleIdMap = getUserRoleIds(normalizedUserIds);
-        Set<String> allRoleIds = userRoleIdMap.values().stream()
+        Map<String, Set<String>> accountRoleIdMap = getAccountRoleIds(normalizedAccountIds);
+        Set<String> allRoleIds = accountRoleIdMap.values().stream()
                 .flatMap(Set::stream)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         if (allRoleIds.isEmpty()) {
@@ -223,7 +223,7 @@ public class PermissionServiceImpl implements PermissionService {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (left, right) -> left, LinkedHashMap::new));
 
         Map<String, List<String>> result = new LinkedHashMap<>();
-        for (Map.Entry<String, Set<String>> entry : userRoleIdMap.entrySet()) {
+        for (Map.Entry<String, Set<String>> entry : accountRoleIdMap.entrySet()) {
             List<String> roleCodes = entry.getValue().stream()
                     .map(roleCodeMap::get)
                     .filter(Objects::nonNull)
@@ -234,23 +234,23 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public Integer getUserHighestRoleLevel(String userId) {
-        String normalizedUserId = normalizeId(userId);
-        if (normalizedUserId == null) {
+    public Integer getAccountHighestRoleLevel(String accountId) {
+        String normalizedAccountId = normalizeId(accountId);
+        if (normalizedAccountId == null) {
             return 0;
         }
-        return getUserHighestRoleLevels(Set.of(normalizedUserId)).getOrDefault(normalizedUserId, 0);
+        return getAccountHighestRoleLevels(Set.of(normalizedAccountId)).getOrDefault(normalizedAccountId, 0);
     }
 
     @Override
-    public Map<String, Integer> getUserHighestRoleLevels(Collection<String> userIds) {
-        Set<String> normalizedUserIds = normalizeIds(userIds);
-        if (normalizedUserIds.isEmpty()) {
+    public Map<String, Integer> getAccountHighestRoleLevels(Collection<String> accountIds) {
+        Set<String> normalizedAccountIds = normalizeIds(accountIds);
+        if (normalizedAccountIds.isEmpty()) {
             return Map.of();
         }
 
-        Map<String, Set<String>> userRoleIdMap = getUserRoleIds(normalizedUserIds);
-        Set<String> allRoleIds = userRoleIdMap.values().stream()
+        Map<String, Set<String>> accountRoleIdMap = getAccountRoleIds(normalizedAccountIds);
+        Set<String> allRoleIds = accountRoleIdMap.values().stream()
                 .flatMap(Set::stream)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
@@ -266,34 +266,34 @@ public class PermissionServiceImpl implements PermissionService {
                                 role -> role.getRoleLevel() == null ? 0 : role.getRoleLevel(),
                                 (left, right) -> left,
                                 LinkedHashMap::new
-                        ));
+        ));
 
         Map<String, Integer> result = new LinkedHashMap<>();
-        for (String userId : normalizedUserIds) {
-            int highestLevel = userRoleIdMap.getOrDefault(userId, Set.of()).stream()
+        for (String accountId : normalizedAccountIds) {
+            int highestLevel = accountRoleIdMap.getOrDefault(accountId, Set.of()).stream()
                     .map(roleLevelMap::get)
                     .filter(Objects::nonNull)
                     .max(Integer::compareTo)
                     .orElse(0);
-            result.put(userId, highestLevel);
+            result.put(accountId, highestLevel);
         }
         return result;
     }
 
     @Override
-    public List<String> getUserPermissionMarks(String userId) {
-        String normalizedUserId = normalizeId(userId);
-        if (normalizedUserId == null) {
+    public List<String> getAccountPermissionMarks(String accountId) {
+        String normalizedAccountId = normalizeId(accountId);
+        if (normalizedAccountId == null) {
             return List.of();
         }
 
-        boolean isSuperAdmin = getUserRoleCodes(normalizedUserId).stream().anyMatch(SystemRoleCode.R_SUPER::equals);
+        boolean isSuperAdmin = getAccountRoleCodes(normalizedAccountId).stream().anyMatch(SystemRoleCode.R_SUPER::equals);
         LambdaQueryWrapper<Menu> wrapper = MenuQuerySupport.selectColumns(new LambdaQueryWrapper<Menu>())
                 .eq(Menu::getDeleted, 0)
                 .eq(Menu::getIsEnable, 1);
 
         if (!isSuperAdmin) {
-            Set<String> roleIds = getUserRoleIds(normalizedUserId);
+            Set<String> roleIds = getAccountRoleIds(normalizedAccountId);
             if (roleIds.isEmpty()) {
                 return List.of();
             }
@@ -313,13 +313,13 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public Set<String> getUserPermittedMenuIds(String userId) {
-        String normalizedUserId = normalizeId(userId);
-        if (normalizedUserId == null) {
+    public Set<String> getAccountPermittedMenuIds(String accountId) {
+        String normalizedAccountId = normalizeId(accountId);
+        if (normalizedAccountId == null) {
             return Set.of();
         }
 
-        if (getUserRoleCodes(normalizedUserId).stream().anyMatch(SystemRoleCode.R_SUPER::equals)) {
+        if (getAccountRoleCodes(normalizedAccountId).stream().anyMatch(SystemRoleCode.R_SUPER::equals)) {
             return menuMapper.selectList(MenuQuerySupport.selectColumns(new LambdaQueryWrapper<Menu>())
                             .eq(Menu::getDeleted, 0)
                             .eq(Menu::getIsEnable, 1))
@@ -329,7 +329,7 @@ public class PermissionServiceImpl implements PermissionService {
                     .collect(Collectors.toCollection(LinkedHashSet::new));
         }
 
-        Set<String> roleIds = getUserRoleIds(normalizedUserId);
+        Set<String> roleIds = getAccountRoleIds(normalizedAccountId);
         if (roleIds.isEmpty()) {
             return Set.of();
         }

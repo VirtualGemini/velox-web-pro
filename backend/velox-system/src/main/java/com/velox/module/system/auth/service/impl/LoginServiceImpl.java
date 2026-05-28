@@ -27,16 +27,16 @@ import com.velox.module.system.auth.status.ActiveUserStatusService;
 import com.velox.module.system.auth.store.VerificationCodeStore;
 import com.velox.module.system.domain.model.Profile;
 import com.velox.module.system.domain.model.Role;
-import com.velox.module.system.domain.model.User;
-import com.velox.module.system.domain.model.UserRole;
-import com.velox.module.system.domain.model.UserSecurity;
-import com.velox.module.system.domain.model.UserSession;
+import com.velox.module.system.domain.model.Account;
+import com.velox.module.system.domain.model.AccountRole;
+import com.velox.module.system.domain.model.AccountSecurity;
+import com.velox.module.system.domain.model.AccountSession;
 import com.velox.module.system.id.generator.SystemEntityIdGenerator;
 import com.velox.module.system.persistence.ProfileMapper;
 import com.velox.module.system.persistence.RoleMapper;
-import com.velox.module.system.persistence.UserMapper;
-import com.velox.module.system.persistence.UserRoleMapper;
-import com.velox.module.system.persistence.UserSecurityMapper;
+import com.velox.module.system.persistence.AccountMapper;
+import com.velox.module.system.persistence.AccountRoleMapper;
+import com.velox.module.system.persistence.AccountSecurityMapper;
 import com.velox.framework.totp.api.model.TotpVerifyResult;
 import com.velox.framework.totp.api.service.TotpService;
 import com.wf.captcha.SpecCaptcha;
@@ -54,15 +54,16 @@ import java.util.stream.Collectors;
 @Service
 public class LoginServiceImpl implements LoginService {
 
-    private static final java.util.regex.Pattern PHONE_PATTERN = java.util.regex.Pattern.compile("^1[3-9]\\d{9}$");
     private static final java.util.regex.Pattern EMAIL_PATTERN = java.util.regex.Pattern.compile(
             "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+    private static final java.util.regex.Pattern PHONE_PATTERN = java.util.regex.Pattern.compile(
+            "^1\\d{10}$");
 
-    private final UserMapper userMapper;
+    private final AccountMapper userMapper;
     private final ProfileMapper profileMapper;
     private final RoleMapper roleMapper;
-    private final UserRoleMapper userRoleMapper;
-    private final UserSecurityMapper userSecurityMapper;
+    private final AccountRoleMapper userRoleMapper;
+    private final AccountSecurityMapper userSecurityMapper;
     private final PasswordCipherService passwordCipherService;
     private final SystemAuthProperties authProperties;
     private final SystemAccountSecurityProperties accountSecurityProperties;
@@ -73,11 +74,11 @@ public class LoginServiceImpl implements LoginService {
     private final SecuritySessionService securitySessionService;
     private final TotpService totpService;
 
-    public LoginServiceImpl(UserMapper userMapper,
+    public LoginServiceImpl(AccountMapper userMapper,
                             ProfileMapper profileMapper,
                             RoleMapper roleMapper,
-                            UserRoleMapper userRoleMapper,
-                            UserSecurityMapper userSecurityMapper,
+                            AccountRoleMapper userRoleMapper,
+                            AccountSecurityMapper userSecurityMapper,
                             PasswordCipherService passwordCipherService,
                             SystemAuthProperties authProperties,
                             SystemAccountSecurityProperties accountSecurityProperties,
@@ -134,7 +135,7 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
         }
 
-        User user = findUserByAccount(username);
+        Account user = findUserByAccount(username);
 
         if (user == null) {
             throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
@@ -147,11 +148,15 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
         }
 
+        if (isPendingDeletion(user)) {
+            return issuePendingDeletionToken(user);
+        }
+
         if (Integer.valueOf(4).equals(user.getStatus())) {
             throw new ApiException(BusinessErrorCode.ACCOUNT_DISABLED);
         }
 
-        UserSecurity security = ensureUserSecurity(user);
+        AccountSecurity security = ensureUserSecurity(user);
         ensureLoginMethodAllowed(security, "password");
 
         resetLoginFailCount(user);
@@ -172,18 +177,18 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.PASSWORD_MISMATCH);
         }
 
-        User existUser = userMapper.selectOne(
-            new LambdaQueryWrapper<User>()
-                .eq(User::getDeleted, 0)
-                .eq(User::getUsername, command.getUsername())
+        Account existUser = userMapper.selectOne(
+            new LambdaQueryWrapper<Account>()
+                .eq(Account::getDeleted, 0)
+                .eq(Account::getUsername, command.getUsername())
         );
 
         if (existUser != null) {
             throw new ApiException(BusinessErrorCode.USER_ALREADY_EXISTS);
         }
 
-        User user = new User();
-        user.setId(entityIdGenerator.nextId(User.class));
+        Account user = new Account();
+        user.setId(entityIdGenerator.nextId(Account.class));
         user.setUsername(command.getUsername());
         user.setPassword(passwordCipherService.encode(command.getPassword()));
         user.setStatus(1);
@@ -194,7 +199,7 @@ public class LoginServiceImpl implements LoginService {
 
         Profile profile = new Profile();
         profile.setId(entityIdGenerator.nextId(Profile.class));
-        profile.setUserId(user.getId());
+        profile.setAccountId(user.getId());
         profile.setNickname(command.getUsername());
         profile.setAvatar(buildDefaultAvatar(command.getUsername()));
         profile.setGender(0);
@@ -206,17 +211,17 @@ public class LoginServiceImpl implements LoginService {
                 .eq(Role::getRoleCode, "R_USER")
                 .last("limit 1"));
         if (defaultRole != null && defaultRole.getId() != null) {
-            UserRole userRole = new UserRole();
-            userRole.setId(entityIdGenerator.nextId(UserRole.class));
-            userRole.setUserId(user.getId());
+            AccountRole userRole = new AccountRole();
+            userRole.setId(entityIdGenerator.nextId(AccountRole.class));
+            userRole.setAccountId(user.getId());
             userRole.setRoleId(defaultRole.getId());
             userRole.setDeleted(0);
             userRoleMapper.insert(userRole);
         }
 
-        UserSecurity security = new UserSecurity();
-        security.setId(entityIdGenerator.nextId(UserSecurity.class));
-        security.setUserId(user.getId());
+        AccountSecurity security = new AccountSecurity();
+        security.setId(entityIdGenerator.nextId(AccountSecurity.class));
+        security.setAccountId(user.getId());
         security.setLoginMethods(String.join(",",
                 accountSecurityProperties.getLoginMethods().getDefaults()));
         security.setMfaEmailEnabled(0);
@@ -232,7 +237,7 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.EMAIL_REQUIRED);
         }
 
-        User user = findUserByEmail(email);
+        Account user = findUserByEmail(email);
         if (user == null) {
             throw new ApiException(BusinessErrorCode.EMAIL_NOT_BOUND);
         }
@@ -272,7 +277,7 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.PASSWORD_MISMATCH);
         }
 
-        User user = findUserByEmail(email);
+        Account user = findUserByEmail(email);
         if (user == null) {
             throw new ApiException(BusinessErrorCode.EMAIL_NOT_BOUND);
         }
@@ -317,7 +322,7 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.EMAIL_REQUIRED);
         }
 
-        User user = findUserByEmail(email);
+        Account user = findUserByEmail(email);
         if (user == null) {
             throw new ApiException(BusinessErrorCode.EMAIL_NOT_BOUND);
         }
@@ -360,7 +365,7 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.EMAIL_REQUIRED);
         }
 
-        User user = findUserByEmail(email);
+        Account user = findUserByEmail(email);
         if (user == null) {
             throw new ApiException(BusinessErrorCode.EMAIL_NOT_BOUND);
         }
@@ -377,11 +382,15 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.LOGIN_CODE_ERROR);
         }
 
+        if (isPendingDeletion(user)) {
+            return issuePendingDeletionToken(user);
+        }
+
         if (Integer.valueOf(4).equals(user.getStatus())) {
             throw new ApiException(BusinessErrorCode.ACCOUNT_DISABLED);
         }
 
-        UserSecurity security = ensureUserSecurity(user);
+        AccountSecurity security = ensureUserSecurity(user);
         ensureLoginMethodAllowed(security, "email_code");
 
         resetLoginFailCount(user);
@@ -402,14 +411,14 @@ public class LoginServiceImpl implements LoginService {
         if (!StringUtils.hasText(userId)) {
             throw new ApiException(BusinessErrorCode.MFA_CHALLENGE_INVALID);
         }
-        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                .eq(User::getId, userId)
-                .eq(User::getDeleted, 0)
+        Account user = userMapper.selectOne(new LambdaQueryWrapper<Account>()
+                .eq(Account::getId, userId)
+                .eq(Account::getDeleted, 0)
                 .last("limit 1"));
         if (user == null) {
             throw new ApiException(BusinessErrorCode.USER_NOT_FOUND);
         }
-        UserSecurity security = ensureUserSecurity(user);
+        AccountSecurity security = ensureUserSecurity(user);
         // 仅当前挑战属于"邮箱二次验证"时才能下发；TOTP 由认证器生成，无需也不允许触发邮件。
         if (Integer.valueOf(1).equals(security.getMfaTotpEnabled())) {
             throw new ApiException(BusinessErrorCode.MFA_CHALLENGE_INVALID);
@@ -417,7 +426,7 @@ public class LoginServiceImpl implements LoginService {
         if (!Integer.valueOf(1).equals(security.getMfaEmailEnabled())) {
             throw new ApiException(BusinessErrorCode.MFA_NOT_ENABLED);
         }
-        String email = normalizeEmail(user.getEmail());
+        String email = normalizeEmail(security.getEmail());
         if (email == null || !EMAIL_PATTERN.matcher(email).matches()) {
             throw new ApiException(BusinessErrorCode.EMAIL_NOT_BOUND_TO_USER);
         }
@@ -456,15 +465,15 @@ public class LoginServiceImpl implements LoginService {
         if (!StringUtils.hasText(userId)) {
             throw new ApiException(BusinessErrorCode.MFA_CHALLENGE_EXPIRED);
         }
-        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                .eq(User::getId, userId)
-                .eq(User::getDeleted, 0)
+        Account user = userMapper.selectOne(new LambdaQueryWrapper<Account>()
+                .eq(Account::getId, userId)
+                .eq(Account::getDeleted, 0)
                 .last("limit 1"));
         if (user == null) {
             throw new ApiException(BusinessErrorCode.USER_NOT_FOUND);
         }
 
-        UserSecurity security = ensureUserSecurity(user);
+        AccountSecurity security = ensureUserSecurity(user);
         if (Integer.valueOf(1).equals(security.getMfaTotpEnabled())) {
             if (!StringUtils.hasText(security.getMfaTotpSecret())) {
                 throw new ApiException(BusinessErrorCode.MFA_TOTP_NOT_PROVISIONED);
@@ -492,8 +501,8 @@ public class LoginServiceImpl implements LoginService {
         return performLogin(user);
     }
 
-    private TokenDTO performLogin(User user) {
-        String sessionId = entityIdGenerator.nextId(UserSession.class);
+    private TokenDTO performLogin(Account user) {
+        String sessionId = entityIdGenerator.nextId(AccountSession.class);
         String token = securitySessionService.login(user.getId(), sessionId);
         try {
             activeUserStatusService.recordLogin(user.getId(), sessionId, token);
@@ -508,12 +517,33 @@ public class LoginServiceImpl implements LoginService {
         return new TokenDTO(token, null);
     }
 
+    private TokenDTO issuePendingDeletionToken(Account user) {
+        String sessionId = entityIdGenerator.nextId(AccountSession.class);
+        String token = securitySessionService.login(user.getId(), sessionId);
+        activeUserStatusService.recordLogin(user.getId(), sessionId, token);
+        Profile profile = profileMapper.selectOne(new LambdaQueryWrapper<Profile>()
+                .eq(Profile::getAccountId, user.getId())
+                .eq(Profile::getDeleted, 0)
+                .last("limit 1"));
+        AccountSecurity security = ensureUserSecurity(user);
+        TokenDTO dto = new TokenDTO();
+        dto.setToken(token);
+        dto.setPendingDeletion(true);
+        dto.setAccountId(user.getId());
+        dto.setUserName(user.getUsername());
+        dto.setAvatar(buildAvatar(profile, user.getUsername()));
+        dto.setEmail(normalizeEmail(security.getEmail()));
+        dto.setDeletionRequestedAt(formatTime(user.getDeletionRequestedAt()));
+        dto.setDeletionExpiresAt(formatTime(user.getDeletionExpiresAt()));
+        return dto;
+    }
+
     /**
      * 解析当前登录方式下应该走的虚拟 MFA 设备验证类型：
      * - 优先 TOTP（独立因素，对所有登录方式生效）
      * - 其次邮箱二次验证，但仅对密码登录生效（邮箱验证码登录本身已校验邮箱）
      */
-    private String resolveMfaType(UserSecurity security, String loginMethod) {
+    private String resolveMfaType(AccountSecurity security, String loginMethod) {
         if (security == null) {
             return null;
         }
@@ -529,15 +559,16 @@ public class LoginServiceImpl implements LoginService {
         return null;
     }
 
-    private TokenDTO issueMfaChallenge(User user, String mfaType) {
+    private TokenDTO issueMfaChallenge(Account user, String mfaType) {
         String challenge = IdUtil.simpleUUID();
         SystemAccountSecurityProperties.Mfa.Email mfaConfig = accountSecurityProperties.getMfa().getEmail();
+        AccountSecurity security = ensureUserSecurity(user);
         verificationCodeStore.saveMfaChallenge(challenge, user.getId(), mfaConfig.getChallengeTtlSeconds());
         TokenDTO dto = new TokenDTO();
         dto.setMfaChallenge(challenge);
         dto.setMfaType(mfaType);
         if ("email".equals(mfaType)) {
-            dto.setMfaEmailMasked(maskEmail(user.getEmail()));
+            dto.setMfaEmailMasked(maskEmail(security.getEmail()));
         } else if ("totp".equals(mfaType)) {
             dto.setMfaTotpDigits(6);
         }
@@ -560,17 +591,17 @@ public class LoginServiceImpl implements LoginService {
         return local.charAt(0) + "***" + local.charAt(local.length() - 1) + domain;
     }
 
-    private UserSecurity ensureUserSecurity(User user) {
-        UserSecurity security = userSecurityMapper.selectOne(new LambdaQueryWrapper<UserSecurity>()
-                .eq(UserSecurity::getUserId, user.getId())
-                .eq(UserSecurity::getDeleted, 0)
+    private AccountSecurity ensureUserSecurity(Account user) {
+        AccountSecurity security = userSecurityMapper.selectOne(new LambdaQueryWrapper<AccountSecurity>()
+                .eq(AccountSecurity::getAccountId, user.getId())
+                .eq(AccountSecurity::getDeleted, 0)
                 .last("limit 1"));
         if (security != null) {
             return security;
         }
-        UserSecurity created = new UserSecurity();
-        created.setId(entityIdGenerator.nextId(UserSecurity.class));
-        created.setUserId(user.getId());
+        AccountSecurity created = new AccountSecurity();
+        created.setId(entityIdGenerator.nextId(AccountSecurity.class));
+        created.setAccountId(user.getId());
         created.setLoginMethods(String.join(",",
                 accountSecurityProperties.getLoginMethods().getDefaults()));
         created.setMfaEmailEnabled(0);
@@ -580,7 +611,31 @@ public class LoginServiceImpl implements LoginService {
         return created;
     }
 
-    private void ensureLoginMethodAllowed(UserSecurity security, String method) {
+    private boolean isPendingDeletion(Account user) {
+        if (user == null || !Integer.valueOf(4).equals(user.getStatus())) {
+            return false;
+        }
+        LocalDateTime expiresAt = user.getDeletionExpiresAt();
+        return expiresAt != null && expiresAt.isAfter(LocalDateTime.now(ZoneOffset.UTC));
+    }
+
+    private String formatTime(LocalDateTime value) {
+        return value == null ? "" : value.toString();
+    }
+
+    private String buildAvatar(Profile profile, String username) {
+        if (profile != null && StringUtils.hasText(profile.getAvatar())) {
+            String avatar = profile.getAvatar();
+            if (avatar.startsWith("http://") || avatar.startsWith("https://") || avatar.startsWith("/")) {
+                return avatar;
+            }
+            return "/api/file/db/" + avatar;
+        }
+        String seed = StringUtils.hasText(username) ? username.trim() : "user";
+        return "https://api.dicebear.com/7.x/avataaars/svg?seed=" + seed;
+    }
+
+    private void ensureLoginMethodAllowed(AccountSecurity security, String method) {
         List<String> enabled = accountSecurityProperties.getLoginMethods().getEnabled();
         if (enabled == null || !enabled.contains(method)) {
             throw new ApiException(BusinessErrorCode.LOGIN_METHOD_DISABLED);
@@ -626,7 +681,7 @@ public class LoginServiceImpl implements LoginService {
         }
     }
 
-    private void checkLoginLock(User user) {
+    private void checkLoginLock(Account user) {
         if (user.getLoginFailTime() == null) {
             return;
         }
@@ -639,7 +694,7 @@ public class LoginServiceImpl implements LoginService {
         userMapper.updateById(user);
     }
 
-    private void increaseLoginFailCount(User user) {
+    private void increaseLoginFailCount(Account user) {
         int failCount = user.getLoginFailCount() == null ? 0 : user.getLoginFailCount();
         user.setLoginFailCount(failCount + 1);
 
@@ -651,7 +706,7 @@ public class LoginServiceImpl implements LoginService {
         userMapper.updateById(user);
     }
 
-    private void resetLoginFailCount(User user) {
+    private void resetLoginFailCount(Account user) {
         if (user.getLoginFailCount() != null && user.getLoginFailCount() > 0) {
             user.setLoginFailCount(0);
             user.setLoginFailTime(null);
@@ -659,7 +714,7 @@ public class LoginServiceImpl implements LoginService {
         }
     }
 
-    private void upgradePasswordIfNeeded(User user, String rawPassword) {
+    private void upgradePasswordIfNeeded(Account user, String rawPassword) {
         if (!passwordCipherService.needsUpgrade(user.getPassword())) {
             return;
         }
@@ -672,41 +727,42 @@ public class LoginServiceImpl implements LoginService {
         return "https://api.dicebear.com/7.x/avataaars/svg?seed=" + seed;
     }
 
-    private User findUserByEmail(String email) {
+    private Account findUserByEmail(String email) {
+        AccountSecurity security = userSecurityMapper.selectOne(
+                new LambdaQueryWrapper<AccountSecurity>()
+                        .eq(AccountSecurity::getDeleted, 0)
+                        .eq(AccountSecurity::getEmail, email)
+                        .last("limit 1")
+        );
+        if (security == null || !StringUtils.hasText(security.getAccountId())) {
+            return null;
+        }
         return userMapper.selectOne(
-                new LambdaQueryWrapper<User>()
-                        .eq(User::getDeleted, 0)
-                        .eq(User::getEmail, email)
+                new LambdaQueryWrapper<Account>()
+                        .eq(Account::getDeleted, 0)
+                        .eq(Account::getId, security.getAccountId())
                         .last("limit 1")
         );
     }
 
     /**
-     * 登录支持账号、手机号、邮箱三选一匹配。
+     * 登录支持账号、邮箱二选一匹配。
      */
-    private User findUserByAccount(String account) {
+    private Account findUserByAccount(String account) {
         String trimmed = account.trim();
 
-        User user = userMapper.selectOne(
-                new LambdaQueryWrapper<User>()
-                        .eq(User::getDeleted, 0)
-                        .eq(User::getUsername, trimmed)
+        if (PHONE_PATTERN.matcher(trimmed).matches()) {
+            return null;
+        }
+
+        Account user = userMapper.selectOne(
+                new LambdaQueryWrapper<Account>()
+                        .eq(Account::getDeleted, 0)
+                        .eq(Account::getUsername, trimmed)
                         .last("limit 1")
         );
         if (user != null) {
             return user;
-        }
-
-        if (PHONE_PATTERN.matcher(trimmed).matches()) {
-            user = userMapper.selectOne(
-                    new LambdaQueryWrapper<User>()
-                            .eq(User::getDeleted, 0)
-                            .eq(User::getPhone, trimmed)
-                            .last("limit 1")
-            );
-            if (user != null) {
-                return user;
-            }
         }
 
         String lower = trimmed.toLowerCase();

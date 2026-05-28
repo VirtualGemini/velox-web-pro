@@ -1,5 +1,5 @@
 import request from '@/utils/http'
-import { useUserStore } from '@/store/modules/user'
+import { useAccountStore } from '@/store/modules/user'
 
 export interface FileUploadResult {
   path: string
@@ -158,7 +158,7 @@ export function fetchFileTypes() {
 }
 
 export async function fetchFileDownloadBlob(id: string) {
-  const userStore = useUserStore()
+  const userStore = useAccountStore()
   const { VITE_API_URL, VITE_WITH_CREDENTIALS } = import.meta.env
   const response = await fetch(`${VITE_API_URL}/api/file/download?id=${encodeURIComponent(id)}`, {
     method: 'GET',

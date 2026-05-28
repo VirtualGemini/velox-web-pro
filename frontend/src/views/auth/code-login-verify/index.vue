@@ -190,12 +190,29 @@
         return
       }
 
+      if (response.pendingDeletion) {
+        if (response.token) {
+          userStore.setToken(response.token, response.refreshToken)
+        }
+        userStore.setPendingDeletionLogin(response)
+        userStore.setAccountInfo({
+          accountId: response.accountId || '',
+          userName: response.userName || '',
+          email: response.email || '',
+          avatar: response.avatar || '',
+          roles: [],
+          buttons: []
+        })
+        userStore.setLoginStatus(false)
+        return
+      }
+
       if (!token) {
         throw new Error('Login failed - no token received')
       }
 
       await completeLogin({
-        userStore,
+        accountStore: userStore,
         token,
         refreshToken,
         redirect: route.query.redirect as string | undefined,

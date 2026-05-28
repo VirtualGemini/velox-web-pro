@@ -3,7 +3,7 @@ package com.velox.module.system.domain.model;
 import java.util.List;
 
 public class CurrentUserInfo {
-    private String userId;
+    private String accountId;
     private String userName;
     private String email;
     private String phone;
@@ -20,12 +20,12 @@ public class CurrentUserInfo {
     private List<String> roles;
     private List<String> buttons;
 
-    public String getUserId() {
-        return userId;
+    public String getAccountId() {
+        return accountId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
     }
 
     public String getUserName() {

@@ -1,7 +1,12 @@
 <template>
   <ElSubMenu v-if="hasChildren" :index="item.path || item.meta.title" class="!p-0">
     <template #title>
-      <VeloxSvgIcon :icon="item.meta.icon" :color="theme?.iconColor" class="mr-1 text-lg" />
+      <VeloxSvgIcon
+        v-if="item.meta.icon"
+        :icon="item.meta.icon"
+        :color="theme?.iconColor"
+        class="mr-1 text-lg"
+      />
       <span class="text-md">{{ formatMenuTitle(item.meta.title) }}</span>
       <div v-if="item.meta.showBadge" class="velox-badge velox-badge-horizontal" />
       <div v-if="item.meta.showTextBadge" class="velox-text-badge">
@@ -27,6 +32,7 @@
     @click="goPage(item)"
   >
     <VeloxSvgIcon
+      v-if="item.meta.icon"
       :icon="item.meta.icon"
       :color="theme?.iconColor"
       class="mr-1 text-lg"

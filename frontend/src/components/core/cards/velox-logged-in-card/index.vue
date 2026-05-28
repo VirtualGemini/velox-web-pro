@@ -13,6 +13,7 @@
     </div>
 
     <div
+      v-if="logoutVisible"
       class="ml-2 shrink-0 size-7 inline-flex flex-cc text-base text-g-600 dark:text-g-800 rounded-full hover:bg-hover-color hover:text-theme"
       :title="logoutTooltip || $t('login.loggedIn.logoutTooltip')"
       @click.stop="onLogout"
@@ -28,13 +29,15 @@
   defineOptions({ name: 'VeloxLoggedInCard' })
 
   interface Props {
-    userInfo: Partial<Api.Auth.UserInfo>
+    userInfo: Partial<Api.Auth.AccountInfo>
     selected?: boolean
     logoutTooltip?: string
+    logoutVisible?: boolean
   }
 
   const props = withDefaults(defineProps<Props>(), {
-    selected: false
+    selected: false,
+    logoutVisible: true
   })
   const emit = defineEmits<{
     select: []
@@ -43,9 +46,10 @@
 
   const avatar = computed(() => props.userInfo.avatar || avatarImg)
 
-  const displayName = computed(() => props.userInfo.userName || props.userInfo.userId || '')
+  const displayName = computed(() => props.userInfo.userName || props.userInfo.accountId || '')
 
   const subLine = computed(() => props.userInfo.email || props.userInfo.userName || '')
+  const logoutVisible = computed(() => props.logoutVisible)
 
   const onSelect = () => emit('select')
   const onLogout = () => emit('logout')

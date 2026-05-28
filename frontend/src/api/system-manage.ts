@@ -9,33 +9,33 @@ function requireId(id: string, resourceName: string) {
   return normalizedId
 }
 
-// 获取用户列表
-export function fetchGetUserList(params: Api.SystemManage.UserSearchParams) {
-  return request.get<Api.SystemManage.UserList>({
-    url: '/api/user/list',
+// 获取账号列表
+export function fetchGetAccountList(params: Api.SystemManage.AccountSearchParams) {
+  return request.get<Api.SystemManage.AccountList>({
+    url: '/api/account/list',
     params
   })
 }
 
-export function fetchCreateUser(data: Api.SystemManage.UserSaveCommand) {
+export function fetchCreateAccount(data: Api.SystemManage.AccountSaveCommand) {
   return request.post<string>({
-    url: '/api/user',
+    url: '/api/account',
     data
   })
 }
 
-export function fetchUpdateUser(userId: string, data: Api.SystemManage.UserSaveCommand) {
-  const normalizedUserId = requireId(userId, '用户')
+export function fetchUpdateAccount(accountId: string, data: Api.SystemManage.AccountSaveCommand) {
+  const normalizedAccountId = requireId(accountId, '账号')
   return request.put<boolean>({
-    url: `/api/user/${normalizedUserId}`,
+    url: `/api/account/${normalizedAccountId}`,
     data
   })
 }
 
-export function fetchDeleteUser(userId: string) {
-  const normalizedUserId = requireId(userId, '用户')
+export function fetchDeleteAccount(accountId: string) {
+  const normalizedAccountId = requireId(accountId, '账号')
   return request.del<boolean>({
-    url: `/api/user/${normalizedUserId}`
+    url: `/api/account/${normalizedAccountId}`
   })
 }
 

@@ -13,6 +13,10 @@ public interface SecuritySessionService {
 
     void logout();
 
+    default void logoutByLoginId(String loginId) {
+        throw new UnsupportedOperationException("logoutByLoginId is not supported");
+    }
+
     boolean isAuthenticated();
 
     String currentLoginIdOrNull();

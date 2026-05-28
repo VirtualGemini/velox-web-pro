@@ -11,11 +11,11 @@ export const systemRoutes: AppRouteRecord = {
   },
   children: [
     {
-      path: 'user',
-      name: 'User',
-      component: '/system/user',
+      path: 'account',
+      name: 'Account',
+      component: '/system/account',
       meta: {
-        title: 'menus.system.user',
+        title: 'menus.system.account',
         keepAlive: true,
         roles: ['R_SUPER', 'R_ADMIN']
       }
@@ -31,11 +31,11 @@ export const systemRoutes: AppRouteRecord = {
       }
     },
     {
-      path: 'user-center',
-      name: 'UserCenter',
-      component: '/system/user-center',
+      path: 'account-center',
+      name: 'AccountCenter',
+      component: '/system/account-center',
       meta: {
-        title: 'menus.system.userCenter',
+        title: 'menus.system.accountCenter',
         isHide: true,
         keepAlive: true,
         isHideTab: true

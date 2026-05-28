@@ -35,6 +35,8 @@
   "common": {
     "tips": "Prompt",
     "cancel": "Cancel",
+    "previous": "Previous",
+    "next": "Next",
     "confirm": "Confirm",
     "logOutTips": "Do you want to log out?",
     "iconPicker": {
@@ -156,10 +158,14 @@
       "subTitle": "Continue with the signed-in account, or sign out to switch to another one.",
       "continueBtn": "Continue",
       "selectTip": "Please select the account you want to sign in with",
-      "logoutTooltip": "Sign out"
+      "logoutTooltip": "Sign out",
+      "pendingDeletionWarning": "This account has been deleted. Continue to recover it.",
+      "pendingDeletionConfirmTitle": "Recover account",
+      "pendingDeletionConfirmDesc": "Enter account name {username} to recover and continue signing in",
+      "pendingDeletionConfirmError": "The account name does not match"
     },
     "placeholder": {
-      "username": "Please enter account / phone / email",
+      "username": "Please enter account or email",
       "password": "Please enter your password",
       "slider": "Please slide to verify",
       "email": "Please enter your email",
@@ -179,20 +185,16 @@
       "title": "Choose a sign-in method",
       "subTitle": "Use a third-party provider or receive a code by email",
       "email": "Email code",
-      "phone": "Phone",
       "github": "GitHub",
       "linuxdo": "LinuxDO",
       "comingSoon": "Coming soon"
     },
     "code": {
       "emailTitle": "Sign in with email code",
-      "phoneTitle": "Sign in with phone code",
       "subTitle": "Enter the code you received to sign in",
       "sendBtn": "Send code",
       "sent": "Verification code sent, please check",
-      "emailInvalid": "Invalid email format",
-      "phoneInvalid": "Invalid phone number format",
-      "phoneTodo": "Phone sign-in is not available yet"
+      "emailInvalid": "Invalid email format"
     },
     "mfaChallenge": {
       "title": "Two-step verification",
@@ -305,9 +307,9 @@
     },
     "system": {
       "title": "System Settings",
-      "user": "User Manage",
+      "account": "Account Manage",
       "role": "Role Manage",
-      "userCenter": "User Center",
+      "accountCenter": "Account Center",
       "menu": "Menu Manage",
       "fileManage": "File Manage"
     },
@@ -318,16 +320,16 @@
   },
   "pages": {
     "system": {
-      "user": {
+      "account": {
         "actions": {
-          "addUser": "Add User"
+          "addAccount": "Add Account",
+          "accountInfo": "Account Info"
         },
         "search": {
-          "userName": "Username",
-          "userPhone": "Phone",
-          "userEmail": "Email",
+          "username": "Account",
+          "email": "Email",
+          "remark": "Remark",
           "status": "Status",
-          "userGender": "Gender",
           "createTimeRange": "Created Time",
           "updateTimeRange": "Edited Time",
           "rangeSeparator": "to",
@@ -341,9 +343,9 @@
           "updateTimeEnd": "Edited To"
         },
         "columns": {
-          "userInfo": "User Info",
-          "userGender": "Gender",
-          "userPhone": "Phone",
+          "accountInfo": "Account Info",
+          "email": "Email",
+          "remark": "Remark",
           "status": "Status",
           "createTime": "Created At",
           "updateTime": "Edited At",
@@ -355,55 +357,51 @@
           "abnormal": "Abnormal",
           "revoked": "Revoked"
         },
-        "gender": {
-          "male": "Male",
-          "female": "Female",
-          "other": "Other"
-        },
         "dialog": {
-          "addTitle": "Add User",
-          "editTitle": "Edit User",
+          "addTitle": "Add Account",
+          "editTitle": "Edit Account",
           "fields": {
-            "username": "Username",
-            "nickname": "Nickname",
-            "email": "Email",
-            "phone": "Phone",
+            "username": "Account",
             "password": "Password",
-            "gender": "Gender",
+            "remark": "Remark",
             "roleCodes": "Roles"
           },
           "placeholders": {
-            "username": "Please enter username",
-            "nickname": "Please enter nickname",
-            "email": "Please enter email",
-            "phone": "Please enter phone number",
+            "username": "Please enter account",
             "initialPassword": "Please enter the initial password",
-            "passwordOptional": "Leave blank to keep the current password"
+            "passwordOptional": "Leave blank to keep the current password",
+            "remark": "Optional internal note for this account"
           },
           "validation": {
-            "usernameRequired": "Please enter username",
-            "usernameLength": "Length must be between 2 and 20 characters",
-            "nicknameRequired": "Please enter nickname",
-            "emailInvalid": "Please enter a valid email address",
-            "phoneRequired": "Please enter phone number",
-            "phoneInvalid": "Please enter a valid phone number",
+            "usernameRequired": "Please enter account",
+            "usernameLength": "Length must be between 2 and 50 characters",
             "passwordRequired": "Please enter password",
             "passwordLength": "Password length must be between 6 and 32 characters",
-            "genderRequired": "Please select gender",
+            "remarkLength": "Remark cannot exceed 255 characters",
             "roleRequired": "Please select at least one role"
           }
         },
+        "detail": {
+          "title": "Account Info",
+          "accountCard": "Account Identity",
+          "roles": "Account Roles",
+          "audit": "Audit Trail",
+          "emailBound": "Bound",
+          "emailUnbound": "Unbound",
+          "noRemark": "No remark",
+          "noRoles": "No roles"
+        },
         "messages": {
-          "missingUserId": "The current user data is missing userId. Please verify the list API response.",
-          "cannotOperateCurrentUser": "The current logged-in user cannot be operated on",
-          "cannotEditUser": "You do not have permission to edit this user",
+          "missingAccountId": "The current account data is missing accountId. Please verify the list API response.",
+          "cannotOperateCurrentAccount": "The current logged-in account cannot be operated on",
+          "cannotEditAccount": "You do not have permission to edit this account",
           "cannotDeleteSelf": "The current logged-in user cannot delete themselves",
-          "cannotDeleteUser": "You do not have permission to delete this user",
-          "confirmDelete": "Are you sure you want to revoke this user?",
-          "deleteTitle": "Revoke User",
-          "deleteSuccess": "User revoked successfully",
-          "createSuccess": "User created successfully",
-          "updateSuccess": "User updated successfully"
+          "cannotDeleteAccount": "You do not have permission to delete this account",
+          "confirmDelete": "Are you sure you want to revoke this account?",
+          "deleteTitle": "Revoke Account",
+          "deleteSuccess": "Account revoked successfully",
+          "createSuccess": "Account created successfully",
+          "updateSuccess": "Account updated successfully"
         }
       },
       "role": {
@@ -527,18 +525,18 @@
             "name": "Please enter menu name",
             "path": "For example: /dashboard or console",
             "label": "For example: User",
-            "component": "For example: /system/user or leave blank",
+            "component": "For example: /system/account or leave blank",
             "icon": "Please select an icon",
             "roles": "Enter role mark and press Enter, for example: R_SUPER",
             "link": "For example: https://www.example.com",
             "showTextBadge": "For example: New or Hot",
-            "activePath": "For example: /system/user",
+            "activePath": "For example: /system/account",
             "authName": "For example: Create, Edit, Delete",
             "authLabel": "For example: add, edit, delete"
           },
           "tooltips": {
             "path": "Top-level menu: absolute path starting with / (for example /dashboard)\nSecond level and below: relative path (for example console or user)",
-            "component": "Top-level parent menu: use /index/index\nSpecific page: use the component path (for example /system/user)\nDirectory menu: leave blank",
+            "component": "Top-level parent menu: use /index/index\nSpecific page: use the component path (for example /system/account)\nDirectory menu: leave blank",
             "icon": "Select a supported project icon. The ri: icon code will be filled automatically.",
             "roles": "Used only in frontend permission mode: configure role marks (for example R_SUPER, R_ADMIN)\nBackend permission mode does not require this.",
             "activePath": "Used for hidden detail pages to highlight the parent menu path.\nFor example, the user detail page highlights the User Management menu."
@@ -598,10 +596,10 @@
           "deleteFailed": "Delete failed"
         }
       },
-      "userCenter": {
+      "accountCenter": {
         "tabs": {
-          "basic": "Basic Info",
-          "password": "Reset Password",
+          "profile": "Profile",
+          "account": "Account Settings",
           "security": "Account Security",
           "thirdParty": "Third-Party Login"
         },
@@ -614,6 +612,16 @@
         "profile": {
           "tags": "Tags",
           "noTags": "No tags",
+          "formDesc": "Maintain your profile details, contact information and introduction",
+          "avatar": {
+            "title": "Profile picture",
+            "desc": "Use a clear square image. It appears in your account menu and profile.",
+            "action": "Change picture"
+          },
+          "sections": {
+            "public": "Profile details",
+            "private": "Personal profile"
+          },
           "defaults": {
             "nickname": "Nickname not set",
             "email": "Email not set",
@@ -676,14 +684,41 @@
           }
         },
         "security": {
-          "title": "Account Security",
+          "title": "Security",
+          "desc": "Maintain your password, login methods and multi-factor authentication settings to protect account access.",
           "loading": "Loading…",
+          "passwordReset": {
+            "entryTitle": "Password",
+            "entryDesc": "Update your login password regularly to improve account security.",
+            "action": "Reset password",
+            "title": "Reset Password",
+            "lastChangedAt": "Last changed at: {time}",
+            "tabs": {
+              "password": "Password",
+              "mfa": "MFA Verification"
+            },
+            "mfa": {
+              "type": "Verification method",
+              "totp": "Authenticator code",
+              "email": "Email code",
+              "totpCode": "Authenticator code",
+              "emailCode": "Email code",
+              "totpPlaceholder": "Enter the current 6-digit code from your authenticator app",
+              "emailPlaceholder": "Enter the 6-digit code sent to your email",
+              "sendEmailCode": "Send code"
+            },
+            "validation": {
+              "emailCodeRequired": "Please enter the email code",
+              "totpCodeRequired": "Please enter the authenticator code"
+            }
+          },
           "email": {
             "title": "Email",
             "desc": "Used for system notifications, password recovery and email-code login",
             "unbound": "No email bound",
             "rebind": "Change Email",
             "bind": "Bind Email",
+            "unbind": "Unbind Email",
             "dialog": {
               "title": "Change Email",
               "bindTitle": "Bind Email",
@@ -693,6 +728,7 @@
               "currentMasked": "Current email: {email}",
               "proofTypeLabel": "Verification Method",
               "proofCurrentEmail": "Current Email Code",
+              "sendToCurrentEmail": "Send a code to {email}",
               "proofTotp": "TOTP Code",
               "proofPassword": "Current Password",
               "proofTip": "Finish current identity verification before binding a new email.",
@@ -722,6 +758,19 @@
               "success": "Email changed successfully",
               "bindSuccess": "Email bound successfully",
               "next": "Next"
+            },
+            "unbindDialog": {
+              "title": "Unbind Email",
+              "tip": "After unbinding, email-code sign-in and Email MFA will no longer be available. Current email: {email}",
+              "currentEmailCode": "Current Email Code",
+              "currentEmailCodePlaceholder": "Enter the 6-digit code sent to your current email",
+              "currentEmailCodeRequired": "Please enter the current email code",
+              "totpCode": "TOTP Code",
+              "totpCodePlaceholder": "Enter the current 6-digit code from your authenticator app",
+              "totpCodeRequired": "Please enter the TOTP code",
+              "sendCode": "Send Code",
+              "codeSent": "Code sent, please check your inbox",
+              "success": "Email unbound successfully"
             }
           },
           "phone": {
@@ -752,7 +801,6 @@
             "title": "Login Methods",
             "desc": "Choose allowed login methods; keep at least one. Methods outside the global policy are disabled.",
             "globalDisabled": "Disabled by global policy",
-            "passwordLocked": "Password login is enforced and cannot be turned off",
             "atLeastOne": "At least one login method must remain",
             "items": {
               "password": "Password",
@@ -778,6 +826,9 @@
               "enableTitle": "Enable Email MFA",
               "disableTitle": "Disable Email MFA",
               "tip": "Once enabled, you must enter a 6-digit code sent to your email when signing in",
+              "hint": "Once enabled, sign-ins and sensitive actions require an extra email code. Make sure this email can receive messages normally.",
+              "enableTip": "Once enabled, you must enter a 6-digit code sent to your email when signing in.",
+              "disableTip": "Before disabling Email MFA, verify this action with an email code.",
               "code": "Email Code",
               "codePlaceholder": "Enter the 6-digit code received",
               "sendCode": "Send Code",
@@ -804,9 +855,75 @@
               "codePlaceholder": "Enter the {digits}-digit code from your app",
               "codeRequired": "Please enter the code",
               "codeFormat": "Please enter a {digits}-digit code",
+              "recoveryCodesTitle": "Save your recovery codes",
+              "recoveryCodesTip": "These recovery codes are shown only once. If your authenticator is unavailable, choose “Recovery code” in “Disable TOTP” to use one. Each recovery code can be used only once, so store them safely now.",
+              "recoveryCodesListTitle": "Recovery codes",
+              "recoveryCodesCopied": "Recovery codes copied",
+              "recoveryCodesConfirm": "I've saved the recovery codes",
+              "disableMethod": "Verification method",
+              "recoveryCode": "Recovery code",
+              "codeHint": "Use the current code shown in your authenticator app to disable TOTP.",
+              "recoveryCodeHint": "Enter one of the recovery codes you saved after enabling TOTP. Each code can be used only once.",
+              "recoveryCodePlaceholder": "Enter a recovery code like ABCD-1234",
+              "recoveryCodeRequired": "Please enter a recovery code",
+              "recoveryCodeFormat": "Please enter a recovery code like ABCD-1234",
               "enableSuccess": "TOTP enabled",
-              "disableTip": "Enter the current code from your authenticator app to confirm disabling TOTP",
+              "disableTip": "You can disable TOTP with the current authenticator code or a recovery code you saved earlier.",
               "disableSuccess": "TOTP disabled"
+            }
+          }
+        },
+        "account": {
+          "title": "Account Settings",
+          "desc": "Manage your sign-in account name and account deletion settings.",
+          "generalTitle": "General",
+          "username": {
+            "title": "Sign-in account",
+            "desc": "Update the account name used for sign-in. Uniqueness is checked before saving.",
+            "action": "Rename",
+            "dialogTitle": "Change account name",
+            "label": "Account name",
+            "success": "Account name updated",
+            "validation": {
+              "required": "Please enter the account name",
+              "length": "Account name must be between 3 and 12 characters"
+            }
+          },
+          "deletion": {
+            "title": "Delete account",
+            "desc": "Once your account is deleted, it cannot be recovered. Please proceed carefully.",
+            "action": "Confirm account deletion",
+            "button": "Delete your account",
+            "dialogTitle": "Delete account",
+            "alertTitle": "This is extremely important.",
+            "impactPrimary": "Deleting your account immediately signs out all active sessions for this account.",
+            "impactSecondary": "The account then enters a 14-day cooling-off period. You can recover it from the login page during that window.",
+            "impactHint": "Before continuing, complete the required identity verification and enter the exact account name to confirm.",
+            "withEmailDesc": "A security email is bound to {email}. Verify the email code first, then enter the account name to confirm deletion.",
+            "withPasswordDesc": "No security email is bound. Verify your current password first, then enter the account name to confirm deletion.",
+            "currentPassword": "Current password",
+            "emailCode": "Email code",
+            "sendCode": "Send code",
+            "usernameConfirm": "Please enter your username \"{username}\" to confirm account deletion",
+            "codeSent": "Verification code sent. Please check your inbox.",
+            "mfaBlocking": "Disable all enabled MFA methods in Account Security before deleting the account.",
+            "mfaBlockingDialog": {
+              "title": "Account deletion unavailable",
+              "content": "MFA is currently enabled for this account.<br>Go to \"Account Center - Account Security - MFA\" and disable the verification step before deleting the account.",
+              "confirm": "Understood"
+            },
+            "pendingTip": "This account is already in the deletion cooling-off period.",
+            "pendingStatus": "Account is pending deletion and expires at {time}.",
+            "success": "Account entered the 14-day cooling-off period",
+            "steps": {
+              "verify": "Step 1/2: Verify your identity",
+              "confirm": "Step 2/2: Enter the account name to confirm"
+            },
+            "validation": {
+              "currentPasswordRequired": "Please enter your current password",
+              "emailCodeRequired": "Please enter the email code",
+              "usernameRequired": "Please enter the account name",
+              "usernameMismatch": "The account name does not match"
             }
           }
         },

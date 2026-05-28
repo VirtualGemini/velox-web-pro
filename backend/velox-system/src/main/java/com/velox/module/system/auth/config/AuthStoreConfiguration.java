@@ -2,7 +2,7 @@ package com.velox.module.system.auth.config;
 
 import com.velox.framework.redis.common.prefix.RedisPropertyPrefixes;
 import com.velox.module.system.auth.properties.SystemAuthProperties;
-import com.velox.module.system.auth.session.UserSessionService;
+import com.velox.module.system.auth.session.AccountSessionService;
 import com.velox.module.system.auth.status.ActiveUserStatusService;
 import com.velox.module.system.auth.store.InMemoryVerificationCodeStore;
 import com.velox.module.system.auth.store.RedisVerificationCodeStore;
@@ -18,31 +18,31 @@ public class AuthStoreConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ActiveUserStatusService.class)
-    public ActiveUserStatusService activeUserStatusService(UserSessionService userSessionService) {
+    public ActiveUserStatusService activeUserStatusService(AccountSessionService accountSessionService) {
         return new ActiveUserStatusService() {
             @Override
             public void recordRequestActivity(String userId, String tokenValue) {
-                userSessionService.recordRequestActivity(userId, tokenValue);
+                accountSessionService.recordRequestActivity(userId, tokenValue);
             }
 
             @Override
             public void recordLogin(String userId, String sessionId, String tokenValue) {
-                userSessionService.recordLogin(userId, sessionId, tokenValue);
+                accountSessionService.recordLogin(userId, sessionId, tokenValue);
             }
 
             @Override
             public void recordLogout(String userId, String tokenValue) {
-                userSessionService.recordLogout(userId, tokenValue);
+                accountSessionService.recordLogout(userId, tokenValue);
             }
 
             @Override
             public boolean isOnline(String userId) {
-                return userSessionService.isOnline(userId);
+                return accountSessionService.isOnline(userId);
             }
 
             @Override
             public java.util.Map<String, String> resolveStatuses(java.util.Collection<String> userIds) {
-                return userSessionService.resolveStatuses(userIds);
+                return accountSessionService.resolveStatuses(userIds);
             }
         };
     }
