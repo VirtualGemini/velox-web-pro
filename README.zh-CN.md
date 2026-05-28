@@ -123,10 +123,13 @@ pnpm serve
 - [Development Spec](./docs/DEVELOPMENT_SPEC.md) / [简体中文](./docs/DEVELOPMENT_SPEC.zh-CN.md)
 - [Commit Spec](./docs/COMMIT_SPEC.md) / [简体中文](./docs/COMMIT_SPEC.zh-CN.md)
 - [Changelog](./CHANGELOG.md) / [简体中文](./CHANGELOG.zh-CN.md)
+- [免责声明](./DISCLAIMER.zh-CN.md) / [English](./DISCLAIMER.md)
+- [使用条款](./TERMS_OF_USE.zh-CN.md) / [English](./TERMS_OF_USE.md)
 
 ## 许可证
 
 本项目使用 MIT License。详见 [LICENSE](./LICENSE)。
+关于额外的风险分配、保证免责声明和使用条件，详见 [DISCLAIMER.zh-CN.md](./DISCLAIMER.zh-CN.md) 与 [TERMS_OF_USE.zh-CN.md](./TERMS_OF_USE.zh-CN.md)。
 
 <br>
 <div align="center"><a href="#top">回到顶部</a></div>
