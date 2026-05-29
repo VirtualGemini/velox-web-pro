@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 public class MenuServiceImpl implements MenuService {
 
     private static final String MENU_TYPE_BUTTON = "button";
-
     private final MenuMapper menuMapper;
     private final RoleMapper roleMapper;
     private final RoleMenuPermissionMapper roleMenuPermissionMapper;
@@ -66,6 +65,15 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuRouteDTO> getSimpleMenus() {
+        return buildMenus(false);
+    }
+
+    @Override
+    public List<MenuRouteDTO> getGrantableMenus() {
+        return buildMenus(true);
+    }
+
+    private List<MenuRouteDTO> buildMenus(boolean preservePermissionGrouping) {
         Set<String> permittedMenuIds = permissionService.getAccountPermittedMenuIds(
                 securitySessionService.requireCurrentLoginId());
         if (permittedMenuIds.isEmpty()) {
@@ -136,7 +144,50 @@ public class MenuServiceImpl implements MenuService {
         }
 
         sortRoutes(roots);
-        return roots;
+        return preservePermissionGrouping ? roots : flattenPermissionGroupingMenus(roots);
+    }
+
+    private List<MenuRouteDTO> flattenPermissionGroupingMenus(List<MenuRouteDTO> routes) {
+        List<MenuRouteDTO> flattened = new ArrayList<>();
+        for (MenuRouteDTO route : routes) {
+            flattenPermissionGroupingRoute(route);
+            flattened.add(route);
+        }
+        return flattened;
+    }
+
+    private void flattenPermissionGroupingRoute(MenuRouteDTO route) {
+        if (route.getChildren() == null || route.getChildren().isEmpty()) {
+            return;
+        }
+
+        List<MenuRouteDTO> normalizedChildren = new ArrayList<>();
+        for (MenuRouteDTO child : route.getChildren()) {
+            if (isAccountCenterPermissionGroup(child)) {
+                if (route.getMeta() != null
+                        && child.getMeta() != null
+                        && child.getMeta().getAuthList() != null
+                        && !child.getMeta().getAuthList().isEmpty()) {
+                    route.getMeta().getAuthList().addAll(child.getMeta().getAuthList());
+                }
+                continue;
+            }
+            flattenPermissionGroupingRoute(child);
+            normalizedChildren.add(child);
+        }
+        route.setChildren(normalizedChildren);
+    }
+
+    private boolean isAccountCenterPermissionGroup(MenuRouteDTO route) {
+        if (route == null) {
+            return false;
+        }
+        if (route.getMeta() == null) {
+            return false;
+        }
+        return Boolean.TRUE.equals(route.getMeta().getIsHide())
+                && !StringUtils.hasText(route.getPath())
+                && !StringUtils.hasText(route.getComponent());
     }
 
     private MenuRouteDTO toRoute(Menu menu, List<String> roleCodes) {

@@ -22,7 +22,7 @@
 
   .dual-menu-left {
     position: relative;
-    width: 80px;
+    width: 112px;
     height: 100%;
     border-right: 1px solid var(--velox-card-border) !important;
     transition: width 0.25s;
@@ -55,14 +55,14 @@
           }
 
           span {
-            display: -webkit-box;
             width: 100%;
-            overflow: hidden;
+            min-height: 30px;
+            padding: 0 2px;
             font-size: 12px;
-            text-overflow: ellipsis;
-            -webkit-line-clamp: 1;
-            line-clamp: 1;
-            -webkit-box-orient: vertical;
+            line-height: 15px;
+            white-space: normal;
+            word-break: break-word;
+            overflow-wrap: anywhere;
           }
 
           &.is-active {

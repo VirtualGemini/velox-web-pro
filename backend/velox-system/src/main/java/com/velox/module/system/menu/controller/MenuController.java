@@ -49,7 +49,7 @@ public class MenuController {
     @RequirePermission("system:menu:query")
     @GetMapping
     public Result<List<MenuRouteDTO>> getGrantableMenus() {
-        return Result.ok(menuService.getSimpleMenus());
+        return Result.ok(menuService.getGrantableMenus());
     }
 
     @Operation(summary = "openapi.system.menu.create.summary")

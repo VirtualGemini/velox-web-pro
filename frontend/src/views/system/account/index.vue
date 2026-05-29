@@ -39,6 +39,7 @@
         :account-data="currentAccountData"
         @submit="handleDialogSubmit"
       />
+      <AccountDetailDrawer v-model:visible="detailVisible" :detail="currentAccountDetail" />
     </ElCard>
   </div>
 </template>
@@ -50,11 +51,13 @@
   import {
     fetchCreateAccount,
     fetchDeleteAccount,
+    fetchGetAccountDetailCard,
     fetchGetAccountList,
     fetchUpdateAccount
   } from '@/api/system-manage'
   import AccountSearch from './modules/user-search.vue'
   import AccountDialog from './modules/user-dialog.vue'
+  import AccountDetailDrawer from './modules/account-detail-drawer.vue'
   import { ElTag, ElMessageBox, ElImage } from 'element-plus'
   import { DialogType } from '@/types'
   import { useI18n } from 'vue-i18n'
@@ -69,6 +72,8 @@
   const dialogType = ref<DialogType>('add')
   const dialogVisible = ref(false)
   const currentAccountData = ref<Partial<AccountListItem>>({})
+  const detailVisible = ref(false)
+  const currentAccountDetail = ref<Api.SystemManage.AccountDetailCard>()
   const selectedRows = ref<AccountListItem[]>([])
   const showSearchBar = ref(false)
 
@@ -115,12 +120,12 @@
         ...searchForm.value
       },
       columnsFactory: () => [
-        { type: 'selection' },
-        { type: 'index', width: 60, label: t('table.column.index') },
+        { type: 'selection', width: 52 },
+        { type: 'index', minWidth: 96, label: t('table.column.index') },
         {
           prop: 'accountInfo',
           label: 'pages.system.account.columns.accountInfo',
-          minWidth: 280,
+          minWidth: 400,
           formatter: (row: AccountListItem) =>
             h('div', { class: 'user flex-c' }, [
               h(ElImage, {
@@ -138,7 +143,7 @@
         {
           prop: 'status',
           label: 'pages.system.account.columns.status',
-          minWidth: 100,
+          minWidth: 132,
           formatter: (row: AccountListItem) => {
             const statusConfig = getAccountStatusConfig(row.status)
             return h(ElTag, { type: statusConfig.type }, () => t(statusConfig.textKey))
@@ -147,42 +152,51 @@
         {
           prop: 'remark',
           label: 'pages.system.account.columns.remark',
-          minWidth: 220,
+          minWidth: 260,
           showOverflowTooltip: true,
           formatter: (row: AccountListItem) => row.remark || '-'
         },
         {
           prop: 'createTime',
           label: 'pages.system.account.columns.createTime',
-          minWidth: 180,
+          minWidth: 210,
           sortable: true
         },
         {
           prop: 'updateTime',
           label: 'pages.system.account.columns.updateTime',
-          minWidth: 180,
+          minWidth: 210,
           sortable: true
         },
         {
           prop: 'operation',
           label: 'pages.system.account.columns.operation',
-          width: 120,
+          width: 180,
           fixed: 'right',
           formatter: (row: AccountListItem) =>
-            h('div', [
-              hasAuth('system:account:update')
-                ? h(VeloxButtonTable, {
-                    type: 'edit',
-                    onClick: () => showDialog('edit', row)
-                  })
-                : null,
-              hasAuth('system:account:delete')
-                ? h(VeloxButtonTable, {
-                    type: 'delete',
-                    onClick: () => deleteAccount(row)
-                  })
-                : null
-            ].filter(Boolean))
+            h(
+              'div',
+              [
+                hasAuth('system:account:query')
+                  ? h(VeloxButtonTable, {
+                      type: 'view',
+                      onClick: () => showDetail(row)
+                    })
+                  : null,
+                hasAuth('system:account:update')
+                  ? h(VeloxButtonTable, {
+                      type: 'edit',
+                      onClick: () => showDialog('edit', row)
+                    })
+                  : null,
+                hasAuth('system:account:delete')
+                  ? h(VeloxButtonTable, {
+                      type: 'delete',
+                      onClick: () => deleteAccount(row)
+                    })
+                  : null
+              ].filter(Boolean)
+            )
         }
       ]
     }
@@ -199,6 +213,15 @@
     nextTick(() => {
       dialogVisible.value = true
     })
+  }
+
+  const showDetail = async (row: AccountListItem) => {
+    try {
+      currentAccountDetail.value = await fetchGetAccountDetailCard(row.accountId)
+      detailVisible.value = true
+    } catch (error) {
+      console.error('获取账号详情失败:', error)
+    }
   }
 
   const deleteAccount = (row: AccountListItem): void => {

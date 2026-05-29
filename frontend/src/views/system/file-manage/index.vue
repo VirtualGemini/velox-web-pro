@@ -245,18 +245,18 @@
         {
           type: 'index',
           label: t('table.column.index'),
-          minWidth: 60
+          minWidth: 96
         },
         {
           prop: 'name',
           label: 'pages.system.fileManage.columns.name',
-          minWidth: 200,
+          minWidth: 240,
           showOverflowTooltip: true
         },
         {
           prop: 'type',
           label: 'pages.system.fileManage.columns.type',
-          minWidth: 140,
+          minWidth: 180,
           formatter: (row: FileRecord) =>
             h(
               ElTag,
@@ -267,13 +267,13 @@
         {
           prop: 'size',
           label: 'pages.system.fileManage.columns.size',
-          minWidth: 100,
+          minWidth: 112,
           formatter: (row: FileRecord) => formatFileSize(row.size)
         },
         {
           prop: 'url',
           label: 'pages.system.fileManage.columns.url',
-          minWidth: 240,
+          minWidth: 280,
           showOverflowTooltip: true,
           formatter: (row: FileRecord) =>
             row.url
@@ -291,19 +291,19 @@
         {
           prop: 'path',
           label: 'pages.system.fileManage.columns.path',
-          minWidth: 200,
+          minWidth: 260,
           showOverflowTooltip: true
         },
         {
           prop: 'uploadTime',
           label: 'pages.system.fileManage.columns.createTime',
-          minWidth: 180,
+          minWidth: 210,
           formatter: (row: FileRecord) => row.uploadTime || '-'
         },
         {
           prop: 'operation',
           label: 'pages.system.fileManage.columns.operation',
-          width: 120,
+          width: 132,
           fixed: 'right',
           align: 'left',
           formatter: (row: FileRecord) => renderOperationButtons(row)

@@ -368,5 +368,9 @@
       margin-top: 12px;
       margin-left: 0;
     }
+
+    .security-email-action {
+      align-items: flex-start;
+    }
   }
 </style>

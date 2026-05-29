@@ -4,6 +4,7 @@ import com.velox.common.exception.ApiException;
 import com.velox.common.exception.BusinessErrorCode;
 import com.velox.common.result.PageResult;
 import com.velox.framework.security.api.session.SecuritySessionService;
+import com.velox.module.system.account.dto.AccountDetailCardDTO;
 import com.velox.module.system.domain.model.Profile;
 import com.velox.module.system.domain.model.Role;
 import com.velox.module.system.domain.model.Account;
@@ -32,6 +33,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -169,6 +171,26 @@ public class AccountManageServiceImpl implements AccountManageService {
     }
 
     @Override
+    public AccountDetailCardDTO getDetailCard(String accountId) {
+        Account account = getActiveUser(accountId);
+        Profile profile = getActiveProfileMap(List.of(accountId)).get(accountId);
+        AccountSecurity security = getActiveSecurityMap(List.of(accountId)).get(accountId);
+        String status = resolveDisplayStatus(
+                account,
+                activeUserStatusService.resolveStatuses(List.of(accountId))
+        );
+        List<String> roleCodes = permissionService.getAccountRoleCodes(accountId);
+
+        AccountDetailCardDTO dto = new AccountDetailCardDTO();
+        dto.setHeader(buildHeader(account, profile, status, roleCodes));
+        dto.setProfile(buildProfileSection(profile));
+        dto.setAccount(buildAccountSection(account, status, roleCodes));
+        dto.setSecurity(buildSecuritySection(security));
+        dto.setThirdPartyProviders(buildThirdPartyProviders());
+        return dto;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public String create(AccountSaveCommand command) {
         validateCreateCommand(command);
@@ -295,6 +317,92 @@ public class AccountManageServiceImpl implements AccountManageService {
         dto.setCreateTime(RequestDateTimeFormatter.format(user.getCreateTime()));
         dto.setUpdateTime(RequestDateTimeFormatter.format(user.getUpdateTime()));
         return dto;
+    }
+
+    private AccountDetailCardDTO.Header buildHeader(
+            Account account,
+            Profile profile,
+            String status,
+            List<String> roleCodes
+    ) {
+        AccountDetailCardDTO.Header header = new AccountDetailCardDTO.Header();
+        header.setAvatar(resolveAvatar(profile, account.getUsername()));
+        header.setUsername(account.getUsername());
+        header.setNickname(profile == null ? null : profile.getNickname());
+        header.setRealName(profile == null ? null : profile.getRealName());
+        header.setStatus(status);
+        header.setRemark(defaultString(account.getRemark(), ""));
+        header.setRoleCodes(roleCodes);
+        header.setCreateTime(RequestDateTimeFormatter.format(account.getCreateTime()));
+        header.setUpdateTime(RequestDateTimeFormatter.format(account.getUpdateTime()));
+        return header;
+    }
+
+    private AccountDetailCardDTO.ProfileSection buildProfileSection(Profile profile) {
+        AccountDetailCardDTO.ProfileSection section = new AccountDetailCardDTO.ProfileSection();
+        if (profile == null) {
+            section.setTags(List.of());
+            return section;
+        }
+        section.setNickname(profile.getNickname());
+        section.setGender(profile.getGender());
+        section.setRealName(profile.getRealName());
+        section.setDisplayEmail(profile.getEmail());
+        section.setDisplayMobile(profile.getMobile());
+        section.setAddress(profile.getAddress());
+        section.setPosition(profile.getPosition());
+        section.setCompany(profile.getCompany());
+        section.setSignature(profile.getSignature());
+        section.setIntroduction(profile.getIntroduction());
+        section.setTags(parseTags(profile.getTags()));
+        return section;
+    }
+
+    private AccountDetailCardDTO.AccountSection buildAccountSection(Account account, String status, List<String> roleCodes) {
+        AccountDetailCardDTO.AccountSection section = new AccountDetailCardDTO.AccountSection();
+        section.setAccountId(account.getId());
+        section.setUsername(account.getUsername());
+        section.setRemark(account.getRemark());
+        section.setStatus(status);
+        section.setPendingDeletion(account.getDeletionExpiresAt() != null);
+        section.setDeletionRequestedAt(RequestDateTimeFormatter.format(account.getDeletionRequestedAt()));
+        section.setDeletionExpiresAt(RequestDateTimeFormatter.format(account.getDeletionExpiresAt()));
+        section.setLoginFailCount(account.getLoginFailCount());
+        section.setLoginFailTime(RequestDateTimeFormatter.format(account.getLoginFailTime()));
+        section.setRoleCodes(roleCodes);
+        return section;
+    }
+
+    private AccountDetailCardDTO.SecuritySection buildSecuritySection(AccountSecurity security) {
+        AccountDetailCardDTO.SecuritySection section = new AccountDetailCardDTO.SecuritySection();
+        if (security == null) {
+            section.setLoginMethods(List.of());
+            section.setEmailMfaEnabled(false);
+            section.setTotpMfaEnabled(false);
+            return section;
+        }
+        section.setSecurityEmail(security.getEmail());
+        section.setEmailMfaEnabled(Integer.valueOf(1).equals(security.getMfaEmailEnabled()));
+        section.setTotpMfaEnabled(Integer.valueOf(1).equals(security.getMfaTotpEnabled()));
+        section.setLoginMethods(parseLoginMethods(security.getLoginMethods()));
+        section.setEmailVerifiedAt(RequestDateTimeFormatter.format(security.getEmailVerifiedAt()));
+        section.setLastPasswordChangeAt(RequestDateTimeFormatter.format(security.getLastPasswordChangeAt()));
+        return section;
+    }
+
+    private List<AccountDetailCardDTO.ThirdPartyProvider> buildThirdPartyProviders() {
+        List<AccountDetailCardDTO.ThirdPartyProvider> providers = new ArrayList<>();
+        providers.add(buildThirdPartyProvider("github", "GitHub"));
+        providers.add(buildThirdPartyProvider("linuxdo", "LinuxDo"));
+        return providers;
+    }
+
+    private AccountDetailCardDTO.ThirdPartyProvider buildThirdPartyProvider(String key, String name) {
+        AccountDetailCardDTO.ThirdPartyProvider provider = new AccountDetailCardDTO.ThirdPartyProvider();
+        provider.setKey(key);
+        provider.setName(name);
+        provider.setBound(false);
+        return provider;
     }
 
     private String resolveDisplayStatus(Account user, Map<String, String> activeStatusMap) {
@@ -503,6 +611,34 @@ public class AccountManageServiceImpl implements AccountManageService {
 
     private String defaultString(String value, String fallback) {
         return StringUtils.hasText(value) ? value : fallback;
+    }
+
+    private List<String> parseTags(String tags) {
+        if (!StringUtils.hasText(tags)) {
+            return List.of();
+        }
+        String normalized = tags.trim();
+        if (normalized.startsWith("[") && normalized.endsWith("]")) {
+            normalized = normalized.substring(1, normalized.length() - 1);
+        }
+        if (!StringUtils.hasText(normalized)) {
+            return List.of();
+        }
+        return Arrays.stream(normalized.split(","))
+                .map(String::trim)
+                .map(item -> item.replace("\"", ""))
+                .filter(StringUtils::hasText)
+                .toList();
+    }
+
+    private List<String> parseLoginMethods(String loginMethods) {
+        if (!StringUtils.hasText(loginMethods)) {
+            return List.of();
+        }
+        return Arrays.stream(loginMethods.split(","))
+                .map(String::trim)
+                .filter(StringUtils::hasText)
+                .toList();
     }
 
     private String resolveAvatar(Profile profile, String username) {

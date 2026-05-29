@@ -63,7 +63,7 @@ public class AccountController {
 
     @Operation(summary = "openapi.system.user.self.update_profile.summary")
     @PutMapping("/username")
-    @RequirePermission("system:account-center:account-update")
+    @RequirePermission("system:account-center:username-update")
     public Result<Boolean> updateUsername(@Valid @RequestBody AccountUsernameUpdateCommand command) {
         return Result.ok(accountInfoService.updateCurrentUsername(command));
     }

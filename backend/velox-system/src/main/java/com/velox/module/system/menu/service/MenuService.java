@@ -9,6 +9,8 @@ public interface MenuService {
 
     List<MenuRouteDTO> getSimpleMenus();
 
+    List<MenuRouteDTO> getGrantableMenus();
+
     String create(MenuSaveCommand command);
 
     Boolean update(String menuId, MenuSaveCommand command);

@@ -39,6 +39,13 @@ export function fetchDeleteAccount(accountId: string) {
   })
 }
 
+export function fetchGetAccountDetailCard(accountId: string) {
+  const normalizedAccountId = requireId(accountId, '账号')
+  return request.get<Api.SystemManage.AccountDetailCard>({
+    url: `/api/account/${normalizedAccountId}/detail-card`
+  })
+}
+
 // 获取角色列表
 export function fetchGetRoleList(params: Api.SystemManage.RoleSearchParams) {
   return request.get<Api.SystemManage.RoleList>({

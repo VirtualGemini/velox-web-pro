@@ -351,6 +351,69 @@
           "updateTime": "编辑时间",
           "operation": "操作"
         },
+        "detailCard": {
+          "title": "账号详情",
+          "header": {
+            "remark": "备注",
+            "createdAt": "创建时间",
+            "updatedAt": "编辑时间"
+          },
+          "sections": {
+            "profile": "个人资料",
+            "account": "账号设置",
+            "security": "账号安全",
+            "thirdParty": "第三方登录"
+          },
+          "profile": {
+            "realName": "姓名",
+            "nickname": "昵称",
+            "gender": "性别",
+            "displayEmail": "资料邮箱",
+            "displayMobile": "资料手机号",
+            "address": "地址",
+            "position": "岗位",
+            "company": "公司",
+            "signature": "签名",
+            "introduction": "简介",
+            "tags": "标签"
+          },
+          "account": {
+            "accountId": "账号ID",
+            "username": "账号",
+            "remark": "备注",
+            "status": "状态",
+            "pendingDeletion": "注销中",
+            "deletionRequestedAt": "注销申请时间",
+            "deletionExpiresAt": "冷静期截止时间",
+            "loginFailCount": "登录失败次数",
+            "loginFailTime": "最近失败时间"
+          },
+          "security": {
+            "securityEmail": "安全邮箱",
+            "emailMfaEnabled": "邮箱二次验证",
+            "totpMfaEnabled": "TOTP 二次验证",
+            "loginMethods": "登录方式",
+            "emailVerifiedAt": "安全邮箱验证时间",
+            "lastPasswordChangeAt": "最近改密时间"
+          },
+          "thirdParty": {
+            "provider": "登录方式",
+            "providerKey": "登录标识",
+            "status": "状态",
+            "bound": "已绑定",
+            "unbound": "未绑定"
+          },
+          "gender": {
+            "male": "男",
+            "female": "女",
+            "other": "其它",
+            "unknown": "未知"
+          },
+          "loginMethods": {
+            "password": "密码登录",
+            "emailCode": "邮箱验证码"
+          }
+        },
         "status": {
           "online": "在线",
           "offline": "离线",

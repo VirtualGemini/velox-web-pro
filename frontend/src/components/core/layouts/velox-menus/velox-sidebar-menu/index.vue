@@ -9,7 +9,7 @@
     <div
       v-if="isDualMenu"
       class="dual-menu-left"
-      :style="{ width: dualMenuShowText ? '80px' : '64px', background: getMenuTheme.background }"
+      :style="{ width: dualMenuShowText ? '112px' : '64px', background: getMenuTheme.background }"
     >
       <VeloxLogo class="logo" @click="navigateToHome" />
 

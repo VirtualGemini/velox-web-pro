@@ -351,6 +351,69 @@
           "updateTime": "Edited At",
           "operation": "Operation"
         },
+        "detailCard": {
+          "title": "Account Details",
+          "header": {
+            "remark": "Remark",
+            "createdAt": "Created At",
+            "updatedAt": "Edited At"
+          },
+          "sections": {
+            "profile": "Profile",
+            "account": "Account Settings",
+            "security": "Account Security",
+            "thirdParty": "Third-Party Sign-In"
+          },
+          "profile": {
+            "realName": "Full Name",
+            "nickname": "Nickname",
+            "gender": "Gender",
+            "displayEmail": "Profile Email",
+            "displayMobile": "Profile Mobile",
+            "address": "Address",
+            "position": "Position",
+            "company": "Company",
+            "signature": "Signature",
+            "introduction": "Introduction",
+            "tags": "Tags"
+          },
+          "account": {
+            "accountId": "Account ID",
+            "username": "Username",
+            "remark": "Remark",
+            "status": "Status",
+            "pendingDeletion": "Pending Deletion",
+            "deletionRequestedAt": "Deletion Requested At",
+            "deletionExpiresAt": "Deletion Expires At",
+            "loginFailCount": "Login Failure Count",
+            "loginFailTime": "Last Failure At"
+          },
+          "security": {
+            "securityEmail": "Security Email",
+            "emailMfaEnabled": "Email MFA",
+            "totpMfaEnabled": "TOTP MFA",
+            "loginMethods": "Login Methods",
+            "emailVerifiedAt": "Security Email Verified At",
+            "lastPasswordChangeAt": "Last Password Change"
+          },
+          "thirdParty": {
+            "provider": "Provider",
+            "providerKey": "Provider Key",
+            "status": "Status",
+            "bound": "Bound",
+            "unbound": "Unbound"
+          },
+          "gender": {
+            "male": "Male",
+            "female": "Female",
+            "other": "Other",
+            "unknown": "Unknown"
+          },
+          "loginMethods": {
+            "password": "Password",
+            "emailCode": "Email Code"
+          }
+        },
         "status": {
           "online": "Online",
           "offline": "Offline",

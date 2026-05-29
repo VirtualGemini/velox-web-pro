@@ -892,24 +892,25 @@
         {
           type: 'index',
           label: t('table.column.index'),
-          minWidth: 60
+          minWidth: 96
         },
         {
           prop: 'name',
           label: 'pages.config.fileConfig.columns.name',
-          minWidth: 160
+          minWidth: 220,
+          showOverflowTooltip: true
         },
         {
           prop: 'storage',
           label: 'pages.config.fileConfig.columns.storage',
-          minWidth: 120,
+          minWidth: 160,
           formatter: (row: FileConfig) =>
             h(ElTag, { type: getStorageTagType(row.storage) }, () => getStorageLabel(row.storage))
         },
         {
           prop: 'master',
           label: 'pages.config.fileConfig.columns.master',
-          minWidth: 100,
+          minWidth: 120,
           formatter: (row: FileConfig) =>
             h(ElTag, { type: row.master ? 'success' : 'info' }, () =>
               row.master ? t('common.status.yes') : t('common.status.no')
@@ -918,7 +919,7 @@
         {
           prop: 'enabled',
           label: 'pages.config.fileConfig.columns.enabled',
-          minWidth: 100,
+          minWidth: 132,
           formatter: (row: FileConfig) =>
             h(ElSwitch, {
               modelValue: row.enabled === 1,
@@ -929,24 +930,24 @@
         {
           prop: 'remark',
           label: 'pages.config.fileConfig.columns.remark',
-          minWidth: 180,
+          minWidth: 240,
           showOverflowTooltip: true,
           formatter: (row: FileConfig) => row.remark || '-'
         },
         {
           prop: 'createTime',
           label: 'pages.config.fileConfig.columns.createTime',
-          minWidth: 180
+          minWidth: 210
         },
         {
           prop: 'updateTime',
           label: 'pages.config.fileConfig.columns.updateTime',
-          minWidth: 180
+          minWidth: 210
         },
         {
           prop: 'operation',
           label: 'pages.config.fileConfig.columns.operation',
-          width: 150,
+          width: 168,
           fixed: 'right',
           align: 'left',
           formatter: (row: FileConfig) => renderOperationButtons(row)

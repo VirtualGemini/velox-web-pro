@@ -245,6 +245,58 @@ declare namespace Api {
       updateTime: string
     }
 
+    interface AccountDetailCard {
+      header: {
+        avatar: string
+        username: string
+        nickname?: string
+        realName?: string
+        status: string
+        remark?: string
+        roleCodes: string[]
+        createTime?: string
+        updateTime?: string
+      }
+      profile: {
+        nickname?: string
+        gender?: number
+        realName?: string
+        displayEmail?: string
+        displayMobile?: string
+        address?: string
+        position?: string
+        company?: string
+        signature?: string
+        introduction?: string
+        tags: string[]
+      }
+      account: {
+        accountId: string
+        username: string
+        remark?: string
+        status: string
+        pendingDeletion: boolean
+        deletionRequestedAt?: string
+        deletionExpiresAt?: string
+        loginFailCount?: number
+        loginFailTime?: string
+        roleCodes: string[]
+      }
+      security: {
+        securityEmail?: string
+        emailMfaEnabled: boolean
+        totpMfaEnabled: boolean
+        loginMethods: string[]
+        emailVerifiedAt?: string
+        lastPasswordChangeAt?: string
+      }
+      thirdPartyProviders: Array<{
+        key: string
+        name: string
+        bound: boolean
+      }>
+    }
+
     /** 账号搜索参数 */
     type AccountSearchParams = Partial<
       Pick<AccountListItem, 'username' | 'email' | 'remark' | 'status'> &

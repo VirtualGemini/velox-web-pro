@@ -220,13 +220,13 @@
     {
       prop: 'meta.title',
       label: 'pages.system.menu.columns.title',
-      minWidth: 120,
+      minWidth: 240,
       formatter: (row: AppRouteRecord) => formatMenuTitle(row.meta?.title)
     },
     {
       prop: 'type',
       label: 'pages.system.menu.columns.type',
-      minWidth: 120,
+      minWidth: 152,
       formatter: (row: AppRouteRecord) => {
         return h(ElTag, { type: getMenuTypeTag(row) }, () => getMenuTypeText(row))
       }
@@ -234,7 +234,8 @@
     {
       prop: 'path',
       label: 'pages.system.menu.columns.route',
-      minWidth: 180,
+      minWidth: 300,
+      showOverflowTooltip: true,
       formatter: (row: AppRouteRecord) => {
         if (row.meta?.isAuthButton) return ''
         return row.meta?.link || row.path || ''
@@ -243,7 +244,8 @@
     {
       prop: 'meta.authList',
       label: 'pages.system.menu.columns.auth',
-      minWidth: 180,
+      minWidth: 280,
+      showOverflowTooltip: true,
       formatter: (row: AppRouteRecord) => {
         if (row.meta?.isAuthButton) {
           return row.meta?.authMark || ''
@@ -258,7 +260,7 @@
     {
       prop: 'status',
       label: 'pages.system.menu.columns.status',
-      minWidth: 100,
+      minWidth: 132,
       formatter: (row: AppRouteRecord) => {
         const isEnabled = row.meta?.isEnable !== false
         return h(ElTag, { type: isEnabled ? 'success' : 'info' }, () =>
@@ -269,19 +271,19 @@
     {
       prop: 'meta.createTime',
       label: 'pages.system.menu.columns.createTime',
-      minWidth: 180,
+      minWidth: 210,
       formatter: (row: AppRouteRecord) => row.meta?.createTime || '-'
     },
     {
       prop: 'meta.updateTime',
       label: 'pages.system.menu.columns.updateTime',
-      minWidth: 180,
+      minWidth: 210,
       formatter: (row: AppRouteRecord) => row.meta?.updateTime || '-'
     },
     {
       prop: 'operation',
       label: 'pages.system.menu.columns.operation',
-      width: 160,
+      width: 180,
       fixed: 'right',
       align: 'left',
       formatter: (row: AppRouteRecord) => {

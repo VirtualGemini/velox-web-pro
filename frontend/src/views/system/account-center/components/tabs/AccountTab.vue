@@ -106,7 +106,13 @@
     <section class="setting-section block-section">
       <div class="rename-panel">
         <h2 class="setting-title">{{ t('pages.system.accountCenter.account.username.title') }}</h2>
-        <ElForm :model="form" :rules="rules" label-position="top" class="rename-form">
+        <ElForm
+          :model="form"
+          :rules="rules"
+          label-position="top"
+          hide-required-asterisk
+          class="rename-form"
+        >
           <div class="rename-panel__row">
             <ElFormItem :label="t('pages.system.accountCenter.account.username.label')" prop="username">
               <ElInput

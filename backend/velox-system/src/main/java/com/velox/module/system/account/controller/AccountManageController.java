@@ -3,6 +3,7 @@ package com.velox.module.system.account.controller;
 import com.velox.common.result.Result;
 import com.velox.framework.security.api.annotation.RequirePermission;
 import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
+import com.velox.module.system.account.dto.AccountDetailCardDTO;
 import com.velox.module.system.account.dto.AccountListItemDTO;
 import com.velox.module.system.account.dto.AccountQuery;
 import com.velox.module.system.account.dto.AccountSaveCommand;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.velox.common.result.PageResult;
 
-@Tag(name = "openapi.system.user.manage.tag.name", description = "openapi.system.user.manage.tag.description")
+@Tag(name = "openapi.system.account.manage.tag.name", description = "openapi.system.account.manage.tag.description")
 @RestController
 @RequestMapping("/account")
 public class AccountManageController {
@@ -42,6 +43,13 @@ public class AccountManageController {
     @GetMapping("/list")
     public Result<PageResult<AccountListItemDTO>> list(AccountQuery query) {
         return Result.ok(accountManageService.list(query));
+    }
+
+    @Operation(summary = "openapi.system.account.manage.detail_card.summary")
+    @RequirePermission("system:account:query")
+    @GetMapping("/{accountId}/detail-card")
+    public Result<AccountDetailCardDTO> getDetailCard(@PathVariable("accountId") String accountId) {
+        return Result.ok(accountManageService.getDetailCard(accountId));
     }
 
     @Operation(summary = "openapi.system.account.manage.create.summary")

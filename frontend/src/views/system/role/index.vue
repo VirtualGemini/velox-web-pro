@@ -120,21 +120,22 @@
         size: 20
       },
       columnsFactory: () => [
-        { type: 'index', label: t('table.column.index'), minWidth: 60 },
+        { type: 'index', label: t('table.column.index'), minWidth: 96 },
         {
           prop: 'roleName',
           label: 'pages.system.role.columns.roleName',
-          minWidth: 120
+          minWidth: 200
         },
         {
           prop: 'roleCode',
           label: 'pages.system.role.columns.roleCode',
-          minWidth: 120
+          minWidth: 200,
+          showOverflowTooltip: true
         },
         {
           prop: 'type',
           label: 'pages.system.role.columns.type',
-          minWidth: 100,
+          minWidth: 152,
           formatter: (row) =>
             h(ElTag, { type: getRoleTypeTagType(row.type) }, () =>
               row.type === 0 ? t('common.status.builtin') : t('common.status.custom')
@@ -143,13 +144,13 @@
         {
           prop: 'description',
           label: 'pages.system.role.columns.description',
-          minWidth: 150,
+          minWidth: 280,
           showOverflowTooltip: true
         },
         {
           prop: 'enabled',
           label: 'pages.system.role.columns.enabled',
-          minWidth: 100,
+          minWidth: 152,
           formatter: (row) => {
             const statusConfig = row.enabled
               ? { type: 'success', text: t('common.status.enabled') }
@@ -164,19 +165,19 @@
         {
           prop: 'createTime',
           label: 'pages.system.role.columns.createTime',
-          minWidth: 180,
+          minWidth: 210,
           sortable: true
         },
         {
           prop: 'updateTime',
           label: 'pages.system.role.columns.updateTime',
-          minWidth: 180,
+          minWidth: 210,
           sortable: true
         },
         {
           prop: 'operation',
           label: 'pages.system.role.columns.operation',
-          width: 100,
+          width: 120,
           fixed: 'right',
           formatter: (row) =>
             h('div', [
