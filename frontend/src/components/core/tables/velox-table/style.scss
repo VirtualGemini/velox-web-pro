@@ -7,6 +7,74 @@
     margin-top: 10px;
   }
 
+  :deep(.el-scrollbar__wrap) {
+    overflow-x: auto !important;
+  }
+
+  :deep(.el-table__header-wrapper th.el-table__cell .cell),
+  :deep(.el-table__body-wrapper td.el-table__cell:not(.el-table-fixed-column--right) .cell) {
+    min-width: 0;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  :deep(.el-table__header-wrapper th.el-table__cell.is-sortable .cell) {
+    display: flex !important;
+    gap: 4px;
+    align-items: center;
+  }
+
+  :deep(.el-table__header-wrapper th.el-table__cell .cell > *),
+  :deep(.el-table__body-wrapper td.el-table__cell:not(.el-table-fixed-column--right) .cell > *) {
+    min-width: 0;
+  }
+
+  :deep(.el-table__header-wrapper th.el-table__cell .cell *),
+  :deep(.el-table__body-wrapper td.el-table__cell:not(.el-table-fixed-column--right) .cell *) {
+    white-space: nowrap !important;
+  }
+
+  :deep(.el-table__header-wrapper th.el-table__cell .cell a),
+  :deep(.el-table__body-wrapper td.el-table__cell:not(.el-table-fixed-column--right) .cell a),
+  :deep(.el-table__header-wrapper th.el-table__cell .cell p),
+  :deep(.el-table__body-wrapper td.el-table__cell:not(.el-table-fixed-column--right) .cell p),
+  :deep(.el-table__header-wrapper th.el-table__cell .cell span),
+  :deep(.el-table__body-wrapper td.el-table__cell:not(.el-table-fixed-column--right) .cell span) {
+    max-width: 100% !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap !important;
+  }
+
+  :deep(.el-table__fixed-right .cell),
+  :deep(.el-table__fixed-right-patch .cell),
+  :deep(.el-table__cell.el-table-fixed-column--right .cell) {
+    white-space: nowrap !important;
+  }
+
+  :deep(.el-table__fixed-right .cell > div),
+  :deep(.el-table__fixed-right-patch .cell > div),
+  :deep(.el-table__cell.el-table-fixed-column--right .cell > div) {
+    display: inline-flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    width: max-content;
+    min-width: max-content;
+    max-width: none !important;
+  }
+
+  :deep(.el-table__fixed-right .cell > div > *),
+  :deep(.el-table__fixed-right-patch .cell > div > *),
+  :deep(.el-table__cell.el-table-fixed-column--right .cell > div > *) {
+    flex: 0 0 auto;
+  }
+
+  :deep(.velox-button-table:last-child) {
+    margin-right: 0;
+  }
+
   :deep(.el-loading-mask) {
     z-index: 100;
     background-color: var(--default-box-color) !important;

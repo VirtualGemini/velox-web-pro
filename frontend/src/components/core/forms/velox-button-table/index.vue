@@ -2,7 +2,7 @@
 <template>
   <div
     :class="[
-      'inline-flex items-center justify-center min-w-8 h-8 px-2.5 mr-2.5 text-sm c-p rounded-md align-middle',
+      'velox-button-table inline-flex flex-none shrink-0 items-center justify-center size-8 mr-2.5 text-sm c-p rounded-md align-middle whitespace-nowrap',
       buttonClass
     ]"
     :style="{ backgroundColor: buttonBgColor, color: iconColor }"

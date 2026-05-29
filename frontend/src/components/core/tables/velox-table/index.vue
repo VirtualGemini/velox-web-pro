@@ -76,7 +76,18 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, nextTick, watchEffect, getCurrentInstance, useAttrs, watch } from 'vue'
+  import {
+    ref,
+    computed,
+    nextTick,
+    watchEffect,
+    getCurrentInstance,
+    useAttrs,
+    watch,
+    onMounted,
+    onActivated,
+    onBeforeUnmount
+  } from 'vue'
   import type { ElTable, TableProps } from 'element-plus'
   import { storeToRefs } from 'pinia'
   import { useI18n } from 'vue-i18n'
@@ -298,9 +309,17 @@
     return slotScope.$index === undefined || slotScope.$index >= 0
   }
 
+  const shouldUseOverflowTooltip = (col: ColumnOption) => {
+    if (col.type || col.prop === 'operation' || col.fixed === 'right') return false
+    return col.showOverflowTooltip !== false
+  }
+
   // 清理列属性，移除插槽相关的自定义属性，确保它们不会被 ElTableColumn 错误解释
   const resolveColumnProps = (col: ColumnOption) => {
     const columnProps = { ...col, label: resolveColumnLabel(col) } as ColumnOption
+    if (columnProps.showOverflowTooltip === undefined && shouldUseOverflowTooltip(col)) {
+      columnProps.showOverflowTooltip = true
+    }
     if (isMobileTable.value) {
       columnProps.align = 'left'
       columnProps.headerAlign = 'left'
@@ -318,147 +337,19 @@
     return columnProps
   }
 
-  const MOBILE_CELL_HORIZONTAL_GAP = 96
-  const MOBILE_MIN_COLUMN_WIDTH = 80
-  const MOBILE_GUTTER_COL_SELECTOR = 'colgroup col[name="gutter"]'
-  const MOBILE_HEADER_CELL_SELECTOR =
-    '.el-table__header-wrapper th.el-table__cell:not(.gutter):not(.el-table__fixed-right-patch)'
-  const MOBILE_BODY_CELL_SELECTOR =
-    'td.el-table__cell:not(.gutter):not(.el-table__fixed-right-patch)'
+  let tableLayoutFrame: number | null = null
+  let isComponentUnmounted = false
 
-  const getTableRootElement = () => {
-    return (elTableRef.value as unknown as { $el?: HTMLElement })?.$el || null
-  }
-
-  const resolveDeclaredColumnWidth = (column?: ColumnOption) => {
-    if (!column) return 0
-    const candidate = column.width ?? column.minWidth
-    if (candidate == null) return 0
-    if (typeof candidate === 'number') return candidate
-    const parsed = Number.parseFloat(candidate)
-    return Number.isFinite(parsed) ? parsed : 0
-  }
-
-  const resetMobileColumnWidths = () => {
-    const root = getTableRootElement()
-    if (!root) return
-
-    root
-      .querySelectorAll<HTMLElement>(
-        '.el-table__header-wrapper colgroup col, .el-table__body-wrapper colgroup col'
-      )
-      .forEach((col) => {
-        col.style.width = ''
-        col.style.minWidth = ''
-      })
-
-    root.querySelectorAll<HTMLTableColElement>(MOBILE_GUTTER_COL_SELECTOR).forEach((col) => {
-      col.style.width = ''
-      col.style.minWidth = ''
-    })
-
-    root
-      .querySelectorAll<HTMLElement>(
-        '.el-table__header-wrapper table, .el-table__body-wrapper table, .el-table__footer-wrapper table'
-      )
-      .forEach((table) => {
-        table.style.width = ''
-        table.style.minWidth = ''
-      })
-
-    root.querySelectorAll<HTMLElement>('.el-table__cell.gutter').forEach((cell) => {
-      cell.style.width = ''
-      cell.style.minWidth = ''
-    })
-  }
-
-  const syncMobileColumnWidths = async () => {
-    if (!isMobileTable.value) {
-      resetMobileColumnWidths()
-      return
+  const scheduleTableLayout = () => {
+    if (tableLayoutFrame !== null) {
+      cancelAnimationFrame(tableLayoutFrame)
+      tableLayoutFrame = null
     }
 
-    await nextTick()
-
-    const root = getTableRootElement()
-    if (!root) return
-
-    const headerTable = root.querySelector<HTMLTableElement>(
-      '.el-table__header-wrapper .el-table__header'
-    )
-    const bodyTable = root.querySelector<HTMLTableElement>(
-      '.el-table__body-wrapper .el-table__body'
-    )
-    const footerTable = root.querySelector<HTMLTableElement>(
-      '.el-table__footer-wrapper .el-table__footer'
-    )
-
-    if (!headerTable || !bodyTable) return
-
-    const headerCells = Array.from(root.querySelectorAll<HTMLElement>(MOBILE_HEADER_CELL_SELECTOR))
-    const bodyRows = Array.from(
-      root.querySelectorAll<HTMLTableRowElement>('.el-table__body-wrapper tbody tr')
-    )
-
-    if (!headerCells.length) return
-
-    const maxColumnWidth = Math.max(window.innerWidth - MOBILE_CELL_HORIZONTAL_GAP, 120)
-    const resolvedWidths = headerCells.map((headerCell, columnIndex) => {
-      const declaredWidth = resolveDeclaredColumnWidth(props.columns?.[columnIndex])
-      const headerContentWidth = Math.ceil(
-        headerCell.querySelector<HTMLElement>('.cell')?.scrollWidth || headerCell.scrollWidth || 0
-      )
-
-      let bodyContentWidth = 0
-      for (const row of bodyRows) {
-        const rowCells = Array.from(row.querySelectorAll<HTMLElement>(MOBILE_BODY_CELL_SELECTOR))
-        const cell = rowCells[columnIndex]
-        if (!cell) continue
-        const contentWidth = Math.ceil(
-          cell.querySelector<HTMLElement>('.cell')?.scrollWidth || cell.scrollWidth || 0
-        )
-        if (contentWidth > bodyContentWidth) {
-          bodyContentWidth = contentWidth
-        }
-      }
-
-      return Math.min(
-        Math.max(headerContentWidth, bodyContentWidth, declaredWidth, MOBILE_MIN_COLUMN_WIDTH),
-        Math.max(maxColumnWidth, declaredWidth)
-      )
-    })
-
-    const applyWidthToCols = (table: HTMLTableElement | null) => {
-      if (!table) return
-      const cols = Array.from(
-        table.querySelectorAll<HTMLTableColElement>('colgroup col:not([name="gutter"])')
-      )
-      resolvedWidths.forEach((width, index) => {
-        const col = cols[index]
-        if (!col) return
-        const widthText = `${width}px`
-        col.style.width = widthText
-        col.style.minWidth = widthText
-      })
-
-      table.querySelectorAll<HTMLTableColElement>(MOBILE_GUTTER_COL_SELECTOR).forEach((col) => {
-        col.style.width = '0px'
-        col.style.minWidth = '0px'
-      })
-
-      const totalWidth = resolvedWidths.reduce((sum, width) => sum + width, 0)
-      const tableWidth = `${totalWidth}px`
-      table.style.width = tableWidth
-      table.style.minWidth = tableWidth
-    }
-
-    applyWidthToCols(headerTable)
-    applyWidthToCols(bodyTable)
-    applyWidthToCols(footerTable)
-
-    root.querySelectorAll<HTMLElement>('.el-table__cell.gutter').forEach((cell) => {
-      cell.style.width = '0px'
-      cell.style.minWidth = '0px'
+    tableLayoutFrame = requestAnimationFrame(() => {
+      tableLayoutFrame = null
+      if (isComponentUnmounted) return
+      elTableRef.value?.doLayout()
     })
   }
 
@@ -531,12 +422,28 @@
   )
 
   watch(
-    [isMobileTable, () => props.data, () => props.columns],
+    [width, locale, () => props.data, () => props.columns],
     () => {
-      syncMobileColumnWidths()
+      scheduleTableLayout()
     },
-    { deep: true, flush: 'post' }
+    { deep: true, flush: 'post', immediate: true }
   )
+
+  onMounted(() => {
+    scheduleTableLayout()
+  })
+
+  onActivated(() => {
+    scheduleTableLayout()
+  })
+
+  onBeforeUnmount(() => {
+    isComponentUnmounted = true
+    if (tableLayoutFrame !== null) {
+      cancelAnimationFrame(tableLayoutFrame)
+      tableLayoutFrame = null
+    }
+  })
 
   defineExpose({
     scrollToTop,
