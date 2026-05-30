@@ -17,16 +17,20 @@ import com.velox.module.system.persistence.AccountRoleMapper;
 import com.velox.module.system.persistence.AccountSecurityMapper;
 import com.velox.module.system.auth.service.PasswordCipherService;
 import com.velox.module.system.auth.status.ActiveUserStatusService;
+import com.velox.module.system.auth.properties.SystemAccountSecurityProperties;
+import com.velox.module.system.common.enums.AccountStatusEnum;
 import com.velox.module.system.id.generator.SystemEntityIdGenerator;
 import com.velox.module.system.permission.service.PermissionService;
 import com.velox.framework.web.RequestDateTimeFormatter;
 import com.velox.module.system.account.dto.AccountListItemDTO;
 import com.velox.module.system.account.dto.AccountQuery;
 import com.velox.module.system.account.dto.AccountSaveCommand;
+import com.velox.module.system.account.dto.AdminProfileUpdateCommand;
 import com.velox.module.system.account.service.AccountManageService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -57,6 +61,8 @@ public class AccountManageServiceImpl implements AccountManageService {
     private final SystemEntityIdGenerator entityIdGenerator;
     private final ActiveUserStatusService activeUserStatusService;
     private final SecuritySessionService securitySessionService;
+    private final SystemAccountSecurityProperties accountSecurityProperties;
+    private final ObjectMapper objectMapper;
 
     public AccountManageServiceImpl(AccountMapper userMapper,
                                  ProfileMapper profileMapper,
@@ -67,7 +73,9 @@ public class AccountManageServiceImpl implements AccountManageService {
                                  PermissionService permissionService,
                                  SystemEntityIdGenerator entityIdGenerator,
                                  ActiveUserStatusService activeUserStatusService,
-                                 SecuritySessionService securitySessionService) {
+                                 SecuritySessionService securitySessionService,
+                                 SystemAccountSecurityProperties accountSecurityProperties,
+                                 ObjectMapper objectMapper) {
         this.userMapper = userMapper;
         this.profileMapper = profileMapper;
         this.roleMapper = roleMapper;
@@ -78,6 +86,8 @@ public class AccountManageServiceImpl implements AccountManageService {
         this.entityIdGenerator = entityIdGenerator;
         this.activeUserStatusService = activeUserStatusService;
         this.securitySessionService = securitySessionService;
+        this.accountSecurityProperties = accountSecurityProperties;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -85,11 +95,14 @@ public class AccountManageServiceImpl implements AccountManageService {
         LambdaQueryWrapper<Account> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Account::getDeleted, 0);
         if (StringUtils.hasText(query.getStatus())) {
-            String normalizedStatus = query.getStatus().trim();
-            if ("4".equals(normalizedStatus)) {
-                wrapper.eq(Account::getStatus, 4);
-            } else if ("3".equals(normalizedStatus)) {
-                wrapper.eq(Account::getStatus, 3);
+            // status 现表示账号状态(1-启用 2-禁用 3-异常 4-注销)，在线/离线属于独立的活跃状态。
+            try {
+                int statusCode = Integer.parseInt(query.getStatus().trim());
+                if (AccountStatusEnum.isValid(statusCode)) {
+                    wrapper.eq(Account::getStatus, statusCode);
+                }
+            } catch (NumberFormatException ignored) {
+                // 非法状态码忽略，等价于不按状态过滤
             }
         }
         if (StringUtils.hasText(query.getUsername())) {
@@ -127,21 +140,17 @@ public class AccountManageServiceImpl implements AccountManageService {
         wrapper.orderByDesc(Account::getCreateTime)
                 .orderByDesc(Account::getUpdateTime);
 
-        String statusFilter = StringUtils.hasText(query.getStatus()) ? query.getStatus().trim() : null;
-        boolean activeStatusFilter = ActiveUserStatusService.STATUS_ONLINE.equals(statusFilter)
-                || ActiveUserStatusService.STATUS_OFFLINE.equals(statusFilter);
-
-        List<Account> users;
-        long total;
-        if (activeStatusFilter) {
-            users = userMapper.selectList(wrapper);
-            total = users.size();
-        } else {
-            Page<Account> page = new Page<>(query.getCurrent(), query.getSize());
-            Page<Account> result = userMapper.selectPage(page, wrapper);
-            users = result.getRecords();
-            total = result.getTotal();
+        String activeStatusFilter = normalizeActiveStatus(query.getActiveStatus());
+        if (activeStatusFilter != null) {
+            // 活跃状态(在线/离线)是运行期数据、无对应 DB 列，无法在 SQL 层过滤：
+            // 取出全部命中记录后按活跃状态过滤再做内存分页，保证总数与分页正确。
+            return listFilteredByActiveStatus(query, wrapper, activeStatusFilter);
         }
+
+        Page<Account> page = new Page<>(query.getCurrent(), query.getSize());
+        Page<Account> result = userMapper.selectPage(page, wrapper);
+        List<Account> users = result.getRecords();
+        long total = result.getTotal();
 
         List<String> accountIds = users.stream().map(Account::getId).toList();
         Map<String, Profile> profileMap = getActiveProfileMap(accountIds);
@@ -153,21 +162,53 @@ public class AccountManageServiceImpl implements AccountManageService {
                         account,
                         profileMap.get(account.getId()),
                         securityMap.get(account.getId()),
-                        resolveDisplayStatus(account, activeStatusMap)))
+                        resolveAccountStatus(account),
+                        resolveActiveStatus(account, activeStatusMap)))
                 .collect(Collectors.toList());
-
-        if (activeStatusFilter) {
-            list = list.stream()
-                    .filter(item -> statusFilter.equals(item.getStatus()))
-                    .collect(Collectors.toList());
-            total = list.size();
-            long current = Math.max(query.getCurrent(), 1L);
-            long size = Math.max(query.getSize(), 1L);
-            int fromIndex = (int) Math.min((current - 1) * size, list.size());
-            int toIndex = (int) Math.min(fromIndex + size, list.size());
-            list = list.subList(fromIndex, toIndex);
-        }
         return new PageResult<>(total, query.getCurrent(), query.getSize(), list);
+    }
+
+    private PageResult<AccountListItemDTO> listFilteredByActiveStatus(
+            AccountQuery query, LambdaQueryWrapper<Account> wrapper, String activeStatusFilter) {
+        List<Account> candidates = userMapper.selectList(wrapper);
+        Map<String, String> activeStatusMap = activeUserStatusService.resolveStatuses(
+                candidates.stream().map(Account::getId).toList());
+        List<Account> matched = candidates.stream()
+                .filter(account -> activeStatusFilter.equals(resolveActiveStatus(account, activeStatusMap)))
+                .toList();
+
+        long total = matched.size();
+        long current = query.getCurrent();
+        long size = query.getSize();
+        int from = (int) Math.min((long) matched.size(), Math.max(0L, (current - 1) * size));
+        int to = (int) Math.min((long) matched.size(), (long) from + size);
+        List<Account> pageRows = matched.subList(from, to);
+
+        List<String> accountIds = pageRows.stream().map(Account::getId).toList();
+        Map<String, Profile> profileMap = getActiveProfileMap(accountIds);
+        Map<String, AccountSecurity> securityMap = getActiveSecurityMap(accountIds);
+
+        List<AccountListItemDTO> list = pageRows.stream()
+                .map(account -> toAccountListItem(
+                        account,
+                        profileMap.get(account.getId()),
+                        securityMap.get(account.getId()),
+                        resolveAccountStatus(account),
+                        resolveActiveStatus(account, activeStatusMap)))
+                .collect(Collectors.toList());
+        return new PageResult<>(total, current, size, list);
+    }
+
+    private String normalizeActiveStatus(String activeStatus) {
+        if (!StringUtils.hasText(activeStatus)) {
+            return null;
+        }
+        String normalized = activeStatus.trim();
+        if (ActiveUserStatusService.STATUS_ONLINE.equals(normalized)
+                || ActiveUserStatusService.STATUS_OFFLINE.equals(normalized)) {
+            return normalized;
+        }
+        return null;
     }
 
     @Override
@@ -175,18 +216,19 @@ public class AccountManageServiceImpl implements AccountManageService {
         Account account = getActiveUser(accountId);
         Profile profile = getActiveProfileMap(List.of(accountId)).get(accountId);
         AccountSecurity security = getActiveSecurityMap(List.of(accountId)).get(accountId);
-        String status = resolveDisplayStatus(
+        String accountStatus = resolveAccountStatus(account);
+        String activeStatus = resolveActiveStatus(
                 account,
                 activeUserStatusService.resolveStatuses(List.of(accountId))
         );
         List<String> roleCodes = permissionService.getAccountRoleCodes(accountId);
 
         AccountDetailCardDTO dto = new AccountDetailCardDTO();
-        dto.setHeader(buildHeader(account, profile, status, roleCodes));
+        dto.setHeader(buildHeader(account, profile, accountStatus, activeStatus, roleCodes));
         dto.setProfile(buildProfileSection(profile));
-        dto.setAccount(buildAccountSection(account, status, roleCodes));
+        dto.setAccount(buildAccountSection(account, accountStatus, activeStatus, roleCodes));
         dto.setSecurity(buildSecuritySection(security));
-        dto.setThirdPartyProviders(buildThirdPartyProviders());
+        dto.setThirdPartyProviders(buildThirdPartyProviders(security));
         return dto;
     }
 
@@ -204,7 +246,7 @@ public class AccountManageServiceImpl implements AccountManageService {
         account.setUsername(command.getUsername().trim());
         account.setPassword(passwordCipherService.encode(command.getPassword().trim()));
         account.setRemark(normalizeNullable(command.getRemark()));
-        account.setStatus(1);
+        account.setStatus(AccountStatusEnum.ENABLED.getCode());
         account.setLoginFailCount(0);
         account.setDeleted(0);
         account.setCreateBy(operator);
@@ -232,10 +274,63 @@ public class AccountManageServiceImpl implements AccountManageService {
         if (StringUtils.hasText(command.getPassword())) {
             user.setPassword(passwordCipherService.encode(command.getPassword().trim()));
         }
+        if (command.getAccountStatus() != null) {
+            if (!AccountStatusEnum.isValid(command.getAccountStatus())) {
+                throw new ApiException(BusinessErrorCode.OPERATION_FAILED);
+            }
+            user.setStatus(command.getAccountStatus());
+        }
         userMapper.updateById(user);
+
+        // 管理员手动置为“注销”视为即时硬注销：去掉自助注销的反悔期（冷静期）时间戳，
+        // 否则详情页仍会显示待删除倒计时。注意 updateById 默认跳过 null，故用 Wrapper 显式置空。
+        if (command.getAccountStatus() != null
+                && AccountStatusEnum.CANCELLED.getCode() == command.getAccountStatus()) {
+            userMapper.update(null, new LambdaUpdateWrapper<Account>()
+                    .eq(Account::getId, userId)
+                    .set(Account::getDeletionRequestedAt, null)
+                    .set(Account::getDeletionExpiresAt, null)
+                    .set(Account::getUpdateBy, operator)
+                    .set(Account::getUpdateTime, LocalDateTime.now(ZoneOffset.UTC)));
+        }
 
         ensureProfile(user, operator);
         assignUserRoles(userId, roles);
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateProfile(String accountId, AdminProfileUpdateCommand command) {
+        Account user = getActiveUser(accountId);
+        ensureCanUpdateUser(user.getId());
+        String operator = currentOperator();
+
+        Profile profile = getOrInitProfile(user, operator);
+        profile.setNickname(normalizeNullable(command.getNickname()));
+        profile.setRealName(normalizeNullable(command.getRealName()));
+        profile.setEmail(normalizeNullable(command.getEmail()));
+        profile.setMobile(normalizeNullable(command.getPhone()));
+        profile.setAddress(normalizeNullable(command.getAddress()));
+        profile.setGender(normalizeGender(command.getGender()));
+        profile.setIntroduction(normalizeNullable(command.getIntroduction()));
+        profile.setSignature(normalizeNullable(command.getSignature()));
+        profile.setPosition(normalizeNullable(command.getPosition()));
+        profile.setCompany(normalizeNullable(command.getCompany()));
+        profile.setTags(serializeTags(command.getTags()));
+        if (StringUtils.hasText(command.getAvatar())) {
+            profile.setAvatar(command.getAvatar().trim());
+        }
+        profile.setDeleted(0);
+        profile.setUpdateBy(operator);
+
+        if (profileMapper.selectById(profile.getId()) == null) {
+            profileMapper.insert(profile);
+        } else {
+            profileMapper.updateById(profile);
+        }
+        // 资料属于账号信息的一部分：同步刷新账号更新时间，使列表“编辑时间”反映本次编辑。
+        touchAccountUpdateTime(accountId, operator);
         return true;
     }
 
@@ -284,6 +379,57 @@ public class AccountManageServiceImpl implements AccountManageService {
         return true;
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean cancelBatch(List<String> accountIds) {
+        if (accountIds == null || accountIds.isEmpty()) {
+            return true;
+        }
+        accountIds.stream()
+                .filter(StringUtils::hasText)
+                .distinct()
+                .forEach(this::cancel);
+        return true;
+    }
+
+    /**
+     * 批量注销：将账号状态置为“注销(CANCELLED)”。注销不同于删除——账号不做逻辑删除，
+     * 列表中仍会展示，但登录被拦截；同时清空自助注销的反悔期（冷静期）时间戳，
+     * 与管理员在编辑抽屉手动置为“注销”的语义保持一致。
+     */
+    private void cancel(String userId) {
+        Account user = getActiveUser(userId);
+        ensureCanCancelUser(user.getId());
+        String operator = currentOperator();
+        userMapper.update(null, new LambdaUpdateWrapper<Account>()
+                .eq(Account::getId, user.getId())
+                .eq(Account::getDeleted, 0)
+                .set(Account::getStatus, AccountStatusEnum.CANCELLED.getCode())
+                .set(Account::getDeletionRequestedAt, null)
+                .set(Account::getDeletionExpiresAt, null)
+                .set(Account::getUpdateBy, operator)
+                .set(Account::getUpdateTime, LocalDateTime.now(ZoneOffset.UTC)));
+    }
+
+    /**
+     * 注销权限校验：禁止注销自己（避免把自己锁在门外），且只能操作角色层级更低的账号。
+     * 语义与删除一致（禁止操作自身 + 需更高层级），但使用“更新”相关错误码（注销走 update 权限）。
+     */
+    private void ensureCanCancelUser(String userId) {
+        String currentUserId = securitySessionService.currentLoginIdOrNull();
+        if (!StringUtils.hasText(currentUserId)) {
+            throw new ApiException(BusinessErrorCode.USER_UPDATE_FORBIDDEN);
+        }
+        if (currentUserId.equals(userId)) {
+            throw new ApiException(BusinessErrorCode.USER_OPERATE_SELF_FORBIDDEN);
+        }
+        int operatorLevel = permissionService.getAccountHighestRoleLevel(currentUserId);
+        int targetLevel = permissionService.getAccountHighestRoleLevel(userId);
+        if (operatorLevel <= targetLevel) {
+            throw new ApiException(BusinessErrorCode.USER_UPDATE_FORBIDDEN);
+        }
+    }
+
     private void ensureCanUpdateUser(String userId) {
         String currentUserId = securitySessionService.currentLoginIdOrNull();
         if (!StringUtils.hasText(currentUserId)) {
@@ -318,12 +464,14 @@ public class AccountManageServiceImpl implements AccountManageService {
             Account user,
             Profile profile,
             AccountSecurity security,
-            String status
+            String accountStatus,
+            String activeStatus
     ) {
         AccountListItemDTO dto = new AccountListItemDTO();
         dto.setAccountId(user.getId());
         dto.setAvatar(resolveAvatar(profile, user.getUsername()));
-        dto.setStatus(status);
+        dto.setStatus(accountStatus);
+        dto.setActiveStatus(activeStatus);
         dto.setUsername(user.getUsername());
         dto.setEmail(security == null ? "" : defaultString(security.getEmail(), ""));
         dto.setRemark(defaultString(user.getRemark(), ""));
@@ -335,7 +483,8 @@ public class AccountManageServiceImpl implements AccountManageService {
     private AccountDetailCardDTO.Header buildHeader(
             Account account,
             Profile profile,
-            String status,
+            String accountStatus,
+            String activeStatus,
             List<String> roleCodes
     ) {
         AccountDetailCardDTO.Header header = new AccountDetailCardDTO.Header();
@@ -343,7 +492,8 @@ public class AccountManageServiceImpl implements AccountManageService {
         header.setUsername(account.getUsername());
         header.setNickname(profile == null ? null : profile.getNickname());
         header.setRealName(profile == null ? null : profile.getRealName());
-        header.setStatus(status);
+        header.setStatus(accountStatus);
+        header.setActiveStatus(activeStatus);
         header.setRemark(defaultString(account.getRemark(), ""));
         header.setRoleCodes(roleCodes);
         header.setCreateTime(RequestDateTimeFormatter.format(account.getCreateTime()));
@@ -371,12 +521,13 @@ public class AccountManageServiceImpl implements AccountManageService {
         return section;
     }
 
-    private AccountDetailCardDTO.AccountSection buildAccountSection(Account account, String status, List<String> roleCodes) {
+    private AccountDetailCardDTO.AccountSection buildAccountSection(Account account, String accountStatus, String activeStatus, List<String> roleCodes) {
         AccountDetailCardDTO.AccountSection section = new AccountDetailCardDTO.AccountSection();
         section.setAccountId(account.getId());
         section.setUsername(account.getUsername());
         section.setRemark(account.getRemark());
-        section.setStatus(status);
+        section.setStatus(accountStatus);
+        section.setActiveStatus(activeStatus);
         section.setPendingDeletion(account.getDeletionExpiresAt() != null);
         section.setDeletionRequestedAt(RequestDateTimeFormatter.format(account.getDeletionRequestedAt()));
         section.setDeletionExpiresAt(RequestDateTimeFormatter.format(account.getDeletionExpiresAt()));
@@ -388,8 +539,11 @@ public class AccountManageServiceImpl implements AccountManageService {
 
     private AccountDetailCardDTO.SecuritySection buildSecuritySection(AccountSecurity security) {
         AccountDetailCardDTO.SecuritySection section = new AccountDetailCardDTO.SecuritySection();
+        List<String> allowed = new ArrayList<>(accountSecurityProperties.getLoginMethods().getEnabled());
         if (security == null) {
             section.setLoginMethods(List.of());
+            section.setDisabledLoginMethods(List.of());
+            section.setAllowedLoginMethods(allowed);
             section.setEmailMfaEnabled(false);
             section.setTotpMfaEnabled(false);
             return section;
@@ -398,34 +552,37 @@ public class AccountManageServiceImpl implements AccountManageService {
         section.setEmailMfaEnabled(Integer.valueOf(1).equals(security.getMfaEmailEnabled()));
         section.setTotpMfaEnabled(Integer.valueOf(1).equals(security.getMfaTotpEnabled()));
         section.setLoginMethods(parseLoginMethods(security.getLoginMethods()));
+        section.setDisabledLoginMethods(parseLoginMethods(security.getDisabledLoginMethods()));
+        section.setAllowedLoginMethods(allowed);
         section.setEmailVerifiedAt(RequestDateTimeFormatter.format(security.getEmailVerifiedAt()));
         section.setLastPasswordChangeAt(RequestDateTimeFormatter.format(security.getLastPasswordChangeAt()));
         return section;
     }
 
-    private List<AccountDetailCardDTO.ThirdPartyProvider> buildThirdPartyProviders() {
+    private List<AccountDetailCardDTO.ThirdPartyProvider> buildThirdPartyProviders(AccountSecurity security) {
+        List<String> disabledChannels = security == null
+                ? List.of()
+                : parseLoginMethods(security.getDisabledOauthChannels());
         List<AccountDetailCardDTO.ThirdPartyProvider> providers = new ArrayList<>();
-        providers.add(buildThirdPartyProvider("github", "GitHub"));
-        providers.add(buildThirdPartyProvider("linuxdo", "LinuxDo"));
+        providers.add(buildThirdPartyProvider("github", "GitHub", disabledChannels));
+        providers.add(buildThirdPartyProvider("linuxdo", "LinuxDo", disabledChannels));
         return providers;
     }
 
-    private AccountDetailCardDTO.ThirdPartyProvider buildThirdPartyProvider(String key, String name) {
+    private AccountDetailCardDTO.ThirdPartyProvider buildThirdPartyProvider(String key, String name, List<String> disabledChannels) {
         AccountDetailCardDTO.ThirdPartyProvider provider = new AccountDetailCardDTO.ThirdPartyProvider();
         provider.setKey(key);
         provider.setName(name);
         provider.setBound(false);
+        provider.setDisabled(disabledChannels.contains(key));
         return provider;
     }
 
-    private String resolveDisplayStatus(Account user, Map<String, String> activeStatusMap) {
-        Integer userStatus = user.getStatus();
-        if (Integer.valueOf(4).equals(userStatus)) {
-            return "4";
-        }
-        if (Integer.valueOf(3).equals(userStatus)) {
-            return "3";
-        }
+    private String resolveAccountStatus(Account user) {
+        return AccountStatusEnum.toStringCode(user.getStatus());
+    }
+
+    private String resolveActiveStatus(Account user, Map<String, String> activeStatusMap) {
         return activeStatusMap.getOrDefault(user.getId(), ActiveUserStatusService.STATUS_OFFLINE);
     }
 
@@ -644,6 +801,37 @@ public class AccountManageServiceImpl implements AccountManageService {
                 .toList();
     }
 
+    private String serializeTags(List<String> tags) {
+        if (tags == null) {
+            return null;
+        }
+        List<String> normalized = tags.stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .limit(10)
+                .toList();
+        if (normalized.isEmpty()) {
+            return "[]";
+        }
+        try {
+            return objectMapper.writeValueAsString(normalized);
+        } catch (Exception ex) {
+            throw new ApiException(BusinessErrorCode.OPERATION_FAILED);
+        }
+    }
+
+    private Integer normalizeGender(Integer gender) {
+        if (gender == null) {
+            return 0;
+        }
+        return switch (gender) {
+            case 1, 2, 3 -> gender;
+            default -> 0;
+        };
+    }
+
     private List<String> parseLoginMethods(String loginMethods) {
         if (!StringUtils.hasText(loginMethods)) {
             return List.of();
@@ -675,5 +863,17 @@ public class AccountManageServiceImpl implements AccountManageService {
     private String currentOperator() {
         String loginId = securitySessionService.currentLoginIdOrNull();
         return StringUtils.hasText(loginId) ? loginId : "system";
+    }
+
+    /**
+     * 刷新账号的更新时间/更新人。用于资料、安全等子表被修改时，让列表“编辑时间”同步反映本次编辑。
+     * 走 Wrapper 显式置值（updateById 之外的无实体更新不触发审计填充）。
+     */
+    private void touchAccountUpdateTime(String accountId, String operator) {
+        userMapper.update(null, new LambdaUpdateWrapper<Account>()
+                .eq(Account::getId, accountId)
+                .eq(Account::getDeleted, 0)
+                .set(Account::getUpdateBy, operator)
+                .set(Account::getUpdateTime, LocalDateTime.now(ZoneOffset.UTC)));
     }
 }

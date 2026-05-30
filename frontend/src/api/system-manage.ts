@@ -48,10 +48,113 @@ export function fetchBatchDeleteAccount(accountIds: string[]) {
   })
 }
 
+// 批量注销账号（账号状态置为“注销”，仍会展示但禁止登录）
+export function fetchBatchCancelAccount(accountIds: string[]) {
+  return request.put<boolean>({
+    url: '/api/account/cancel-batch',
+    params: { ids: accountIds },
+    // http 工具会把 PUT 的 params 挪进 body；显式提供 data 占位以保留查询参数，
+    // 使后端 @RequestParam("ids") 正常接收并完成生产环境 ID 解码（参数名需为 ids）。
+    data: {},
+    paramsSerializer: { indexes: null }
+  })
+}
+
 export function fetchGetAccountDetailCard(accountId: string) {
   const normalizedAccountId = requireId(accountId, '账号')
   return request.get<Api.SystemManage.AccountDetailCard>({
     url: `/api/account/${normalizedAccountId}/detail-card`
+  })
+}
+
+// ===== 管理员编辑账号：资料 / 安全 / 第三方 =====
+
+// 编辑账号资料（含头像）
+export function fetchAdminUpdateProfile(
+  accountId: string,
+  data: Api.SystemManage.AdminProfileUpdateCommand
+) {
+  const normalizedAccountId = requireId(accountId, '账号')
+  return request.put<boolean>({
+    url: `/api/account/${normalizedAccountId}/profile`,
+    data
+  })
+}
+
+// 重置密码
+export function fetchAdminResetPassword(
+  accountId: string,
+  data: Api.SystemManage.AdminPasswordResetCommand
+) {
+  const normalizedAccountId = requireId(accountId, '账号')
+  return request.put<boolean>({
+    url: `/api/account/${normalizedAccountId}/security/password`,
+    data
+  })
+}
+
+// 设置 / 清除安全邮箱（email 为空表示清除）
+export function fetchAdminSetSecurityEmail(
+  accountId: string,
+  data: Api.SystemManage.AdminSecurityEmailCommand
+) {
+  const normalizedAccountId = requireId(accountId, '账号')
+  return request.put<boolean>({
+    url: `/api/account/${normalizedAccountId}/security/email`,
+    data
+  })
+}
+
+// 开启 / 关闭邮箱二次验证
+export function fetchAdminUpdateMfaEmail(
+  accountId: string,
+  data: Api.SystemManage.AdminMfaEmailCommand
+) {
+  const normalizedAccountId = requireId(accountId, '账号')
+  return request.put<boolean>({
+    url: `/api/account/${normalizedAccountId}/security/mfa/email`,
+    data
+  })
+}
+
+// 关闭 TOTP 二次验证（仅支持关闭）
+export function fetchAdminDisableTotp(accountId: string) {
+  const normalizedAccountId = requireId(accountId, '账号')
+  return request.put<boolean>({
+    url: `/api/account/${normalizedAccountId}/security/mfa/totp/disable`
+  })
+}
+
+// 设置登录方式（enabledMethods 已开启，disabledMethods 管理员禁用）
+export function fetchAdminUpdateLoginMethods(
+  accountId: string,
+  data: Api.SystemManage.AdminLoginMethodsCommand
+) {
+  const normalizedAccountId = requireId(accountId, '账号')
+  return request.put<boolean>({
+    url: `/api/account/${normalizedAccountId}/security/login-methods`,
+    data
+  })
+}
+
+// 开启 / 禁用第三方登录渠道
+export function fetchAdminToggleOauthChannel(
+  accountId: string,
+  channel: string,
+  data: Api.SystemManage.AdminOauthChannelCommand
+) {
+  const normalizedAccountId = requireId(accountId, '账号')
+  return request.put<boolean>({
+    url: `/api/account/${normalizedAccountId}/third-party/${channel}/disabled`,
+    data
+  })
+}
+
+// 解绑第三方登录渠道（占位，绑定能力未实现）
+export function fetchAdminUnbindOauth(accountId: string, channel: string) {
+  const normalizedAccountId = requireId(accountId, '账号')
+  return request.del<boolean>({
+    url: `/api/account/${normalizedAccountId}/third-party/${channel}`
   })
 }
 

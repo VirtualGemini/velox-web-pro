@@ -23,6 +23,9 @@ public class AccountQuery {
     @Schema(description = "openapi.system.user.query.status")
     private String status;
 
+    @Schema(description = "openapi.system.user.query.active_status")
+    private String activeStatus;
+
     @Schema(description = "openapi.common.audit.create_time_start", example = "2026-05-22 10:00:00")
     private String createTimeStart;
 
@@ -81,6 +84,14 @@ public class AccountQuery {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getActiveStatus() {
+        return activeStatus;
+    }
+
+    public void setActiveStatus(String activeStatus) {
+        this.activeStatus = activeStatus;
     }
 
     public String getCreateTimeStart() {

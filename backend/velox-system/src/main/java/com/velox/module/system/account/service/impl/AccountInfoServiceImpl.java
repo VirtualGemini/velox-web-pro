@@ -18,6 +18,7 @@ import com.velox.module.system.auth.service.PasswordCipherService;
 import com.velox.module.system.auth.store.VerificationCodeStore;
 import com.velox.module.system.id.generator.SystemEntityIdGenerator;
 import com.velox.module.system.permission.service.PermissionService;
+import com.velox.module.system.common.enums.AccountStatusEnum;
 import com.velox.module.system.account.dto.AccountPasswordUpdateCommand;
 import com.velox.module.system.account.dto.AccountDeletionCommand;
 import com.velox.module.system.account.dto.AccountInfoBasicDTO;
@@ -339,7 +340,7 @@ public class AccountInfoServiceImpl implements AccountInfoService {
             }
         }
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-        user.setStatus(4);
+        user.setStatus(AccountStatusEnum.CANCELLED.getCode());
         user.setDeletionRequestedAt(now);
         user.setDeletionExpiresAt(now.plusDays(14));
         user.setUpdateBy(currentOperator());
@@ -360,7 +361,7 @@ public class AccountInfoServiceImpl implements AccountInfoService {
         if (!Objects.equals(user.getUsername(), normalizeNullable(command.getUsername()))) {
             throw new ApiException(BusinessErrorCode.ACCOUNT_RECOVERY_USERNAME_MISMATCH);
         }
-        user.setStatus(1);
+        user.setStatus(AccountStatusEnum.ENABLED.getCode());
         user.setDeletionRequestedAt(null);
         user.setDeletionExpiresAt(null);
         user.setUpdateBy(currentOperator());
@@ -566,7 +567,7 @@ public class AccountInfoServiceImpl implements AccountInfoService {
     }
 
     private boolean isPendingDeletion(Account user) {
-        if (user == null || !Integer.valueOf(4).equals(user.getStatus())) {
+        if (user == null || !Integer.valueOf(AccountStatusEnum.CANCELLED.getCode()).equals(user.getStatus())) {
             return false;
         }
         return user.getDeletionExpiresAt() != null

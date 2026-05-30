@@ -4,6 +4,7 @@ public class AccountListItemDTO {
     private String accountId;
     private String avatar;
     private String status;
+    private String activeStatus;
     private String username;
     private String email;
     private String remark;
@@ -32,6 +33,14 @@ public class AccountListItemDTO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getActiveStatus() {
+        return activeStatus;
+    }
+
+    public void setActiveStatus(String activeStatus) {
+        this.activeStatus = activeStatus;
     }
 
     public String getUsername() {

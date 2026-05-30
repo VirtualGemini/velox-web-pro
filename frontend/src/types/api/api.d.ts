@@ -238,6 +238,7 @@ declare namespace Api {
       accountId: string
       avatar: string
       status: string
+      activeStatus: string
       username: string
       email: string
       remark: string
@@ -252,6 +253,7 @@ declare namespace Api {
         nickname?: string
         realName?: string
         status: string
+        activeStatus: string
         remark?: string
         roleCodes: string[]
         createTime?: string
@@ -275,6 +277,7 @@ declare namespace Api {
         username: string
         remark?: string
         status: string
+        activeStatus: string
         pendingDeletion: boolean
         deletionRequestedAt?: string
         deletionExpiresAt?: string
@@ -287,6 +290,8 @@ declare namespace Api {
         emailMfaEnabled: boolean
         totpMfaEnabled: boolean
         loginMethods: string[]
+        disabledLoginMethods: string[]
+        allowedLoginMethods: string[]
         emailVerifiedAt?: string
         lastPasswordChangeAt?: string
       }
@@ -294,12 +299,13 @@ declare namespace Api {
         key: string
         name: string
         bound: boolean
+        disabled: boolean
       }>
     }
 
     /** 账号搜索参数 */
     type AccountSearchParams = Partial<
-      Pick<AccountListItem, 'username' | 'email' | 'remark' | 'status'> &
+      Pick<AccountListItem, 'username' | 'email' | 'remark' | 'status' | 'activeStatus'> &
         Api.Common.CommonSearchParams & {
           createTimeStart: string | null
           createTimeEnd: string | null
@@ -313,6 +319,50 @@ declare namespace Api {
       password?: string
       remark?: string
       roleCodes: string[]
+      /** 账号状态(1-启用 2-禁用 3-异常 4-注销)，仅编辑生效 */
+      accountStatus?: number
+    }
+
+    /** 管理员编辑账号资料命令（含头像，全部可选） */
+    interface AdminProfileUpdateCommand {
+      realName?: string
+      nickname?: string
+      email?: string
+      phone?: string
+      address?: string
+      gender?: number
+      introduction?: string
+      signature?: string
+      position?: string
+      company?: string
+      avatar?: string
+      tags?: string[]
+    }
+
+    /** 管理员重置密码命令 */
+    interface AdminPasswordResetCommand {
+      newPassword: string
+    }
+
+    /** 管理员设置/清除安全邮箱命令（email 为空表示清除） */
+    interface AdminSecurityEmailCommand {
+      email?: string
+    }
+
+    /** 管理员开启/关闭邮箱二次验证命令 */
+    interface AdminMfaEmailCommand {
+      enabled: boolean
+    }
+
+    /** 管理员设置登录方式命令 */
+    interface AdminLoginMethodsCommand {
+      enabledMethods: string[]
+      disabledMethods: string[]
+    }
+
+    /** 管理员开启/禁用第三方渠道命令 */
+    interface AdminOauthChannelCommand {
+      disabled: boolean
     }
 
     /** 角色列表 */

@@ -5,7 +5,9 @@
     :size="drawerSize"
     destroy-on-close
     append-to-body
+    modal-class="account-drawer-modal"
     class="account-detail-drawer"
+    @opened="tabTransitionReady = true"
   >
     <template v-if="detail">
       <div class="account-detail-page">
@@ -24,6 +26,9 @@
               <div class="hero-title-row">
                 <h1 class="hero-title">{{ detail.header.username }}</h1>
                 <ElTag :type="statusTag.type">{{ t(statusTag.textKey) }}</ElTag>
+                <ElTag :type="activeStatusTag.type" effect="plain">
+                  {{ t(activeStatusTag.textKey) }}
+                </ElTag>
               </div>
               <p class="hero-subtitle">
                 {{ detail.header.nickname || detail.header.realName || '-' }}
@@ -113,7 +118,7 @@
           <ElTabs
             v-model="activeTab"
             class="detail-tabs tab-scroll-tabs"
-            :class="{ 'is-dragging': detailTabsDrag.isDragging.value }"
+            :class="{ 'is-dragging': detailTabsDrag.isDragging.value, 'tabs-no-anim': !tabTransitionReady }"
           >
             <ElTabPane
               :label="t('pages.system.account.detailCard.sections.profile')"
@@ -256,6 +261,9 @@
   const { t } = useI18n()
   const { width } = useWindowSize()
   const activeTab = ref('profile')
+  // tab 切换动画开关：抽屉滑入期间关闭（避免上次选中 tab 颜色渐变重放造成“闪一下”），
+  // 抽屉完全打开后(@opened)再开启，正常点击切换仍有过渡。
+  const tabTransitionReady = ref(false)
   const roleListRef = ref<HTMLElement>()
   const roleListScrollable = ref(false)
   const canScrollRoleLeft = ref(false)
@@ -278,6 +286,17 @@
     get: () => props.visible,
     set: (value) => emit('update:visible', value)
   })
+
+  // 关闭时即把 tab 复位到第一个，并关闭切换动画；下次打开滑入期间不会重放上次选中 tab 的颜色渐变。
+  watch(
+    () => props.visible,
+    (visible) => {
+      if (!visible) {
+        activeTab.value = 'profile'
+        tabTransitionReady.value = false
+      }
+    }
+  )
 
   const updateRoleScrollState = () => {
     const roleList = roleListRef.value
@@ -368,10 +387,10 @@
 
   const statusTag = computed(() => {
     const map = {
-      '1': { type: 'success' as const, textKey: 'pages.system.account.status.online' },
-      '2': { type: 'info' as const, textKey: 'pages.system.account.status.offline' },
+      '1': { type: 'success' as const, textKey: 'pages.system.account.status.enabled' },
+      '2': { type: 'info' as const, textKey: 'pages.system.account.status.disabled' },
       '3': { type: 'warning' as const, textKey: 'pages.system.account.status.abnormal' },
-      '4': { type: 'danger' as const, textKey: 'pages.system.account.status.revoked' }
+      '4': { type: 'danger' as const, textKey: 'pages.system.account.status.cancelled' }
     }
     return (
       map[props.detail?.header?.status as keyof typeof map] || {
@@ -380,6 +399,12 @@
       }
     )
   })
+
+  const activeStatusTag = computed(() =>
+    props.detail?.header?.activeStatus === '1'
+      ? { type: 'success' as const, textKey: 'pages.system.account.activeStatus.online' }
+      : { type: 'info' as const, textKey: 'pages.system.account.activeStatus.offline' }
+  )
 
   const resolveGender = (gender?: number) => {
     if (gender === 1) return t('pages.system.account.detailCard.gender.male')
@@ -497,6 +522,10 @@
       {
         label: t('pages.system.account.detailCard.account.status'),
         value: t(statusTag.value.textKey)
+      },
+      {
+        label: t('pages.system.account.detailCard.account.activeStatus'),
+        value: t(activeStatusTag.value.textKey)
       },
       {
         label: t('pages.system.account.detailCard.account.pendingDeletion'),
@@ -796,6 +825,10 @@
 
   .detail-tabs :deep(.el-tabs__header) {
     margin-bottom: 2px;
+  }
+
+  .tabs-no-anim :deep(.el-tabs__item) {
+    transition: none !important;
   }
 
   .provider-row {

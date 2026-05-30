@@ -104,6 +104,8 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
         AccountSecurity security = getOrInitSecurity(user);
 
         List<String> allowed = new ArrayList<>(accountSecurityProperties.getLoginMethods().getEnabled());
+        List<String> disabled = parseLoginMethods(security.getDisabledLoginMethods());
+        allowed.removeAll(disabled);
 
         List<String> stored = parseLoginMethods(security.getLoginMethods());
         if (stored.isEmpty()) {
@@ -392,6 +394,12 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
             }
         }
         AccountSecurity security = getOrInitSecurity(user);
+        List<String> disabled = parseLoginMethods(security.getDisabledLoginMethods());
+        for (String method : dedup) {
+            if (disabled.contains(method)) {
+                throw new ApiException(BusinessErrorCode.LOGIN_METHOD_NOT_ALLOWED);
+            }
+        }
         security.setLoginMethods(String.join(",", dedup));
         security.setUpdateBy(userId);
         saveSecurity(security);

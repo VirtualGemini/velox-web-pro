@@ -14,6 +14,7 @@
     email?: string
     remark?: string
     status?: string
+    activeStatus?: string
     createTimeRange?: [string, string]
     updateTimeRange?: [string, string]
   }
@@ -38,10 +39,15 @@
   })
 
   const statusOptions = [
-    { label: 'pages.system.account.status.online', value: '1' },
-    { label: 'pages.system.account.status.offline', value: '2' },
+    { label: 'pages.system.account.status.enabled', value: '1' },
+    { label: 'pages.system.account.status.disabled', value: '2' },
     { label: 'pages.system.account.status.abnormal', value: '3' },
-    { label: 'pages.system.account.status.revoked', value: '4' }
+    { label: 'pages.system.account.status.cancelled', value: '4' }
+  ]
+
+  const activeStatusOptions = [
+    { label: 'pages.system.account.activeStatus.online', value: '1' },
+    { label: 'pages.system.account.activeStatus.offline', value: '2' }
   ]
 
   const formItems = computed(() => [
@@ -58,11 +64,19 @@
       clearable: true
     },
     {
-      label: 'pages.system.account.search.status',
+      label: 'pages.system.account.search.accountStatus',
       key: 'status',
       type: 'select',
       props: {
         options: statusOptions
+      }
+    },
+    {
+      label: 'pages.system.account.search.activeStatus',
+      key: 'activeStatus',
+      type: 'select',
+      props: {
+        options: activeStatusOptions
       }
     },
     {
@@ -110,6 +124,7 @@
       email: params.email,
       remark: params.remark,
       status: params.status,
+      activeStatus: params.activeStatus,
       createTimeStart: params.createTimeRange?.[0],
       createTimeEnd: params.createTimeRange?.[1],
       updateTimeStart: params.updateTimeRange?.[0],

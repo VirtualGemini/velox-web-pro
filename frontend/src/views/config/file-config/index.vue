@@ -62,6 +62,7 @@
       align-center
       class="file-config-dialog"
       @close="handleDialogClose"
+      @closed="handleDialogClosed"
     >
       <ElForm
         ref="formRef"
@@ -221,6 +222,7 @@
                   v-model="formModel.password"
                   type="password"
                   show-password
+                  autocomplete="new-password"
                   :placeholder="t('pages.config.fileConfig.form.placeholders.password')"
                 />
               </ElFormItem>
@@ -332,6 +334,7 @@
                   v-model="formModel.password"
                   type="password"
                   show-password
+                  autocomplete="new-password"
                   :placeholder="t('pages.config.fileConfig.form.placeholders.password')"
                 />
               </ElFormItem>
@@ -409,6 +412,7 @@
                   v-model="formModel.accessKey"
                   type="password"
                   show-password
+                  autocomplete="new-password"
                   :placeholder="t('pages.config.fileConfig.form.placeholders.accessKey')"
                 />
               </ElFormItem>
@@ -425,6 +429,7 @@
                   v-model="formModel.accessSecret"
                   type="password"
                   show-password
+                  autocomplete="new-password"
                   :placeholder="t('pages.config.fileConfig.form.placeholders.accessSecret')"
                 />
               </ElFormItem>
@@ -455,6 +460,7 @@
                   v-model="formModel.sessionToken"
                   type="password"
                   show-password
+                  autocomplete="new-password"
                   :placeholder="t('pages.config.fileConfig.form.placeholders.sessionToken')"
                 />
               </ElFormItem>
@@ -532,7 +538,7 @@
 
       <template #footer>
         <ElButton @click="handleDialogClose">{{ t('common.cancel') }}</ElButton>
-        <ElButton type="primary" :loading="submitLoading" @click="handleSubmit">
+        <ElButton type="primary" @click="handleSubmit">
           {{ t('table.form.submit') }}
         </ElButton>
       </template>
@@ -1174,6 +1180,10 @@
   function handleDialogClose() {
     dialogVisible.value = false
     submitLoading.value = false
+  }
+
+  // 关闭动画结束后再重置表单，避免关闭过程中清空内容导致闪烁（取消已输入内容的新增表单同理）。
+  function handleDialogClosed() {
     formRef.value?.resetFields()
     fillForm()
   }

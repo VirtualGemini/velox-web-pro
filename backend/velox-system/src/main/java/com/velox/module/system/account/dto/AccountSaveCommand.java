@@ -21,6 +21,9 @@ public class AccountSaveCommand {
     @NotEmpty(message = "{validation.system.user.save.role_codes.not_empty}")
     private List<String> roleCodes;
 
+    /** 账号状态(1-启用 2-禁用 3-异常 4-注销)，仅编辑时生效，新增忽略并默认启用 */
+    private Integer accountStatus;
+
     public String getUsername() {
         return username;
     }
@@ -51,5 +54,13 @@ public class AccountSaveCommand {
 
     public void setRoleCodes(List<String> roleCodes) {
         this.roleCodes = roleCodes;
+    }
+
+    public Integer getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void setAccountStatus(Integer accountStatus) {
+        this.accountStatus = accountStatus;
     }
 }

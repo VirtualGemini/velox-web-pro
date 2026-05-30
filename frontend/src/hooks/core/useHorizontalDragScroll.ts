@@ -51,7 +51,10 @@ export function useHorizontalDragScroll() {
     state.moved = false
     state.onScroll = onScroll
 
-    state.captureTarget?.setPointerCapture?.(event.pointerId)
+    // 关键：不要在 pointerdown 时就调用 setPointerCapture。一旦捕获指针，
+    // 后续派发的 click 事件会被重定向到捕获元素（这里是外层 shell），
+    // 导致点击 tab 标签时 ElTabs 收不到 click、无法切换（仅在可横向滚动/窄屏时出现）。
+    // 改为在 moveDrag 中确认越过拖拽阈值后再捕获，纯点击（未移动）便能正常落到 tab 上。
   }
 
   const moveDrag = (event: PointerEvent) => {
@@ -59,6 +62,10 @@ export function useHorizontalDragScroll() {
 
     const deltaX = event.clientX - state.startX
     if (Math.abs(deltaX) > DRAG_THRESHOLD) {
+      if (!state.moved) {
+        // 真正进入拖拽后再捕获指针，确保指针移出元素也能持续滚动
+        state.captureTarget?.setPointerCapture?.(event.pointerId)
+      }
       state.moved = true
       isDragging.value = true
     }
@@ -73,8 +80,9 @@ export function useHorizontalDragScroll() {
   const endDrag = (event: PointerEvent) => {
     if (state.pointerId !== event.pointerId) return
 
-    state.captureTarget?.releasePointerCapture?.(event.pointerId)
     if (state.moved) {
+      // 仅在确实捕获过（发生拖拽）时释放，避免对未捕获的指针调用 releasePointerCapture 抛错
+      state.captureTarget?.releasePointerCapture?.(event.pointerId)
       shouldSuppressClick.value = true
       window.setTimeout(() => {
         shouldSuppressClick.value = false

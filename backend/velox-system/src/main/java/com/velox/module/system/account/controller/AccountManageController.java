@@ -7,6 +7,7 @@ import com.velox.module.system.account.dto.AccountDetailCardDTO;
 import com.velox.module.system.account.dto.AccountListItemDTO;
 import com.velox.module.system.account.dto.AccountQuery;
 import com.velox.module.system.account.dto.AccountSaveCommand;
+import com.velox.module.system.account.dto.AdminProfileUpdateCommand;
 import com.velox.module.system.account.service.AccountManageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -69,6 +70,13 @@ public class AccountManageController {
         return Result.ok(accountManageService.update(accountId, command));
     }
 
+    @Operation(summary = "openapi.system.account.manage.update_profile.summary")
+    @RequirePermission("system:account:update")
+    @PutMapping("/{accountId}/profile")
+    public Result<Boolean> updateProfile(@PathVariable("accountId") String accountId, @Valid @RequestBody AdminProfileUpdateCommand command) {
+        return Result.ok(accountManageService.updateProfile(accountId, command));
+    }
+
     @Operation(summary = "openapi.system.account.manage.delete.summary")
     @RequirePermission("system:account:delete")
     @DeleteMapping("/{accountId}")
@@ -81,5 +89,12 @@ public class AccountManageController {
     @DeleteMapping("/delete-batch")
     public Result<Boolean> deleteBatch(@RequestParam("ids") List<String> ids) {
         return Result.ok(accountManageService.deleteBatch(ids));
+    }
+
+    @Operation(summary = "openapi.system.account.manage.cancel_batch.summary")
+    @RequirePermission("system:account:update")
+    @PutMapping("/cancel-batch")
+    public Result<Boolean> cancelBatch(@RequestParam("ids") List<String> ids) {
+        return Result.ok(accountManageService.cancelBatch(ids));
     }
 }

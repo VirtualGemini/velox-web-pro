@@ -30,6 +30,17 @@
             >
               {{ t('common.batchDelete') }}
             </ElButton>
+            <ElButton
+              v-if="hasAuth('system:account:update')"
+              class="velox-batch-cancel"
+              type="warning"
+              plain
+              :disabled="selectedRows.length === 0"
+              @click="handleBatchCancel"
+              v-ripple
+            >
+              {{ t('common.batchCancel') }}
+            </ElButton>
           </ElSpace>
         </template>
       </VeloxTableHeader>
@@ -50,8 +61,14 @@
         :type="dialogType"
         :account-data="currentAccountData"
         @submit="handleDialogSubmit"
+        @closed="currentAccountData = {}"
       />
       <AccountDetailDrawer v-model:visible="detailVisible" :detail="currentAccountDetail" />
+      <AccountEditDrawer
+        v-model:visible="editVisible"
+        :detail="currentAccountDetail"
+        @saved="refreshData"
+      />
     </ElCard>
   </div>
 </template>
@@ -61,6 +78,7 @@
   import { useTable } from '@/hooks/core/useTable'
   import { useAuth } from '@/hooks/core/useAuth'
   import {
+    fetchBatchCancelAccount,
     fetchBatchDeleteAccount,
     fetchCreateAccount,
     fetchDeleteAccount,
@@ -71,9 +89,11 @@
   import AccountSearch from './modules/user-search.vue'
   import AccountDialog from './modules/user-dialog.vue'
   import AccountDetailDrawer from './modules/account-detail-drawer.vue'
+  import AccountEditDrawer from './modules/account-edit-drawer.vue'
   import { ElTag, ElMessageBox, ElImage } from 'element-plus'
   import { DialogType } from '@/types'
   import { useI18n } from 'vue-i18n'
+  import { useUserStore } from '@/store/modules/user'
 
   defineOptions({ name: 'Account' })
 
@@ -81,11 +101,13 @@
 
   const { hasAuth } = useAuth()
   const { t } = useI18n()
+  const userStore = useUserStore()
 
   const dialogType = ref<DialogType>('add')
   const dialogVisible = ref(false)
   const currentAccountData = ref<Partial<AccountListItem>>({})
   const detailVisible = ref(false)
+  const editVisible = ref(false)
   const currentAccountDetail = ref<Api.SystemManage.AccountDetailCard>()
   const veloxTableRef = ref()
   const selectedRows = ref<AccountListItem[]>([])
@@ -96,15 +118,16 @@
     email: undefined,
     remark: undefined,
     status: undefined,
+    activeStatus: undefined,
     createTimeRange: undefined as [string, string] | undefined,
     updateTimeRange: undefined as [string, string] | undefined
   })
 
   const ACCOUNT_STATUS_CONFIG = {
-    '1': { type: 'success' as const, textKey: 'pages.system.account.status.online' },
-    '2': { type: 'info' as const, textKey: 'pages.system.account.status.offline' },
+    '1': { type: 'success' as const, textKey: 'pages.system.account.status.enabled' },
+    '2': { type: 'info' as const, textKey: 'pages.system.account.status.disabled' },
     '3': { type: 'warning' as const, textKey: 'pages.system.account.status.abnormal' },
-    '4': { type: 'danger' as const, textKey: 'pages.system.account.status.revoked' }
+    '4': { type: 'danger' as const, textKey: 'pages.system.account.status.cancelled' }
   } as const
 
   const getAccountStatusConfig = (status: string) =>
@@ -112,6 +135,11 @@
       type: 'info' as const,
       textKey: 'common.status.unknown'
     }
+
+  const getActiveStatusConfig = (activeStatus: string) =>
+    activeStatus === '1'
+      ? { type: 'success' as const, textKey: 'pages.system.account.activeStatus.online' }
+      : { type: 'info' as const, textKey: 'pages.system.account.activeStatus.offline' }
 
   const {
     columns,
@@ -156,11 +184,22 @@
         },
         {
           prop: 'status',
-          label: 'pages.system.account.columns.status',
-          minWidth: 132,
+          label: 'pages.system.account.columns.accountStatus',
+          minWidth: 120,
           formatter: (row: AccountListItem) => {
             const statusConfig = getAccountStatusConfig(row.status)
             return h(ElTag, { type: statusConfig.type }, () => t(statusConfig.textKey))
+          }
+        },
+        {
+          prop: 'activeStatus',
+          label: 'pages.system.account.columns.activeStatus',
+          minWidth: 110,
+          formatter: (row: AccountListItem) => {
+            const activeConfig = getActiveStatusConfig(row.activeStatus)
+            return h(ElTag, { type: activeConfig.type, effect: 'plain' }, () =>
+              t(activeConfig.textKey)
+            )
           }
         },
         {
@@ -200,7 +239,7 @@
                 hasAuth('system:account:update')
                   ? h(VeloxButtonTable, {
                       type: 'edit',
-                      onClick: () => showDialog('edit', row)
+                      onClick: () => showEdit(row)
                     })
                   : null,
                 hasAuth('system:account:delete')
@@ -238,7 +277,39 @@
     }
   }
 
+  const showEdit = async (row: AccountListItem) => {
+    try {
+      currentAccountDetail.value = await fetchGetAccountDetailCard(row.accountId)
+      editVisible.value = true
+    } catch (error) {
+      console.error('获取账号详情失败:', error)
+    }
+  }
+
+  // 当前登录账号 ID：用于禁止对自己执行删除/注销。后端同样会拦截（USER_OPERATE_SELF_FORBIDDEN），
+  // 这里前置拦截，给出更友好的弹窗引导，而不是生硬的错误提示。
+  const isSelf = (accountId?: string): boolean => {
+    const selfId = String(userStore.info?.accountId ?? '')
+    return !!selfId && String(accountId ?? '') === selfId
+  }
+
+  // 操作到自己时，用弹窗说明不能在账号管理删除/注销当前登录账号，并引导前往「账号中心 - 账号设置」自助注销。
+  const showSelfRestrictedDialog = (action: 'delete' | 'cancel'): void => {
+    ElMessageBox.alert(
+      t(`pages.system.account.messages.selfRestricted.${action}Content`),
+      t('pages.system.account.messages.selfRestricted.title'),
+      {
+        confirmButtonText: t('pages.system.account.messages.selfRestricted.gotIt'),
+        type: 'warning'
+      }
+    ).catch(() => {})
+  }
+
   const deleteAccount = (row: AccountListItem): void => {
+    if (isSelf(row.accountId)) {
+      showSelfRestrictedDialog('delete')
+      return
+    }
     ElMessageBox.confirm(
       t('pages.system.account.messages.confirmDelete'),
       t('pages.system.account.messages.deleteTitle'),
@@ -247,11 +318,13 @@
         cancelButtonText: t('common.cancel'),
         type: 'error'
       }
-    ).then(async () => {
-      await fetchDeleteAccount(row.accountId)
-      ElMessage.success(t('pages.system.account.messages.deleteSuccess'))
-      refreshData()
-    })
+    )
+      .then(async () => {
+        await fetchDeleteAccount(row.accountId)
+        ElMessage.success(t('pages.system.account.messages.deleteSuccess'))
+        refreshData()
+      })
+      .catch(() => {})
   }
 
   const handleDialogSubmit = async (payload: Api.SystemManage.AccountSaveCommand) => {
@@ -264,7 +337,7 @@
         ElMessage.success(t('pages.system.account.messages.updateSuccess'))
       }
       dialogVisible.value = false
-      currentAccountData.value = {}
+      // currentAccountData 在 @closed 事件中清空，避免关闭动画期间表单闪烁
       refreshData()
     } catch (error) {
       console.error('提交失败:', error)
@@ -280,6 +353,10 @@
       ElMessage.warning(t('common.batchDeleteEmpty'))
       return
     }
+    if (selectedRows.value.some((row) => isSelf(row.accountId))) {
+      showSelfRestrictedDialog('delete')
+      return
+    }
     ElMessageBox.confirm(
       t('common.batchDeleteConfirm', { count: selectedRows.value.length }),
       t('common.batchDeleteTitle'),
@@ -288,13 +365,43 @@
         cancelButtonText: t('common.cancel'),
         type: 'warning'
       }
-    ).then(async () => {
-      await fetchBatchDeleteAccount(selectedRows.value.map((row) => row.accountId))
-      ElMessage.success(t('common.batchDeleteSuccess'))
-      veloxTableRef.value?.elTableRef?.clearSelection()
-      selectedRows.value = []
-      refreshData()
-    })
+    )
+      .then(async () => {
+        await fetchBatchDeleteAccount(selectedRows.value.map((row) => row.accountId))
+        ElMessage.success(t('common.batchDeleteSuccess'))
+        veloxTableRef.value?.elTableRef?.clearSelection()
+        selectedRows.value = []
+        refreshData()
+      })
+      .catch(() => {})
+  }
+
+  const handleBatchCancel = (): void => {
+    if (selectedRows.value.length === 0) {
+      ElMessage.warning(t('common.batchCancelEmpty'))
+      return
+    }
+    if (selectedRows.value.some((row) => isSelf(row.accountId))) {
+      showSelfRestrictedDialog('cancel')
+      return
+    }
+    ElMessageBox.confirm(
+      t('common.batchCancelConfirm', { count: selectedRows.value.length }),
+      t('common.batchCancelTitle'),
+      {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
+        type: 'warning'
+      }
+    )
+      .then(async () => {
+        await fetchBatchCancelAccount(selectedRows.value.map((row) => row.accountId))
+        ElMessage.success(t('common.batchCancelSuccess'))
+        veloxTableRef.value?.elTableRef?.clearSelection()
+        selectedRows.value = []
+        refreshData()
+      })
+      .catch(() => {})
   }
 </script>
 

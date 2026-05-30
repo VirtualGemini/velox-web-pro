@@ -423,6 +423,8 @@ CREATE TABLE sys_account_security (
   account_id bigint NOT NULL REFERENCES sys_account (id),
   email varchar(100),
   login_methods varchar(128) DEFAULT 'password',
+  disabled_login_methods varchar(128),
+  disabled_oauth_channels varchar(255),
   mfa_email_enabled smallint DEFAULT 0,
   mfa_totp_enabled smallint DEFAULT 0,
   mfa_totp_secret varchar(64),

@@ -38,7 +38,7 @@ import { headerBarConfig } from './modules/headerBar'
 const appConfig: SystemConfig = {
   // 系统信息
   systemInfo: {
-    name: 'Velox Web' // 系统名称
+    name: 'Velox Web Pro' // 系统名称
   },
   // 系统主题
   systemThemeStyles: {

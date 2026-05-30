@@ -59,5 +59,6 @@ html {
 
 // body 相关样式
 body {
-  background-color: var(--bg-animation-color);
+  // 让 body 底色与页面一致（亮色 #fafbfc / 暗色 #070707），作为任意图层透明时露白的兜底防御样式。
+  background-color: var(--default-bg-color);
 }

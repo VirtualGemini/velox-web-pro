@@ -25,6 +25,7 @@ import com.velox.module.system.auth.service.LoginService;
 import com.velox.module.system.auth.service.PasswordCipherService;
 import com.velox.module.system.auth.status.ActiveUserStatusService;
 import com.velox.module.system.auth.store.VerificationCodeStore;
+import com.velox.module.system.common.enums.AccountStatusEnum;
 import com.velox.module.system.domain.model.Profile;
 import com.velox.module.system.domain.model.Role;
 import com.velox.module.system.domain.model.Account;
@@ -152,7 +153,7 @@ public class LoginServiceImpl implements LoginService {
             return issuePendingDeletionToken(user);
         }
 
-        if (Integer.valueOf(4).equals(user.getStatus())) {
+        if (AccountStatusEnum.isLoginBlocked(user.getStatus())) {
             throw new ApiException(BusinessErrorCode.ACCOUNT_DISABLED);
         }
 
@@ -191,7 +192,7 @@ public class LoginServiceImpl implements LoginService {
         user.setId(entityIdGenerator.nextId(Account.class));
         user.setUsername(command.getUsername());
         user.setPassword(passwordCipherService.encode(command.getPassword()));
-        user.setStatus(1);
+        user.setStatus(AccountStatusEnum.ENABLED.getCode());
         user.setLoginFailCount(0);
         user.setDeleted(0);
 
@@ -386,7 +387,7 @@ public class LoginServiceImpl implements LoginService {
             return issuePendingDeletionToken(user);
         }
 
-        if (Integer.valueOf(4).equals(user.getStatus())) {
+        if (AccountStatusEnum.isLoginBlocked(user.getStatus())) {
             throw new ApiException(BusinessErrorCode.ACCOUNT_DISABLED);
         }
 
@@ -612,7 +613,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     private boolean isPendingDeletion(Account user) {
-        if (user == null || !Integer.valueOf(4).equals(user.getStatus())) {
+        if (user == null || !Integer.valueOf(AccountStatusEnum.CANCELLED.getCode()).equals(user.getStatus())) {
             return false;
         }
         LocalDateTime expiresAt = user.getDeletionExpiresAt();
@@ -638,6 +639,10 @@ public class LoginServiceImpl implements LoginService {
     private void ensureLoginMethodAllowed(AccountSecurity security, String method) {
         List<String> enabled = accountSecurityProperties.getLoginMethods().getEnabled();
         if (enabled == null || !enabled.contains(method)) {
+            throw new ApiException(BusinessErrorCode.LOGIN_METHOD_DISABLED);
+        }
+        List<String> disabled = parseLoginMethods(security.getDisabledLoginMethods());
+        if (disabled.contains(method)) {
             throw new ApiException(BusinessErrorCode.LOGIN_METHOD_DISABLED);
         }
         List<String> stored = parseLoginMethods(security.getLoginMethods());

@@ -60,6 +60,7 @@ public class AccountDetailCardDTO {
         private String nickname;
         private String realName;
         private String status;
+        private String activeStatus;
         private String remark;
         private List<String> roleCodes;
         private String createTime;
@@ -103,6 +104,14 @@ public class AccountDetailCardDTO {
 
         public void setStatus(String status) {
             this.status = status;
+        }
+
+        public String getActiveStatus() {
+            return activeStatus;
+        }
+
+        public void setActiveStatus(String activeStatus) {
+            this.activeStatus = activeStatus;
         }
 
         public String getRemark() {
@@ -245,6 +254,7 @@ public class AccountDetailCardDTO {
         private String username;
         private String remark;
         private String status;
+        private String activeStatus;
         private Boolean pendingDeletion;
         private String deletionRequestedAt;
         private String deletionExpiresAt;
@@ -282,6 +292,14 @@ public class AccountDetailCardDTO {
 
         public void setStatus(String status) {
             this.status = status;
+        }
+
+        public String getActiveStatus() {
+            return activeStatus;
+        }
+
+        public void setActiveStatus(String activeStatus) {
+            this.activeStatus = activeStatus;
         }
 
         public Boolean getPendingDeletion() {
@@ -338,6 +356,8 @@ public class AccountDetailCardDTO {
         private Boolean emailMfaEnabled;
         private Boolean totpMfaEnabled;
         private List<String> loginMethods;
+        private List<String> disabledLoginMethods;
+        private List<String> allowedLoginMethods;
         private String emailVerifiedAt;
         private String lastPasswordChangeAt;
 
@@ -373,6 +393,22 @@ public class AccountDetailCardDTO {
             this.loginMethods = loginMethods;
         }
 
+        public List<String> getDisabledLoginMethods() {
+            return disabledLoginMethods;
+        }
+
+        public void setDisabledLoginMethods(List<String> disabledLoginMethods) {
+            this.disabledLoginMethods = disabledLoginMethods;
+        }
+
+        public List<String> getAllowedLoginMethods() {
+            return allowedLoginMethods;
+        }
+
+        public void setAllowedLoginMethods(List<String> allowedLoginMethods) {
+            this.allowedLoginMethods = allowedLoginMethods;
+        }
+
         public String getEmailVerifiedAt() {
             return emailVerifiedAt;
         }
@@ -394,6 +430,7 @@ public class AccountDetailCardDTO {
         private String key;
         private String name;
         private Boolean bound;
+        private Boolean disabled;
 
         public String getKey() {
             return key;
@@ -417,6 +454,14 @@ public class AccountDetailCardDTO {
 
         public void setBound(Boolean bound) {
             this.bound = bound;
+        }
+
+        public Boolean getDisabled() {
+            return disabled;
+        }
+
+        public void setDisabled(Boolean disabled) {
+            this.disabled = disabled;
         }
     }
 }

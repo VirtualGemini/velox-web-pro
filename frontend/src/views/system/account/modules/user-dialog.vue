@@ -8,6 +8,7 @@
     "
     width="520px"
     align-center
+    @closed="emit('closed')"
   >
     <ElForm ref="formRef" :model="formData" :rules="rules" label-width="92px">
       <ElFormItem :label="t('pages.system.account.dialog.fields.username')" prop="username">
@@ -21,6 +22,7 @@
           v-model="formData.password"
           type="password"
           show-password
+          autocomplete="new-password"
           :placeholder="
             dialogType === 'add'
               ? t('pages.system.account.dialog.placeholders.initialPassword')
@@ -74,6 +76,7 @@
   interface Emits {
     (e: 'update:visible', value: boolean): void
     (e: 'submit', value: Api.SystemManage.AccountSaveCommand): void
+    (e: 'closed'): void
   }
 
   const props = defineProps<Props>()
@@ -97,7 +100,7 @@
     roleCodes: [] as string[]
   })
 
-  const rules: FormRules = {
+  const rules = computed<FormRules>(() => ({
     username: [
       {
         required: true,
@@ -111,22 +114,29 @@
         trigger: 'blur'
       }
     ],
-    password: [
-      {
-        validator: (_rule, value, callback) => {
-          if (dialogType.value === 'add' && !value) {
-            callback(new Error(t('pages.system.account.dialog.validation.passwordRequired')))
-            return
-          }
-          if (value && (value.length < 6 || value.length > 32)) {
-            callback(new Error(t('pages.system.account.dialog.validation.passwordLength')))
-            return
-          }
-          callback()
-        },
-        trigger: 'blur'
-      }
-    ],
+    password:
+      dialogType.value === 'add'
+        ? [
+            {
+              required: true,
+              message: t('pages.system.account.dialog.validation.passwordRequired'),
+              trigger: 'blur'
+            },
+            {
+              min: 6,
+              max: 32,
+              message: t('pages.system.account.dialog.validation.passwordLength'),
+              trigger: 'blur'
+            }
+          ]
+        : [
+            {
+              min: 6,
+              max: 32,
+              message: t('pages.system.account.dialog.validation.passwordLength'),
+              trigger: 'blur'
+            }
+          ],
     remark: [
       {
         max: 255,
@@ -141,7 +151,7 @@
         trigger: 'change'
       }
     ]
-  }
+  }))
 
   const initFormData = () => {
     const isEdit = props.type === 'edit' && props.accountData

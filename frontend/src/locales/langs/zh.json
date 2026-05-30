@@ -43,6 +43,11 @@
     "batchDeleteConfirm": "确定删除选中的 {count} 项吗？此操作不可恢复！",
     "batchDeleteEmpty": "请先选择要删除的数据",
     "batchDeleteSuccess": "批量删除成功",
+    "batchCancel": "批量注销",
+    "batchCancelTitle": "批量注销确认",
+    "batchCancelConfirm": "确定注销选中的 {count} 个账号吗？注销后账号将无法登录，但仍会保留在列表中。",
+    "batchCancelEmpty": "请先选择要注销的账号",
+    "batchCancelSuccess": "批量注销成功",
     "logOutTips": "您是否要退出登录?",
     "iconPicker": {
       "title": "选择图标",
@@ -345,13 +350,17 @@
           "createTimeStart": "创建开始时间",
           "createTimeEnd": "创建结束时间",
           "updateTimeStart": "编辑开始时间",
-          "updateTimeEnd": "编辑结束时间"
+          "updateTimeEnd": "编辑结束时间",
+          "accountStatus": "账号状态",
+          "activeStatus": "活跃状态"
         },
         "columns": {
           "accountInfo": "账号信息",
           "email": "邮箱",
           "remark": "备注",
           "status": "状态",
+          "accountStatus": "账号状态",
+          "activeStatus": "活跃状态",
           "createTime": "创建时间",
           "updateTime": "编辑时间",
           "operation": "操作"
@@ -386,7 +395,8 @@
             "accountId": "账号ID",
             "username": "账号",
             "remark": "备注",
-            "status": "状态",
+            "status": "账号状态",
+            "activeStatus": "活跃状态",
             "pendingDeletion": "注销中",
             "deletionRequestedAt": "注销申请时间",
             "deletionExpiresAt": "冷静期截止时间",
@@ -423,7 +433,78 @@
           "online": "在线",
           "offline": "离线",
           "abnormal": "异常",
-          "revoked": "注销"
+          "revoked": "注销",
+          "enabled": "启用",
+          "disabled": "禁用",
+          "cancelled": "注销"
+        },
+        "activeStatus": {
+          "online": "在线",
+          "offline": "离线"
+        },
+        "editDrawer": {
+          "title": "编辑账号",
+          "save": "保存",
+          "tabs": {
+            "profile": "个人资料",
+            "account": "账号设置",
+            "security": "账号安全",
+            "thirdParty": "第三方登录",
+            "other": "其它"
+          },
+          "fields": {
+            "accountStatus": "账号状态"
+          },
+          "security": {
+            "password": {
+              "title": "登录密码",
+              "desc": "为该账号设置新的登录密码，保存后立即生效。",
+              "placeholder": "请输入新密码（6-32 位）",
+              "action": "重置密码"
+            },
+            "email": {
+              "title": "安全邮箱",
+              "desc": "用于接收通知与邮箱验证码登录，可直接更换或清除，无需验证。",
+              "placeholder": "请输入安全邮箱，留空并保存可清除",
+              "save": "保存",
+              "clear": "清除",
+              "clearConfirm": "清除安全邮箱后将同时关闭邮箱二次验证，确定继续吗？",
+              "clearConfirmTitle": "清除安全邮箱"
+            },
+            "emailMfa": {
+              "title": "邮箱二次验证",
+              "desc": "开启后该账号登录需额外校验邮箱验证码；未绑定安全邮箱或已开启 TOTP 时不可开启。"
+            },
+            "totp": {
+              "title": "TOTP 二次验证",
+              "desc": "管理员只能关闭该账号的 TOTP 动态口令，无法代为开启。",
+              "disableConfirm": "确定关闭该账号的 TOTP 二次验证吗？",
+              "disableConfirmTitle": "关闭 TOTP 二次验证"
+            },
+            "loginMethods": {
+              "title": "登录方式",
+              "desc": "开启或禁用该账号可用的登录方式，被禁用的方式该用户不可开启或使用，且至少保留一种。"
+            }
+          },
+          "thirdParty": {
+            "desc": "管理该账号的第三方登录渠道：可启用或禁用渠道，被禁用的渠道该用户不可开启或使用。",
+            "channelEnabled": "启用渠道",
+            "unbind": "解绑",
+            "unbindConfirm": "确定解绑该第三方登录渠道吗？",
+            "unbindConfirmTitle": "解绑第三方渠道"
+          },
+          "messages": {
+            "success": "保存成功",
+            "passwordReset": "密码已重置",
+            "passwordLength": "密码长度应在 6 到 32 个字符之间",
+            "emailUpdated": "安全邮箱已更新",
+            "emailCleared": "安全邮箱已清除",
+            "mfaUpdated": "邮箱二次验证已更新",
+            "totpDisabled": "TOTP 二次验证已关闭",
+            "loginMethodsUpdated": "登录方式已更新",
+            "channelUpdated": "渠道状态已更新",
+            "unbound": "已解绑"
+          }
         },
         "dialog": {
           "addTitle": "新增账号",
@@ -465,9 +546,15 @@
           "cannotEditAccount": "无权限修改该账号",
           "cannotDeleteSelf": "当前登录用户不能删除自己",
           "cannotDeleteAccount": "无权限删除该账号",
-          "confirmDelete": "确定要注销该账号吗？",
-          "deleteTitle": "注销账号",
-          "deleteSuccess": "注销成功",
+          "confirmDelete": "确定要删除该账号吗？此操作不可恢复！",
+          "deleteTitle": "删除账号",
+          "deleteSuccess": "删除成功",
+          "selfRestricted": {
+            "title": "无法操作当前账号",
+            "deleteContent": "无法通过账号管理删除当前登录的账号，可通过「账号中心 - 账号设置」注销当前账号。",
+            "cancelContent": "无法通过账号管理注销当前登录的账号，可通过「账号中心 - 账号设置」注销当前账号。",
+            "gotIt": "我知道了"
+          },
           "createSuccess": "添加成功",
           "updateSuccess": "更新成功"
         }
@@ -718,7 +805,13 @@
             "tags": "个人标签"
           },
           "placeholders": {
+            "realName": "请输入姓名",
             "sex": "请选择性别",
+            "nickname": "请输入昵称",
+            "email": "请输入邮箱",
+            "mobile": "请输入手机号码",
+            "address": "请输入地址",
+            "description": "请输入个人介绍",
             "signature": "请输入个性签名",
             "position": "请输入职位",
             "company": "请输入所在公司",

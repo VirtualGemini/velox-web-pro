@@ -1,5 +1,7 @@
 package com.velox.module.system.domain.model;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.velox.domain.model.BaseEntity;
 
@@ -13,16 +15,38 @@ public class AccountSecurity extends BaseEntity {
     /** 逗号分隔: password,email_code */
     private String loginMethods;
 
+    /**
+     * 管理员禁用的登录方式（逗号分隔），用户不可开启或使用。
+     * 需要支持清空为 NULL，故使用 ALWAYS 策略覆盖默认的 NOT_NULL（updateById 会跳过 null）。
+     */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private String disabledLoginMethods;
+
+    /**
+     * 管理员禁用的第三方登录渠道（逗号分隔），用户不可开启或使用。
+     * 同样需要支持清空为 NULL，使用 ALWAYS 策略。
+     */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private String disabledOauthChannels;
+
+    /** 安全邮箱，解绑时需要清空为 NULL，使用 ALWAYS 策略。 */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String email;
 
     private Integer mfaEmailEnabled;
 
     private Integer mfaTotpEnabled;
 
+    /** 关闭 TOTP 时需要清空密钥为 NULL，使用 ALWAYS 策略。 */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String mfaTotpSecret;
 
+    /** 关闭 TOTP 时需要清空恢复码为 NULL，使用 ALWAYS 策略。 */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String mfaTotpRecoveryCodes;
 
+    /** 邮箱验证时间，解绑邮箱时需要清空为 NULL，使用 ALWAYS 策略。 */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private LocalDateTime emailVerifiedAt;
 
     private LocalDateTime lastPasswordChangeAt;
@@ -41,6 +65,22 @@ public class AccountSecurity extends BaseEntity {
 
     public void setLoginMethods(String loginMethods) {
         this.loginMethods = loginMethods;
+    }
+
+    public String getDisabledLoginMethods() {
+        return disabledLoginMethods;
+    }
+
+    public void setDisabledLoginMethods(String disabledLoginMethods) {
+        this.disabledLoginMethods = disabledLoginMethods;
+    }
+
+    public String getDisabledOauthChannels() {
+        return disabledOauthChannels;
+    }
+
+    public void setDisabledOauthChannels(String disabledOauthChannels) {
+        this.disabledOauthChannels = disabledOauthChannels;
     }
 
     public String getEmail() {

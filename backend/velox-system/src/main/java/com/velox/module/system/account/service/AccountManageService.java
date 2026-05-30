@@ -5,6 +5,7 @@ import com.velox.module.system.account.dto.AccountDetailCardDTO;
 import com.velox.module.system.account.dto.AccountListItemDTO;
 import com.velox.module.system.account.dto.AccountQuery;
 import com.velox.module.system.account.dto.AccountSaveCommand;
+import com.velox.module.system.account.dto.AdminProfileUpdateCommand;
 
 import java.util.List;
 
@@ -18,7 +19,11 @@ public interface AccountManageService {
 
     Boolean update(String userId, AccountSaveCommand command);
 
+    Boolean updateProfile(String accountId, AdminProfileUpdateCommand command);
+
     Boolean delete(String userId);
 
     Boolean deleteBatch(List<String> accountIds);
+
+    Boolean cancelBatch(List<String> accountIds);
 }

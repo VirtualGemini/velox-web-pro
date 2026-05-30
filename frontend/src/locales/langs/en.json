@@ -43,6 +43,11 @@
     "batchDeleteConfirm": "Are you sure you want to delete the selected {count} item(s)? This action cannot be undone.",
     "batchDeleteEmpty": "Please select items to delete first",
     "batchDeleteSuccess": "Items deleted successfully",
+    "batchCancel": "Batch Cancel",
+    "batchCancelTitle": "Batch Cancellation Confirmation",
+    "batchCancelConfirm": "Are you sure you want to cancel the selected {count} account(s)? Cancelled accounts cannot log in but remain in the list.",
+    "batchCancelEmpty": "Please select accounts to cancel first",
+    "batchCancelSuccess": "Accounts cancelled successfully",
     "logOutTips": "Do you want to log out?",
     "iconPicker": {
       "title": "Select Icon",
@@ -345,13 +350,17 @@
           "createTimeStart": "Created From",
           "createTimeEnd": "Created To",
           "updateTimeStart": "Edited From",
-          "updateTimeEnd": "Edited To"
+          "updateTimeEnd": "Edited To",
+          "accountStatus": "Account Status",
+          "activeStatus": "Active Status"
         },
         "columns": {
           "accountInfo": "Account Info",
           "email": "Email",
           "remark": "Remark",
           "status": "Status",
+          "accountStatus": "Account Status",
+          "activeStatus": "Active Status",
           "createTime": "Created At",
           "updateTime": "Edited At",
           "operation": "Operation"
@@ -386,7 +395,8 @@
             "accountId": "Account ID",
             "username": "Username",
             "remark": "Remark",
-            "status": "Status",
+            "status": "Account Status",
+            "activeStatus": "Active Status",
             "pendingDeletion": "Pending Deletion",
             "deletionRequestedAt": "Deletion Requested At",
             "deletionExpiresAt": "Deletion Expires At",
@@ -423,7 +433,78 @@
           "online": "Online",
           "offline": "Offline",
           "abnormal": "Abnormal",
-          "revoked": "Revoked"
+          "revoked": "Revoked",
+          "enabled": "Enabled",
+          "disabled": "Disabled",
+          "cancelled": "Cancelled"
+        },
+        "activeStatus": {
+          "online": "Online",
+          "offline": "Offline"
+        },
+        "editDrawer": {
+          "title": "Edit Account",
+          "save": "Save",
+          "tabs": {
+            "profile": "Profile",
+            "account": "Account",
+            "security": "Security",
+            "thirdParty": "Third-party",
+            "other": "Other"
+          },
+          "fields": {
+            "accountStatus": "Account Status"
+          },
+          "security": {
+            "password": {
+              "title": "Login Password",
+              "desc": "Set a new login password for this account. It takes effect immediately after saving.",
+              "placeholder": "Enter a new password (6-32 chars)",
+              "action": "Reset Password"
+            },
+            "email": {
+              "title": "Security Email",
+              "desc": "Used for notifications and email-code login. You can replace or clear it without verification.",
+              "placeholder": "Enter security email; leave empty and save to clear",
+              "save": "Save",
+              "clear": "Clear",
+              "clearConfirm": "Clearing the security email will also disable email MFA. Continue?",
+              "clearConfirmTitle": "Clear Security Email"
+            },
+            "emailMfa": {
+              "title": "Email MFA",
+              "desc": "When enabled, login requires an email code. It cannot be enabled without a security email or while TOTP is on."
+            },
+            "totp": {
+              "title": "TOTP MFA",
+              "desc": "An admin can only turn off this account's TOTP; it cannot be enabled on the user's behalf.",
+              "disableConfirm": "Disable TOTP MFA for this account?",
+              "disableConfirmTitle": "Disable TOTP MFA"
+            },
+            "loginMethods": {
+              "title": "Login Methods",
+              "desc": "Enable or disable login methods for this account. Disabled methods cannot be enabled or used by the user, and at least one must remain."
+            }
+          },
+          "thirdParty": {
+            "desc": "Manage this account's third-party login channels: enable or disable a channel. Disabled channels cannot be enabled or used by the user.",
+            "channelEnabled": "Enabled",
+            "unbind": "Unbind",
+            "unbindConfirm": "Unbind this third-party login channel?",
+            "unbindConfirmTitle": "Unbind Channel"
+          },
+          "messages": {
+            "success": "Saved",
+            "passwordReset": "Password has been reset",
+            "passwordLength": "Password length must be between 6 and 32 characters",
+            "emailUpdated": "Security email updated",
+            "emailCleared": "Security email cleared",
+            "mfaUpdated": "Email MFA updated",
+            "totpDisabled": "TOTP MFA disabled",
+            "loginMethodsUpdated": "Login methods updated",
+            "channelUpdated": "Channel status updated",
+            "unbound": "Unbound"
+          }
         },
         "dialog": {
           "addTitle": "Add Account",
@@ -465,9 +546,15 @@
           "cannotEditAccount": "You do not have permission to edit this account",
           "cannotDeleteSelf": "The current logged-in user cannot delete themselves",
           "cannotDeleteAccount": "You do not have permission to delete this account",
-          "confirmDelete": "Are you sure you want to revoke this account?",
-          "deleteTitle": "Revoke Account",
-          "deleteSuccess": "Account revoked successfully",
+          "confirmDelete": "Are you sure you want to delete this account? This action cannot be undone.",
+          "deleteTitle": "Delete Account",
+          "deleteSuccess": "Deleted successfully",
+          "selfRestricted": {
+            "title": "Action not allowed on current account",
+            "deleteContent": "You cannot delete the currently logged-in account from account management. You can cancel your own account via Account Center - Account Settings.",
+            "cancelContent": "You cannot cancel the currently logged-in account from account management. You can cancel your own account via Account Center - Account Settings.",
+            "gotIt": "Got it"
+          },
           "createSuccess": "Account created successfully",
           "updateSuccess": "Account updated successfully"
         }
@@ -718,7 +805,13 @@
             "tags": "Personal Tags"
           },
           "placeholders": {
+            "realName": "Enter your name",
             "sex": "Please select gender",
+            "nickname": "Enter your nickname",
+            "email": "Enter your email",
+            "mobile": "Enter your mobile number",
+            "address": "Enter your address",
+            "description": "Enter your introduction",
             "signature": "Enter your signature",
             "position": "Enter your position",
             "company": "Enter your company",
