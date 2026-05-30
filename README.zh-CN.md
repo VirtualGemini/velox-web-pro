@@ -119,10 +119,10 @@ pnpm serve
 
 ## 文档
 
-- [Contribution Guide](./CONTRIBUTING.md) / [简体中文](./CONTRIBUTING.zh-CN.md)
-- [Development Spec](./docs/DEVELOPMENT_SPEC.md) / [简体中文](./docs/DEVELOPMENT_SPEC.zh-CN.md)
-- [Commit Spec](./docs/COMMIT_SPEC.md) / [简体中文](./docs/COMMIT_SPEC.zh-CN.md)
-- [Changelog](./CHANGELOG.md) / [简体中文](./CHANGELOG.zh-CN.md)
+- [Contribution Guide](./CONTRIBUTING.md) / [贡献指南](./CONTRIBUTING.zh-CN.md)
+- [Development Spec](./docs/DEVELOPMENT_SPEC.md) / [开发规范](./docs/DEVELOPMENT_SPEC.zh-CN.md)
+- [Commit Spec](./docs/COMMIT_SPEC.md) / [提交规范](./docs/COMMIT_SPEC.zh-CN.md)
+- [Changelog](./CHANGELOG.md) / [更新日志](./CHANGELOG.zh-CN.md)
 - [免责声明](./DISCLAIMER.zh-CN.md) / [English](./DISCLAIMER.md)
 - [使用条款](./TERMS_OF_USE.zh-CN.md) / [English](./TERMS_OF_USE.md)
 

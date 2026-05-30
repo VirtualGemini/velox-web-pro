@@ -1,6 +1,6 @@
 <h2 align="center" id="top">Velox Web Pro</h2>
 <p align="center">A full-stack admin system with a Vue 3 frontend and a Spring Boot backend.</p>
-<div align="center">English | <a href="./README.zh-CN.md">简体中文</a></div>
+<div align="center">English | <a href="./README.zh-CN.md">中文</a></div>
 
 <br />
 
@@ -119,12 +119,12 @@ pnpm serve
 
 ## Documentation
 
-- [Contribution Guide](./CONTRIBUTING.md) / [简体中文](./CONTRIBUTING.zh-CN.md)
-- [Development Spec](./docs/DEVELOPMENT_SPEC.md) / [简体中文](./docs/DEVELOPMENT_SPEC.zh-CN.md)
-- [Commit Spec](./docs/COMMIT_SPEC.md) / [简体中文](./docs/COMMIT_SPEC.zh-CN.md)
-- [Changelog](./CHANGELOG.md) / [简体中文](./CHANGELOG.zh-CN.md)
-- [Disclaimer](./DISCLAIMER.md) / [简体中文](./DISCLAIMER.zh-CN.md)
-- [Terms of Use](./TERMS_OF_USE.md) / [简体中文](./TERMS_OF_USE.zh-CN.md)
+- [Contribution Guide](./CONTRIBUTING.md) / [贡献指南](./CONTRIBUTING.zh-CN.md)
+- [Development Spec](./docs/DEVELOPMENT_SPEC.md) / [开发规范](./docs/DEVELOPMENT_SPEC.zh-CN.md)
+- [Commit Spec](./docs/COMMIT_SPEC.md) / [提交规范](./docs/COMMIT_SPEC.zh-CN.md)
+- [Changelog](./CHANGELOG.md) / [更新日志](./CHANGELOG.zh-CN.md)
+- [Disclaimer](./DISCLAIMER.md) / [免责声明](./DISCLAIMER.zh-CN.md)
+- [Terms of Use](./TERMS_OF_USE.md) / [使用条款](./TERMS_OF_USE.zh-CN.md)
 
 ## License
 
