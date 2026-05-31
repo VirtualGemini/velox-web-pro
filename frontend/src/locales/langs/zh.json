@@ -233,7 +233,8 @@
     "emailInvalid": "邮箱格式不正确",
     "codeSent": "验证码已发送，请查收邮件",
     "passwordMismatch": "两次输入的新密码不一致",
-    "resetSuccess": "密码重置成功"
+    "resetSuccess": "密码重置成功",
+    "disabled": "忘记密码功能已关闭"
   },
   "register": {
     "title": "创建账号",
@@ -255,7 +256,8 @@
     "submitBtnText": "注册",
     "success": "注册成功",
     "hasAccount": "已有账号？",
-    "toLogin": "去登录"
+    "toLogin": "去登录",
+    "disabled": "注册功能已关闭"
   },
   "lockScreen": {
     "pwdError": "密码错误",
@@ -326,6 +328,10 @@
     "config": {
       "title": "配置管理",
       "fileConfig": "文件配置"
+    },
+    "settings": {
+      "title": "设置",
+      "accessControl": "访问控制"
     }
   },
   "pages": {
@@ -626,7 +632,7 @@
           "missingRoleId": "当前角色数据缺少 roleId，请确认列表接口返回内容",
           "superRoleCannotEdit": "最高权限角色不可编辑",
           "systemRoleCannotDelete": "系统角色不可删除",
-          "confirmDelete": "确定删除角色“{name}”吗？此操作不可恢复！",
+          "confirmDelete": "确定删除角色'{name}'吗？此操作不可恢复！",
           "confirmDeleteBound": "该角色已绑定以下账号：{accounts}，删除后该角色将不可用，同时使用该角色的账号会被解除关联，确认要删除该角色吗？",
           "batchDeleteBound": "{roles} 已被使用，删除后角色和账号的关联将被解除，确认要删除选中的 {count} 项吗？",
           "boundMoreSuffix": " 等 {count} 个",
@@ -659,7 +665,8 @@
             "menuType": "菜单类型",
             "name": "菜单名称",
             "path": "路由地址",
-            "label": "权限标识",
+            "label": "路由名称",
+            "menuAuthMark": "权限标识",
             "component": "组件路径",
             "icon": "图标",
             "roles": "角色权限",
@@ -683,9 +690,10 @@
             "name": "请输入菜单名称",
             "path": "如：/dashboard 或 console",
             "label": "如：User",
+            "menuAuthMark": "如：system:user:query",
             "component": "如：/system/account 或留空",
             "icon": "请选择图标",
-            "roles": "输入角色标识后按回车，如：R_SUPER",
+            "roles": "请选择角色",
             "link": "如：https://www.example.com",
             "showTextBadge": "如：New、Hot",
             "activePath": "如：/system/account",
@@ -694,10 +702,11 @@
           },
           "tooltips": {
             "path": "一级菜单：以 / 开头的绝对路径（如 /dashboard）\n二级及以下：相对路径（如 console、user）",
+            "menuAuthMark": "用于后端权限校验的标识，格式：模块:功能:操作\n例如：system:user:query",
             "component": "一级父级菜单：填写 /index/index\n具体页面：填写组件路径（如 /system/account）\n目录菜单：留空",
             "icon": "可选择项目内支持的图标，选择后会自动写入 ri: 图标代码",
             "roles": "仅用于前端权限模式：配置角色标识（如 R_SUPER、R_ADMIN）\n后端权限模式：无需配置",
-            "activePath": "用于详情页等隐藏菜单，指定高亮显示的父级菜单路径\n例如：用户详情页高亮显示“用户管理”菜单"
+            "activePath": "用于详情页等隐藏菜单，指定高亮显示的父级菜单路径\n例如：用户详情页高亮显示'用户管理'菜单"
           },
           "validation": {
             "nameRequired": "请输入菜单名称",
@@ -848,7 +857,7 @@
           }
         },
         "security": {
-          "title": "安全",
+          "title": "账号安全",
           "desc": "维护你的密码、登录方式和多因子认证设置，保护账号访问安全。",
           "loading": "加载中…",
           "passwordReset": {
@@ -1020,7 +1029,7 @@
               "codeRequired": "请输入动态口令",
               "codeFormat": "请输入 {digits} 位数字口令",
               "recoveryCodesTitle": "请保存恢复码",
-              "recoveryCodesTip": "以下恢复码仅展示一次。认证器不可用时，你可以在“关闭 TOTP 动态口令”中选择“恢复码”来使用。每个恢复码只能使用一次，请立即保存。",
+              "recoveryCodesTip": "以下恢复码仅展示一次。认证器不可用时，你可以在'关闭 TOTP 动态口令'中选择'恢复码'来使用。每个恢复码只能使用一次，请立即保存。",
               "recoveryCodesListTitle": "恢复码列表",
               "recoveryCodesCopied": "恢复码已复制",
               "recoveryCodesConfirm": "我已保存恢复码",
@@ -1068,12 +1077,12 @@
             "currentPassword": "当前密码",
             "emailCode": "邮箱验证码",
             "sendCode": "发送验证码",
-            "usernameConfirm": "请输入您的用户名“{username}”以确认删除账号",
+            "usernameConfirm": "请输入您的用户名'{username}'以确认删除账号",
             "codeSent": "验证码已发送，请查收邮箱",
-            "mfaBlocking": "请先前往“账号安全”关闭已启用的 MFA，再删除账号。",
+            "mfaBlocking": "请先前往'账号安全'关闭已启用的 MFA，再删除账号。",
             "mfaBlockingDialog": {
               "title": "无法删除账号",
-              "content": "当前账号已启用 MFA<br>请先前往“账号中心 - 账号安全 - MFA”关闭二次校验，然后再删除账号。",
+              "content": "当前账号已启用 MFA<br>请先前往'账号中心 - 账号安全 - MFA'关闭二次校验，然后再删除账号。",
               "confirm": "我知道了"
             },
             "pendingTip": "账号已处于注销冷静期内。",
@@ -1163,7 +1172,7 @@
           "downloadUrlFailed": "获取下载地址失败",
           "invalidSizeValue": "文件大小请输入有效数字",
           "invalidSizeRange": "文件大小范围不合法，最小值不能大于最大值",
-          "confirmDelete": "确定删除文件“{name}”吗？删除后无法恢复。",
+          "confirmDelete": "确定删除文件'{name}'吗？删除后无法恢复。",
           "deleteTitle": "删除确认",
           "deleteSuccess": "删除成功",
           "selectFileFirst": "请选择文件",
@@ -1329,14 +1338,53 @@
           "enabledSuccess": "已启用",
           "disabledSuccess": "已禁用",
           "confirmSetDisabledMaster": "当前配置已被禁用，可能会导致文件上传失败或丢失，确认要更换吗？",
-          "confirmSetMaster": "确定将“{name}”设为主配置吗？",
+          "confirmSetMaster": "确定将'{name}'设为主配置吗？",
           "setMasterTitle": "设置主配置",
           "setMasterSuccess": "已切换主配置",
           "testSuccess": "测试成功",
           "acknowledged": "我知道了",
-          "confirmDelete": "确定删除配置“{name}”吗？删除后无法恢复。",
+          "confirmDelete": "确定删除配置'{name}'吗？删除后无法恢复。",
           "deleteTitle": "删除确认",
           "deleteSuccess": "删除成功"
+        }
+      }
+    },
+    "settings": {
+      "accessControl": {
+        "title": "访问控制",
+        "description": "统一管理系统未登录可访问页面的全局开关。被关闭的功能将在对应页面隐藏入口，并由后端拒绝相关请求。",
+        "saveSuccess": "保存成功",
+        "loadFailed": "加载访问控制配置失败",
+        "sections": {
+          "generalRegister": {
+            "title": "通用注册",
+            "description": "关闭后，登录页将不再显示注册入口，且注册接口被拒绝。"
+          },
+          "forgotPassword": {
+            "title": "忘记密码",
+            "description": "关闭后，登录页将不再显示'忘记密码'入口，且找回密码接口被拒绝。"
+          },
+          "loginMethod": {
+            "title": "普通登录方式",
+            "description": "控制可用的普通登录方式。密码方式即使关闭，登录页仍显示完整表单，但提交会被后端拒绝。",
+            "atLeastOne": "请至少保留一种登录方式"
+          },
+          "thirdPartyLogin": {
+            "title": "第三方登录方式",
+            "description": "控制可用的第三方登录渠道。关闭的渠道将在登录页隐藏对应入口。"
+          },
+          "thirdPartyRegister": {
+            "title": "第三方注册方式",
+            "description": "控制可用的第三方注册渠道。第三方注册沿用第三方登录入口，关闭仅影响注册行为。"
+          }
+        },
+        "methods": {
+          "password": "账号密码",
+          "email_code": "邮箱验证码"
+        },
+        "channels": {
+          "github": "GitHub",
+          "linuxdo": "LinuxDo"
         }
       }
     }

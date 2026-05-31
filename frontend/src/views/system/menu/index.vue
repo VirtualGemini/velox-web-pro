@@ -51,7 +51,7 @@
         :editData="editData"
         :parentData="parentData"
         :lockType="lockMenuType"
-        @submit="handleSubmit || ''"
+        @submit="handleSubmit"
       />
     </ElCard>
   </div>
@@ -215,6 +215,24 @@
     return t('common.status.unknown')
   }
 
+  /**
+   * 递归统计某节点子树内的权限标识（按钮）数量。
+   * 计数规则：父级展示其所有分组 + 直接权限的权限标识总数；分组展示自身分组下的数量；
+   * 仅含直接权限的页面展示其直接权限数量。容器 / 分组节点自身不计为权限标识。
+   * 注：行数据已由 convertAuthListToChildren 将 meta.authList 展开为 isAuthButton 子节点，
+   * 故此处只需统计子树内的 isAuthButton 叶子，避免与 authList 重复计数。
+   * @param row 菜单行数据
+   * @returns 该节点子树内的权限标识数量
+   */
+  const countPermissionMarks = (row: AppRouteRecord): number => {
+    const children = row.children
+    if (!children || children.length === 0) return 0
+    return children.reduce(
+      (total, child) => total + (child.meta?.isAuthButton ? 1 : countPermissionMarks(child)),
+      0
+    )
+  }
+
   // 表格列配置
   const { columnChecks, columns } = useTableColumns(() => [
     {
@@ -244,17 +262,16 @@
     {
       prop: 'meta.authList',
       label: 'pages.system.menu.columns.auth',
-      minWidth: 280,
+      minWidth: 350,
       showOverflowTooltip: true,
       formatter: (row: AppRouteRecord) => {
+        // 权限按钮（叶子节点）：直接展示其权限标识
         if (row.meta?.isAuthButton) {
           return row.meta?.authMark || ''
         }
-        if (row.meta?.authMark) {
-          return row.meta.authMark
-        }
-        if (!row.meta?.authList?.length) return ''
-        return t('pages.system.menu.messages.authCount', { count: row.meta.authList.length })
+        // 目录 / 分组 / 页面：展示其子树内的权限标识总数（无则留空）
+        const count = countPermissionMarks(row)
+        return count > 0 ? t('pages.system.menu.messages.authCount', { count }) : ''
       }
     },
     {

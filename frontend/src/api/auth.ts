@@ -159,6 +159,16 @@ export function fetchLogout() {
 }
 
 /**
+ * 获取登录页访问控制配置（匿名，决定展示哪些认证入口）
+ */
+export function fetchGetAccessConfig() {
+  return request.get<Api.Auth.AccessConfig>({
+    url: '/api/auth/access-config',
+    showErrorMessage: false
+  })
+}
+
+/**
  * 发送邮箱二次验证邮件验证码
  */
 export function fetchSendMfaChallengeCode(data: Api.Auth.MfaChallengeSendParams) {

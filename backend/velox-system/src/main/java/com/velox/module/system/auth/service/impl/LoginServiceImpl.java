@@ -25,6 +25,8 @@ import com.velox.module.system.auth.service.LoginService;
 import com.velox.module.system.auth.service.PasswordCipherService;
 import com.velox.module.system.auth.status.ActiveUserStatusService;
 import com.velox.module.system.auth.store.VerificationCodeStore;
+import com.velox.module.system.accesscontrol.service.AccessControlService;
+import com.velox.module.system.accesscontrol.vo.AccessControlRespVO;
 import com.velox.module.system.common.enums.AccountStatusEnum;
 import com.velox.module.system.domain.model.Profile;
 import com.velox.module.system.domain.model.Role;
@@ -48,6 +50,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -74,6 +77,7 @@ public class LoginServiceImpl implements LoginService {
     private final ActiveUserStatusService activeUserStatusService;
     private final SecuritySessionService securitySessionService;
     private final TotpService totpService;
+    private final AccessControlService accessControlService;
 
     public LoginServiceImpl(AccountMapper userMapper,
                             ProfileMapper profileMapper,
@@ -88,7 +92,8 @@ public class LoginServiceImpl implements LoginService {
                             VerificationCodeStore verificationCodeStore,
                             ActiveUserStatusService activeUserStatusService,
                             SecuritySessionService securitySessionService,
-                            TotpService totpService) {
+                            TotpService totpService,
+                            AccessControlService accessControlService) {
         this.userMapper = userMapper;
         this.profileMapper = profileMapper;
         this.roleMapper = roleMapper;
@@ -103,6 +108,7 @@ public class LoginServiceImpl implements LoginService {
         this.activeUserStatusService = activeUserStatusService;
         this.securitySessionService = securitySessionService;
         this.totpService = totpService;
+        this.accessControlService = accessControlService;
     }
 
     @Override
@@ -118,6 +124,11 @@ public class LoginServiceImpl implements LoginService {
         dto.setCaptchaCodeImg(specCaptcha.toBase64());
 
         return dto;
+    }
+
+    @Override
+    public AccessControlRespVO getAccessConfig() {
+        return accessControlService.getConfig();
     }
 
     @Override
@@ -174,6 +185,9 @@ public class LoginServiceImpl implements LoginService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void register(RegisterCommand command) {
+        if (!accessControlService.isGeneralRegisterEnabled()) {
+            throw new ApiException(BusinessErrorCode.REGISTER_DISABLED);
+        }
         if (!command.getPassword().equals(command.getConfirmPassword())) {
             throw new ApiException(BusinessErrorCode.PASSWORD_MISMATCH);
         }
@@ -233,6 +247,9 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public void sendResetPasswordCode(ForgotPasswordCodeCommand command) {
+        if (!accessControlService.isForgotPasswordEnabled()) {
+            throw new ApiException(BusinessErrorCode.FORGOT_PASSWORD_DISABLED);
+        }
         String email = normalizeEmail(command.getEmail());
         if (email == null) {
             throw new ApiException(BusinessErrorCode.EMAIL_REQUIRED);
@@ -270,6 +287,9 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public void resetPassword(ResetPasswordCommand command) {
+        if (!accessControlService.isForgotPasswordEnabled()) {
+            throw new ApiException(BusinessErrorCode.FORGOT_PASSWORD_DISABLED);
+        }
         String email = normalizeEmail(command.getEmail());
         if (email == null) {
             throw new ApiException(BusinessErrorCode.EMAIL_REQUIRED);
@@ -637,7 +657,8 @@ public class LoginServiceImpl implements LoginService {
     }
 
     private void ensureLoginMethodAllowed(AccountSecurity security, String method) {
-        List<String> enabled = accountSecurityProperties.getLoginMethods().getEnabled();
+        // 全局启用的登录方式以访问控制配置为准（取代 yml 全局配置）。
+        List<String> enabled = accessControlService.getEnabledLoginMethods();
         if (enabled == null || !enabled.contains(method)) {
             throw new ApiException(BusinessErrorCode.LOGIN_METHOD_DISABLED);
         }
@@ -656,7 +677,7 @@ public class LoginServiceImpl implements LoginService {
 
     private List<String> parseLoginMethods(String methods) {
         if (!StringUtils.hasText(methods)) {
-            return List.of();
+            return new ArrayList<>();
         }
         return Arrays.stream(methods.split(","))
                 .map(String::trim)

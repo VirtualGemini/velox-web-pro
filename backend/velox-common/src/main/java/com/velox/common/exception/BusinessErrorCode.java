@@ -89,6 +89,8 @@ public enum BusinessErrorCode implements ErrorCode {
     ACCOUNT_DELETION_EMAIL_CODE_EXPIRED(12059, "删除账号邮箱验证码已过期"),
     ACCOUNT_DELETION_PASSWORD_REQUIRED(12060, "请先验证当前密码"),
     EMAIL_UNBIND_TOTP_REQUIRED(12061, "请先输入 TOTP 动态口令"),
+    REGISTER_DISABLED(12062, "注册功能已关闭"),
+    FORGOT_PASSWORD_DISABLED(12063, "忘记密码功能已关闭"),
 
     // ---- 文件模块 (13000-13999) ----
     FILE_UPLOAD_FAILED(13000, "文件上传失败"),
@@ -114,6 +116,7 @@ public enum BusinessErrorCode implements ErrorCode {
     MENU_PATH_REQUIRED(21002, "菜单路由地址不能为空"),
     MENU_AUTH_MARK_REQUIRED(21003, "权限标识不能为空"),
     MENU_PARENT_REQUIRED(21004, "父级菜单不能为空"),
+    MENU_HAS_CHILDREN(21005, "该菜单下存在子菜单，请先删除子菜单"),
 
     // ---- 用户管理模块 (22000-22999) ----
     USER_PASSWORD_REQUIRED_FOR_CREATE(22000, "新增用户时密码不能为空"),

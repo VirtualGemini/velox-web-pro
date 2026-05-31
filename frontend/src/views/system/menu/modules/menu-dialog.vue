@@ -86,6 +86,7 @@
     name: string
     path: string
     label: string
+    menuAuthMark: string
     component: string
     icon: string
     isEnable: boolean
@@ -100,7 +101,6 @@
     showTextBadge: string
     fixedTab: boolean
     activePath: string
-    roles: string[]
     isFullPage: boolean
     authName: string
     authLabel: string
@@ -137,6 +137,7 @@
     name: '',
     path: '',
     label: '',
+    menuAuthMark: '',
     component: '',
     icon: '',
     isEnable: true,
@@ -151,7 +152,6 @@
     showTextBadge: '',
     fixedTab: false,
     activePath: '',
-    roles: [],
     isFullPage: false,
     authName: '',
     authLabel: '',
@@ -240,6 +240,16 @@
         },
         {
           label: createLabelTooltip(
+            t('pages.system.menu.dialog.fields.menuAuthMark'),
+            t('pages.system.menu.dialog.tooltips.menuAuthMark')
+          ),
+          key: 'menuAuthMark',
+          type: 'input',
+          span: 12,
+          props: { placeholder: t('pages.system.menu.dialog.placeholders.menuAuthMark') }
+        },
+        {
+          label: createLabelTooltip(
             t('pages.system.menu.dialog.fields.component'),
             t('pages.system.menu.dialog.tooltips.component')
           ),
@@ -255,15 +265,6 @@
           key: 'icon',
           type: 'input',
           props: { placeholder: t('pages.system.menu.dialog.placeholders.icon') }
-        },
-        {
-          label: createLabelTooltip(
-            t('pages.system.menu.dialog.fields.roles'),
-            t('pages.system.menu.dialog.tooltips.roles')
-          ),
-          key: 'roles',
-          type: 'inputtag',
-          props: { placeholder: t('pages.system.menu.dialog.placeholders.roles') }
         },
         {
           label: t('pages.system.menu.dialog.fields.sort'),
@@ -409,6 +410,7 @@
       form.name = formatMenuTitle(row.meta?.title || '')
       form.path = row.path || ''
       form.label = row.name || ''
+      form.menuAuthMark = row.meta?.authMark || ''
       form.component = row.component || ''
       form.icon = row.meta?.icon || ''
       form.sort = row.meta?.sort || 1
@@ -423,7 +425,6 @@
       form.showTextBadge = row.meta?.showTextBadge || ''
       form.fixedTab = row.meta?.fixedTab ?? false
       form.activePath = row.meta?.activePath || ''
-      form.roles = row.meta?.roles || []
       form.isFullPage = row.meta?.isFullPage ?? false
     } else {
       const row = props.editData
@@ -443,12 +444,6 @@
     try {
       await formRef.value.validate()
       emit('submit', { ...form })
-      ElMessage.success(
-        isEdit.value
-          ? t('pages.system.menu.messages.updateSuccess')
-          : t('pages.system.menu.messages.createSuccess')
-      )
-      handleCancel()
     } catch {
       ElMessage.error(t('pages.system.menu.dialog.validation.submitFailed'))
     }

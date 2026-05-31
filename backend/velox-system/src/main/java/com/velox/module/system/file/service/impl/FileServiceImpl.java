@@ -16,6 +16,7 @@ import com.velox.framework.security.api.session.SecuritySessionService;
 import com.velox.module.system.file.persistence.FileMapper;
 import com.velox.framework.web.RequestDateTimeFormatter;
 import com.velox.module.system.id.generator.SystemEntityIdGenerator;
+import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
 import com.velox.module.system.file.service.FileConfigService;
 import com.velox.module.system.file.service.FileService;
 import com.velox.module.system.file.vo.FileCreateReqVO;
@@ -53,14 +54,18 @@ public class FileServiceImpl implements FileService {
 
     private final SecuritySessionService securitySessionService;
 
+    private final SystemFrontendIdCodecSupport frontendIdCodecSupport;
+
     public FileServiceImpl(FileConfigService fileConfigService,
                            FileMapper fileMapper,
                            SystemEntityIdGenerator entityIdGenerator,
-                           SecuritySessionService securitySessionService) {
+                           SecuritySessionService securitySessionService,
+                           SystemFrontendIdCodecSupport frontendIdCodecSupport) {
         this.fileConfigService = fileConfigService;
         this.fileMapper = fileMapper;
         this.entityIdGenerator = entityIdGenerator;
         this.securitySessionService = securitySessionService;
+        this.frontendIdCodecSupport = frontendIdCodecSupport;
     }
 
     @Override
@@ -81,7 +86,7 @@ public class FileServiceImpl implements FileService {
         Page<File> page = fileMapper.selectPage(
                 new Page<>(pageReqVO.getPage(), pageReqVO.getSize()), wrapper);
         return PageResult.of(page.getTotal(), page.getCurrent(), page.getSize(),
-                page.getRecords().stream().map(this::toFileRespVO).toList());
+                page.getRecords().stream().map(this::toFileRespVO).collect(Collectors.toList()));
     }
 
     @Override
@@ -180,8 +185,11 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public String presignGetUrl(String configId, String url, Integer expirationSeconds) {
-        FileClient fileClient = StrUtil.isNotBlank(configId)
-                ? fileConfigService.getFileClient(configId)
+        String decodedConfigId = configId != null && !configId.isEmpty()
+                ? frontendIdCodecSupport.decodeIdentifier(configId)
+                : null;
+        FileClient fileClient = StrUtil.isNotBlank(decodedConfigId)
+                ? fileConfigService.getFileClient(decodedConfigId)
                 : fileConfigService.getMasterFileClient();
         try {
             return fileClient.presignGetUrl(url, expirationSeconds);
@@ -210,25 +218,28 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public FileRespVO getFile(String id) {
-        return toFileRespVO(validateFileExists(id));
+        String decodedId = frontendIdCodecSupport.decodeIdentifier(id);
+        return toFileRespVO(validateFileExists(decodedId));
     }
 
     @Override
     public void deleteFile(String id) {
-        File fileDO = validateFileExists(id);
+        String decodedId = frontendIdCodecSupport.decodeIdentifier(id);
+        File fileDO = validateFileExists(decodedId);
         FileClient client = fileConfigService.getFileClient(fileDO.getConfigId());
         client.delete(fileDO.getPath());
-        fileMapper.deleteById(id);
+        fileMapper.deleteById(decodedId);
     }
 
     @Override
     public void deleteFileList(List<String> ids) {
-        List<File> files = fileMapper.selectByIds(ids);
+        List<String> decodedIds = frontendIdCodecSupport.decodeIdentifiers(ids);
+        List<File> files = fileMapper.selectByIds(decodedIds);
         for (File fileDO : files) {
             FileClient client = fileConfigService.getFileClient(fileDO.getConfigId());
             client.delete(fileDO.getPath());
         }
-        fileMapper.deleteByIds(ids);
+        fileMapper.deleteByIds(decodedIds);
     }
 
     private File validateFileExists(String id) {
@@ -241,7 +252,8 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public byte[] getFileContent(String configId, String path) {
-        FileClient client = fileConfigService.getFileClient(configId);
+        String decodedConfigId = frontendIdCodecSupport.decodeIdentifier(configId);
+        FileClient client = fileConfigService.getFileClient(decodedConfigId);
         return client.getContent(path);
     }
 

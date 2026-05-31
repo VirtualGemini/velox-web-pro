@@ -2,21 +2,19 @@
  * 网站链接常量配置
  * 集中管理便于维护和更新链接地址
  *
- * @module utils/constants/links
- * @author Velox Team
  */
 export const WEB_LINKS = {
   // Github 主页
-  GITHUB_HOME: 'https://github.com/Daymychen/velox-web',
+  GITHUB_HOME: 'https://github.com/VirtualGemini/velox-web-pro',
 
   // 项目 Github 主页
-  GITHUB: 'https://github.com/Daymychen/velox-web',
+  GITHUB: 'https://github.com/VirtualGemini/velox-web-pro',
 
   // 个人博客
-  BLOG: 'https://www.artd.pro',
+  BLOG: 'https://github.com/VirtualGemini/velox-web-pro',
 
   // 项目文档
-  DOCS: 'https://www.artd.pro/docs/zh/',
+  DOCS: 'https://github.com/VirtualGemini/velox-web-pro',
 
   // 精简版本
   LiteVersion: 'https://www.artd.pro/docs/zh/guide/lite-version.html',

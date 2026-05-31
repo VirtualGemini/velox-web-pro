@@ -81,11 +81,21 @@ public class SystemFrontendIdReflectionTransformer {
             }
             return;
         }
+        // Check if the list is modifiable by attempting to get its class name
+        // ImmutableCollections lists cannot be modified, so we skip transformation for them
+        String listClassName = list.getClass().getName();
+        boolean isImmutable = listClassName.contains("ImmutableCollections");
+
         for (int index = 0; index < list.size(); index++) {
             Object element = list.get(index);
             Object transformed = transformValue(element, fieldName, encode, visited);
-            if (element instanceof String && transformed instanceof String transformedString) {
-                ((List<Object>) list).set(index, transformedString);
+            if (element instanceof String && transformed instanceof String transformedString && !isImmutable) {
+                try {
+                    ((List<Object>) list).set(index, transformedString);
+                } catch (UnsupportedOperationException e) {
+                    // List is immutable, skip modification
+                    break;
+                }
             }
         }
     }

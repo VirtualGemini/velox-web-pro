@@ -20,6 +20,7 @@ import com.velox.module.system.auth.status.ActiveUserStatusService;
 import com.velox.module.system.auth.properties.SystemAccountSecurityProperties;
 import com.velox.module.system.common.enums.AccountStatusEnum;
 import com.velox.module.system.id.generator.SystemEntityIdGenerator;
+import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
 import com.velox.module.system.permission.service.PermissionService;
 import com.velox.framework.web.RequestDateTimeFormatter;
 import com.velox.module.system.account.dto.AccountListItemDTO;
@@ -63,6 +64,7 @@ public class AccountManageServiceImpl implements AccountManageService {
     private final SecuritySessionService securitySessionService;
     private final SystemAccountSecurityProperties accountSecurityProperties;
     private final ObjectMapper objectMapper;
+    private final SystemFrontendIdCodecSupport frontendIdCodecSupport;
 
     public AccountManageServiceImpl(AccountMapper userMapper,
                                  ProfileMapper profileMapper,
@@ -75,7 +77,8 @@ public class AccountManageServiceImpl implements AccountManageService {
                                  ActiveUserStatusService activeUserStatusService,
                                  SecuritySessionService securitySessionService,
                                  SystemAccountSecurityProperties accountSecurityProperties,
-                                 ObjectMapper objectMapper) {
+                                 ObjectMapper objectMapper,
+                                 SystemFrontendIdCodecSupport frontendIdCodecSupport) {
         this.userMapper = userMapper;
         this.profileMapper = profileMapper;
         this.roleMapper = roleMapper;
@@ -88,12 +91,26 @@ public class AccountManageServiceImpl implements AccountManageService {
         this.securitySessionService = securitySessionService;
         this.accountSecurityProperties = accountSecurityProperties;
         this.objectMapper = objectMapper;
+        this.frontendIdCodecSupport = frontendIdCodecSupport;
     }
 
     @Override
     public PageResult<AccountListItemDTO> list(AccountQuery query) {
         LambdaQueryWrapper<Account> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Account::getDeleted, 0);
+        // 数据权限：仅可查看自身最高角色等级及以下的账号（同级及以下）。账号等级取其所有角色的最高 role_level；
+        // 排除「拥有任一更高等级角色」的账号。用关联子查询在 SQL 层过滤，保证分页 total 正确
+        // （sys_account 主表无别名，子查询可直接以表名关联其主键）。
+        String currentUserId = securitySessionService.currentLoginIdOrNull();
+        int operatorLevel = StringUtils.hasText(currentUserId)
+                ? permissionService.getAccountHighestRoleLevel(currentUserId)
+                : 0;
+        wrapper.apply(
+                "NOT EXISTS (SELECT 1 FROM sys_account_role ar JOIN sys_role r ON ar.role_id = r.id "
+                        + "WHERE ar.account_id = sys_account.id AND ar.deleted = 0 AND r.deleted = 0 "
+                        + "AND r.role_level > {0})",
+                operatorLevel
+        );
         if (StringUtils.hasText(query.getStatus())) {
             // status 现表示账号状态(1-启用 2-禁用 3-异常 4-注销)，在线/离线属于独立的活跃状态。
             try {
@@ -131,9 +148,9 @@ public class AccountManageServiceImpl implements AccountManageService {
                     .map(AccountSecurity::getAccountId)
                     .filter(StringUtils::hasText)
                     .distinct()
-                    .toList();
+                    .collect(Collectors.toList());
             if (accountIds.isEmpty()) {
-                return new PageResult<>(0, query.getCurrent(), query.getSize(), List.of());
+                return new PageResult<>(0, query.getCurrent(), query.getSize(), new ArrayList<>());
             }
             wrapper.in(Account::getId, accountIds);
         }
@@ -152,7 +169,7 @@ public class AccountManageServiceImpl implements AccountManageService {
         List<Account> users = result.getRecords();
         long total = result.getTotal();
 
-        List<String> accountIds = users.stream().map(Account::getId).toList();
+        List<String> accountIds = users.stream().map(Account::getId).collect(Collectors.toList());
         Map<String, Profile> profileMap = getActiveProfileMap(accountIds);
         Map<String, AccountSecurity> securityMap = getActiveSecurityMap(accountIds);
         Map<String, String> activeStatusMap = activeUserStatusService.resolveStatuses(accountIds);
@@ -172,10 +189,10 @@ public class AccountManageServiceImpl implements AccountManageService {
             AccountQuery query, LambdaQueryWrapper<Account> wrapper, String activeStatusFilter) {
         List<Account> candidates = userMapper.selectList(wrapper);
         Map<String, String> activeStatusMap = activeUserStatusService.resolveStatuses(
-                candidates.stream().map(Account::getId).toList());
+                candidates.stream().map(Account::getId).collect(Collectors.toList()));
         List<Account> matched = candidates.stream()
                 .filter(account -> activeStatusFilter.equals(resolveActiveStatus(account, activeStatusMap)))
-                .toList();
+                .collect(Collectors.toList());
 
         long total = matched.size();
         long current = query.getCurrent();
@@ -184,7 +201,7 @@ public class AccountManageServiceImpl implements AccountManageService {
         int to = (int) Math.min((long) matched.size(), (long) from + size);
         List<Account> pageRows = matched.subList(from, to);
 
-        List<String> accountIds = pageRows.stream().map(Account::getId).toList();
+        List<String> accountIds = pageRows.stream().map(Account::getId).collect(Collectors.toList());
         Map<String, Profile> profileMap = getActiveProfileMap(accountIds);
         Map<String, AccountSecurity> securityMap = getActiveSecurityMap(accountIds);
 
@@ -213,15 +230,16 @@ public class AccountManageServiceImpl implements AccountManageService {
 
     @Override
     public AccountDetailCardDTO getDetailCard(String accountId) {
-        Account account = getActiveUser(accountId);
-        Profile profile = getActiveProfileMap(List.of(accountId)).get(accountId);
-        AccountSecurity security = getActiveSecurityMap(List.of(accountId)).get(accountId);
+        String decodedAccountId = frontendIdCodecSupport.decodeIdentifier(accountId);
+        Account account = getActiveUser(decodedAccountId);
+        Profile profile = getActiveProfileMap(List.of(decodedAccountId)).get(decodedAccountId);
+        AccountSecurity security = getActiveSecurityMap(List.of(decodedAccountId)).get(decodedAccountId);
         String accountStatus = resolveAccountStatus(account);
         String activeStatus = resolveActiveStatus(
                 account,
-                activeUserStatusService.resolveStatuses(List.of(accountId))
+                activeUserStatusService.resolveStatuses(List.of(decodedAccountId))
         );
-        List<String> roleCodes = permissionService.getAccountRoleCodes(accountId);
+        List<String> roleCodes = permissionService.getAccountRoleCodes(decodedAccountId);
 
         AccountDetailCardDTO dto = new AccountDetailCardDTO();
         dto.setHeader(buildHeader(account, profile, accountStatus, activeStatus, roleCodes));
@@ -261,9 +279,10 @@ public class AccountManageServiceImpl implements AccountManageService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean update(String userId, AccountSaveCommand command) {
-        Account user = getActiveUser(userId);
+        String decodedUserId = frontendIdCodecSupport.decodeIdentifier(userId);
+        Account user = getActiveUser(decodedUserId);
         ensureCanUpdateUser(user.getId());
-        ensureUsernameUnique(command.getUsername(), userId);
+        ensureUsernameUnique(command.getUsername(), decodedUserId);
 
         List<Role> roles = resolveRoles(command.getRoleCodes());
         String operator = currentOperator();
@@ -282,12 +301,12 @@ public class AccountManageServiceImpl implements AccountManageService {
         }
         userMapper.updateById(user);
 
-        // 管理员手动置为“注销”视为即时硬注销：去掉自助注销的反悔期（冷静期）时间戳，
+        // 管理员手动置为”注销”视为即时硬注销：去掉自助注销的反悔期（冷静期）时间戳，
         // 否则详情页仍会显示待删除倒计时。注意 updateById 默认跳过 null，故用 Wrapper 显式置空。
         if (command.getAccountStatus() != null
                 && AccountStatusEnum.CANCELLED.getCode() == command.getAccountStatus()) {
             userMapper.update(null, new LambdaUpdateWrapper<Account>()
-                    .eq(Account::getId, userId)
+                    .eq(Account::getId, decodedUserId)
                     .set(Account::getDeletionRequestedAt, null)
                     .set(Account::getDeletionExpiresAt, null)
                     .set(Account::getUpdateBy, operator)
@@ -295,14 +314,15 @@ public class AccountManageServiceImpl implements AccountManageService {
         }
 
         ensureProfile(user, operator);
-        assignUserRoles(userId, roles);
+        assignUserRoles(decodedUserId, roles);
         return true;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateProfile(String accountId, AdminProfileUpdateCommand command) {
-        Account user = getActiveUser(accountId);
+        String decodedAccountId = frontendIdCodecSupport.decodeIdentifier(accountId);
+        Account user = getActiveUser(decodedAccountId);
         ensureCanUpdateUser(user.getId());
         String operator = currentOperator();
 
@@ -329,37 +349,38 @@ public class AccountManageServiceImpl implements AccountManageService {
         } else {
             profileMapper.updateById(profile);
         }
-        // 资料属于账号信息的一部分：同步刷新账号更新时间，使列表“编辑时间”反映本次编辑。
-        touchAccountUpdateTime(accountId, operator);
+        // 资料属于账号信息的一部分：同步刷新账号更新时间，使列表”编辑时间”反映本次编辑。
+        touchAccountUpdateTime(decodedAccountId, operator);
         return true;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean delete(String userId) {
-        Account user = getActiveUser(userId);
+        String decodedUserId = frontendIdCodecSupport.decodeIdentifier(userId);
+        Account user = getActiveUser(decodedUserId);
         ensureCanDeleteUser(user.getId());
         String operator = currentOperator();
 
         userMapper.update(null, new LambdaUpdateWrapper<Account>()
-                .eq(Account::getId, userId)
+                .eq(Account::getId, decodedUserId)
                 .eq(Account::getDeleted, 0)
                 .set(Account::getDeleted, 1)
                 .set(Account::getUpdateTime, LocalDateTime.now(ZoneOffset.UTC))
                 .set(Account::getUpdateBy, operator));
 
         profileMapper.update(null, new LambdaUpdateWrapper<Profile>()
-                .eq(Profile::getAccountId, userId)
+                .eq(Profile::getAccountId, decodedUserId)
                 .eq(Profile::getDeleted, 0)
                 .set(Profile::getDeleted, 1)
                 .set(Profile::getUpdateTime, LocalDateTime.now(ZoneOffset.UTC))
                 .set(Profile::getUpdateBy, operator));
 
-        List<String> activeRelationIds = userRoleMapper.selectAllByAccountId(userId).stream()
+        List<String> activeRelationIds = userRoleMapper.selectAllByAccountId(decodedUserId).stream()
                 .filter(relation -> Integer.valueOf(0).equals(relation.getDeleted()))
                 .map(AccountRole::getId)
                 .filter(Objects::nonNull)
-                .toList();
+                .collect(Collectors.toList());
         if (!activeRelationIds.isEmpty()) {
             userRoleMapper.logicalDeleteByIds(activeRelationIds, operator);
         }
@@ -374,6 +395,7 @@ public class AccountManageServiceImpl implements AccountManageService {
         }
         accountIds.stream()
                 .filter(StringUtils::hasText)
+                .map(frontendIdCodecSupport::decodeIdentifier)
                 .distinct()
                 .forEach(this::delete);
         return true;
@@ -387,6 +409,7 @@ public class AccountManageServiceImpl implements AccountManageService {
         }
         accountIds.stream()
                 .filter(StringUtils::hasText)
+                .map(frontendIdCodecSupport::decodeIdentifier)
                 .distinct()
                 .forEach(this::cancel);
         return true;
@@ -504,7 +527,7 @@ public class AccountManageServiceImpl implements AccountManageService {
     private AccountDetailCardDTO.ProfileSection buildProfileSection(Profile profile) {
         AccountDetailCardDTO.ProfileSection section = new AccountDetailCardDTO.ProfileSection();
         if (profile == null) {
-            section.setTags(List.of());
+            section.setTags(new ArrayList<>());
             return section;
         }
         section.setNickname(profile.getNickname());
@@ -541,8 +564,8 @@ public class AccountManageServiceImpl implements AccountManageService {
         AccountDetailCardDTO.SecuritySection section = new AccountDetailCardDTO.SecuritySection();
         List<String> allowed = new ArrayList<>(accountSecurityProperties.getLoginMethods().getEnabled());
         if (security == null) {
-            section.setLoginMethods(List.of());
-            section.setDisabledLoginMethods(List.of());
+            section.setLoginMethods(new ArrayList<>());
+            section.setDisabledLoginMethods(new ArrayList<>());
             section.setAllowedLoginMethods(allowed);
             section.setEmailMfaEnabled(false);
             section.setTotpMfaEnabled(false);
@@ -561,7 +584,7 @@ public class AccountManageServiceImpl implements AccountManageService {
 
     private List<AccountDetailCardDTO.ThirdPartyProvider> buildThirdPartyProviders(AccountSecurity security) {
         List<String> disabledChannels = security == null
-                ? List.of()
+                ? new ArrayList<>()
                 : parseLoginMethods(security.getDisabledOauthChannels());
         List<AccountDetailCardDTO.ThirdPartyProvider> providers = new ArrayList<>();
         providers.add(buildThirdPartyProvider("github", "GitHub", disabledChannels));
@@ -659,7 +682,7 @@ public class AccountManageServiceImpl implements AccountManageService {
                 .map(Map.Entry::getValue)
                 .map(AccountRole::getId)
                 .filter(Objects::nonNull)
-                .toList();
+                .collect(Collectors.toList());
         if (!deleteIds.isEmpty()) {
             userRoleMapper.logicalDeleteByIds(deleteIds, operator);
         }
@@ -670,7 +693,7 @@ public class AccountManageServiceImpl implements AccountManageService {
                 .filter(Objects::nonNull)
                 .map(AccountRole::getId)
                 .filter(Objects::nonNull)
-                .toList();
+                .collect(Collectors.toList());
         if (!restoreIds.isEmpty()) {
             userRoleMapper.restoreByIds(restoreIds, operator);
         }
@@ -785,20 +808,20 @@ public class AccountManageServiceImpl implements AccountManageService {
 
     private List<String> parseTags(String tags) {
         if (!StringUtils.hasText(tags)) {
-            return List.of();
+            return new ArrayList<>();
         }
         String normalized = tags.trim();
         if (normalized.startsWith("[") && normalized.endsWith("]")) {
             normalized = normalized.substring(1, normalized.length() - 1);
         }
         if (!StringUtils.hasText(normalized)) {
-            return List.of();
+            return new ArrayList<>();
         }
         return Arrays.stream(normalized.split(","))
                 .map(String::trim)
                 .map(item -> item.replace("\"", ""))
                 .filter(StringUtils::hasText)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private String serializeTags(List<String> tags) {
@@ -811,7 +834,7 @@ public class AccountManageServiceImpl implements AccountManageService {
                 .filter(s -> !s.isEmpty())
                 .distinct()
                 .limit(10)
-                .toList();
+                .collect(Collectors.toList());
         if (normalized.isEmpty()) {
             return "[]";
         }
@@ -834,12 +857,12 @@ public class AccountManageServiceImpl implements AccountManageService {
 
     private List<String> parseLoginMethods(String loginMethods) {
         if (!StringUtils.hasText(loginMethods)) {
-            return List.of();
+            return new ArrayList<>();
         }
         return Arrays.stream(loginMethods.split(","))
                 .map(String::trim)
                 .filter(StringUtils::hasText)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private String resolveAvatar(Profile profile, String username) {

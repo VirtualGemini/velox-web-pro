@@ -88,7 +88,11 @@
 <script setup lang="ts">
   import type { FormInstance, FormRules } from 'element-plus'
   import { useI18n } from 'vue-i18n'
-  import { fetchResetPassword, fetchSendResetPasswordCode } from '@/api/auth'
+  import {
+    fetchResetPassword,
+    fetchSendResetPasswordCode,
+    fetchGetAccessConfig
+  } from '@/api/auth'
 
   defineOptions({ name: 'ForgetPassword' })
 
@@ -98,6 +102,19 @@
   const loading = ref(false)
   const countdown = ref(0)
   const timer = ref<number | null>(null)
+
+  // 路由保护：忘记密码被全局关闭时，禁止访问该页（防止强行输入路由）
+  onMounted(async () => {
+    try {
+      const config = await fetchGetAccessConfig()
+      if (!config.forgotPasswordEnabled) {
+        ElMessage.warning(t('forgetPassword.disabled'))
+        router.replace({ name: 'Login' })
+      }
+    } catch {
+      // 配置拉取失败时不阻断页面，后端仍会拒绝被关闭的请求（双重保护）
+    }
+  })
 
   const formData = reactive({
     email: '',

@@ -8,7 +8,8 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan(basePackages = "com.velox.module.system")
 @MapperScan({
         "com.velox.module.system.persistence",
-        "com.velox.module.system.file.persistence"
+        "com.velox.module.system.file.persistence",
+        "com.velox.module.system.accesscontrol.persistence"
 })
 public class SystemModulePackageScan {
 }

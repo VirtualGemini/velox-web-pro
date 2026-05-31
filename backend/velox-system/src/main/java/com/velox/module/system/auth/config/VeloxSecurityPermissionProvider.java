@@ -4,6 +4,7 @@ import com.velox.framework.security.api.authorization.SecurityPermissionProvider
 import com.velox.module.system.permission.service.PermissionService;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -19,7 +20,7 @@ public class VeloxSecurityPermissionProvider implements SecurityPermissionProvid
     public List<String> getPermissions(String loginId) {
         String accountId = normalizeLoginId(loginId);
         if (accountId == null) {
-            return List.of();
+            return new ArrayList<>();
         }
         return permissionService.getAccountPermissionMarks(accountId);
     }
@@ -28,7 +29,7 @@ public class VeloxSecurityPermissionProvider implements SecurityPermissionProvid
     public List<String> getRoles(String loginId) {
         String accountId = normalizeLoginId(loginId);
         if (accountId == null) {
-            return List.of();
+            return new ArrayList<>();
         }
         return permissionService.getAccountRoleCodes(accountId);
     }

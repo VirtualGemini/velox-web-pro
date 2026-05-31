@@ -19,6 +19,7 @@ import com.velox.module.system.persistence.AccountMapper;
 import com.velox.module.system.persistence.support.MenuQuerySupport;
 import com.velox.framework.web.RequestDateTimeFormatter;
 import com.velox.module.system.id.generator.SystemEntityIdGenerator;
+import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
 import com.velox.module.system.permission.service.PermissionService;
 import com.velox.module.system.role.dto.RoleListItemDTO;
 import com.velox.module.system.role.dto.RoleBoundAccountsDTO;
@@ -56,6 +57,7 @@ public class RoleServiceImpl implements RoleService {
     private final PermissionService permissionService;
     private final SystemEntityIdGenerator entityIdGenerator;
     private final SecuritySessionService securitySessionService;
+    private final SystemFrontendIdCodecSupport frontendIdCodecSupport;
 
     public RoleServiceImpl(
             MenuMapper menuMapper,
@@ -65,7 +67,8 @@ public class RoleServiceImpl implements RoleService {
             RoleMenuPermissionMapper roleMenuPermissionMapper,
             PermissionService permissionService,
             SystemEntityIdGenerator entityIdGenerator,
-            SecuritySessionService securitySessionService
+            SecuritySessionService securitySessionService,
+            SystemFrontendIdCodecSupport frontendIdCodecSupport
     ) {
         this.menuMapper = menuMapper;
         this.roleMapper = roleMapper;
@@ -75,6 +78,7 @@ public class RoleServiceImpl implements RoleService {
         this.permissionService = permissionService;
         this.entityIdGenerator = entityIdGenerator;
         this.securitySessionService = securitySessionService;
+        this.frontendIdCodecSupport = frontendIdCodecSupport;
     }
 
     @Override
@@ -82,6 +86,12 @@ public class RoleServiceImpl implements RoleService {
         Page<Role> page = new Page<>(query.getCurrent(), query.getSize());
         LambdaQueryWrapper<Role> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Role::getDeleted, 0);
+        // 数据权限：仅可查看自身最高角色等级及以下的角色（同级及以下），更高等级角色不可见。
+        String currentUserId = securitySessionService.currentLoginIdOrNull();
+        int operatorLevel = StringUtils.hasText(currentUserId)
+                ? permissionService.getAccountHighestRoleLevel(currentUserId)
+                : 0;
+        wrapper.le(Role::getRoleLevel, operatorLevel);
         if (query.getRoleName() != null && !query.getRoleName().isEmpty()) {
             wrapper.like(Role::getRoleName, query.getRoleName());
         }
@@ -148,9 +158,10 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean update(String roleId, RoleSaveCommand command) {
-        Role role = getActiveRole(roleId);
+        String decodedRoleId = frontendIdCodecSupport.decodeIdentifier(roleId);
+        Role role = getActiveRole(decodedRoleId);
         ensureRoleEditable(role, command);
-        ensureRoleCodeUnique(command.getRoleCode(), roleId);
+        ensureRoleCodeUnique(command.getRoleCode(), decodedRoleId);
         role.setRoleName(command.getRoleName().trim());
         role.setRoleCode(command.getRoleCode().trim());
         role.setDescription(command.getDescription().trim());
@@ -163,7 +174,8 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean delete(String roleId) {
-        Role role = getActiveRole(roleId);
+        String decodedRoleId = frontendIdCodecSupport.decodeIdentifier(roleId);
+        Role role = getActiveRole(decodedRoleId);
         if (Integer.valueOf(RoleTypeEnum.SYSTEM.getCode()).equals(role.getType())) {
             throw new ApiException(BusinessErrorCode.SYSTEM_ROLE_DELETE_FORBIDDEN);
         }
@@ -172,22 +184,22 @@ public class RoleServiceImpl implements RoleService {
         // 解除该角色与账号的绑定（逻辑删除），保证被删除的角色在用户侧不再可见
         List<String> boundRelationIds = userRoleMapper.selectList(new LambdaQueryWrapper<AccountRole>()
                         .eq(AccountRole::getDeleted, 0)
-                        .eq(AccountRole::getRoleId, roleId))
+                        .eq(AccountRole::getRoleId, decodedRoleId))
                 .stream()
                 .map(AccountRole::getId)
                 .filter(Objects::nonNull)
-                .toList();
+                .collect(Collectors.toList());
         if (!boundRelationIds.isEmpty()) {
             userRoleMapper.logicalDeleteByIds(boundRelationIds, operator);
         }
 
         roleMapper.update(null, new LambdaUpdateWrapper<Role>()
-                .eq(Role::getId, roleId)
+                .eq(Role::getId, decodedRoleId)
                 .eq(Role::getDeleted, 0)
                 .set(Role::getDeleted, 1)
                 .set(Role::getUpdateTime, LocalDateTime.now(ZoneOffset.UTC))
                 .set(Role::getUpdateBy, operator));
-        roleMenuPermissionMapper.delete(new LambdaQueryWrapper<RoleMenuPermission>().eq(RoleMenuPermission::getRoleId, roleId));
+        roleMenuPermissionMapper.delete(new LambdaQueryWrapper<RoleMenuPermission>().eq(RoleMenuPermission::getRoleId, decodedRoleId));
         return true;
     }
 
@@ -197,31 +209,58 @@ public class RoleServiceImpl implements RoleService {
         if (roleIds == null || roleIds.isEmpty()) {
             return true;
         }
-        roleIds.stream()
+        List<String> decodedRoleIds = frontendIdCodecSupport.decodeIdentifiers(roleIds);
+        decodedRoleIds.stream()
                 .filter(StringUtils::hasText)
                 .distinct()
-                .forEach(this::delete);
+                .forEach(decodedId -> {
+                    Role role = getActiveRole(decodedId);
+                    if (Integer.valueOf(RoleTypeEnum.SYSTEM.getCode()).equals(role.getType())) {
+                        throw new ApiException(BusinessErrorCode.SYSTEM_ROLE_DELETE_FORBIDDEN);
+                    }
+                    String operator = currentOperator();
+
+                    List<String> boundRelationIds = userRoleMapper.selectList(new LambdaQueryWrapper<AccountRole>()
+                                    .eq(AccountRole::getDeleted, 0)
+                                    .eq(AccountRole::getRoleId, decodedId))
+                            .stream()
+                            .map(AccountRole::getId)
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList());
+                    if (!boundRelationIds.isEmpty()) {
+                        userRoleMapper.logicalDeleteByIds(boundRelationIds, operator);
+                    }
+
+                    roleMapper.update(null, new LambdaUpdateWrapper<Role>()
+                            .eq(Role::getId, decodedId)
+                            .eq(Role::getDeleted, 0)
+                            .set(Role::getDeleted, 1)
+                            .set(Role::getUpdateTime, LocalDateTime.now(ZoneOffset.UTC))
+                            .set(Role::getUpdateBy, operator));
+                    roleMenuPermissionMapper.delete(new LambdaQueryWrapper<RoleMenuPermission>().eq(RoleMenuPermission::getRoleId, decodedId));
+                });
         return true;
     }
 
     @Override
     public List<RoleBoundAccountsDTO> getBoundAccounts(List<String> roleIds) {
         if (roleIds == null || roleIds.isEmpty()) {
-            return List.of();
+            return new ArrayList<>();
         }
-        List<String> distinctRoleIds = roleIds.stream()
+        List<String> decodedRoleIds = frontendIdCodecSupport.decodeIdentifiers(roleIds);
+        List<String> distinctRoleIds = decodedRoleIds.stream()
                 .filter(StringUtils::hasText)
                 .distinct()
-                .toList();
+                .collect(Collectors.toList());
         if (distinctRoleIds.isEmpty()) {
-            return List.of();
+            return new ArrayList<>();
         }
 
         List<AccountRole> relations = userRoleMapper.selectList(new LambdaQueryWrapper<AccountRole>()
                 .eq(AccountRole::getDeleted, 0)
                 .in(AccountRole::getRoleId, distinctRoleIds));
         if (relations.isEmpty()) {
-            return List.of();
+            return new ArrayList<>();
         }
 
         Map<String, String> roleNameMap = roleMapper.selectList(new LambdaQueryWrapper<Role>()
@@ -233,7 +272,7 @@ public class RoleServiceImpl implements RoleService {
                 .map(AccountRole::getAccountId)
                 .filter(Objects::nonNull)
                 .distinct()
-                .toList();
+                .collect(Collectors.toList());
         Map<String, String> usernameMap = accountIds.isEmpty()
                 ? Map.<String, String>of()
                 : accountMapper.selectList(new LambdaQueryWrapper<Account>()
@@ -267,10 +306,11 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<String> getRoleMenuPermissions(String roleId) {
-        getActiveRole(roleId);
-        Set<String> grantedMenuIds = permissionService.getRoleMenuIds(roleId);
+        String decodedRoleId = frontendIdCodecSupport.decodeIdentifier(roleId);
+        getActiveRole(decodedRoleId);
+        Set<String> grantedMenuIds = permissionService.getRoleMenuIds(decodedRoleId);
         if (grantedMenuIds.isEmpty()) {
-            return List.of();
+            return new ArrayList<>();
         }
         return compressGrantedMenuIds(grantedMenuIds);
     }
@@ -278,9 +318,13 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateRoleMenuPermissions(String roleId, RoleMenuPermissionUpdateCommand command) {
-        List<String> requestedMenuIds = command == null ? List.of() : command.getMenuIds();
-        ensureWithinCurrentUserScope(requestedMenuIds);
-        permissionService.assignRoleMenu(roleId, requestedMenuIds);
+        String decodedRoleId = frontendIdCodecSupport.decodeIdentifier(roleId);
+        List<String> requestedMenuIds = command == null ? new ArrayList<>() : command.getMenuIds();
+        List<String> decodedMenuIds = requestedMenuIds == null || requestedMenuIds.isEmpty()
+                ? new ArrayList<>()
+                : frontendIdCodecSupport.decodeIdentifiers(requestedMenuIds);
+        ensureWithinCurrentUserScope(decodedMenuIds);
+        permissionService.assignRoleMenu(decodedRoleId, decodedMenuIds);
         return true;
     }
 
@@ -309,7 +353,7 @@ public class RoleServiceImpl implements RoleService {
                 .orderByAsc(Menu::getSort)
                 .orderByAsc(Menu::getCreateTime));
         if (menus.isEmpty()) {
-            return List.of();
+            return new ArrayList<>();
         }
 
         Map<String, Menu> menuMap = menus.stream()
@@ -350,7 +394,7 @@ public class RoleServiceImpl implements RoleService {
     ) {
         String menuId = menu.getId();
         boolean selfGranted = menuId != null && grantedMenuIds.contains(menuId);
-        List<Menu> children = childrenMap.getOrDefault(menuId, List.of());
+        List<Menu> children = childrenMap.getOrDefault(menuId, new ArrayList<>());
 
         if (children.isEmpty()) {
             if (selfGranted && menuId != null) {

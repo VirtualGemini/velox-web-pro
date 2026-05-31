@@ -126,7 +126,7 @@ public class PermissionServiceImpl implements PermissionService {
                     .filter(Objects::nonNull)
                     .map(RoleMenuPermission::getId)
                     .filter(Objects::nonNull)
-                    .toList();
+                    .collect(Collectors.toList());
             if (!deleteRelationIds.isEmpty()) {
                 roleMenuPermissionMapper.logicalDeleteByIds(deleteRelationIds, operator);
             }
@@ -137,7 +137,7 @@ public class PermissionServiceImpl implements PermissionService {
                 .filter(Objects::nonNull)
                 .map(RoleMenuPermission::getId)
                 .filter(Objects::nonNull)
-                .toList();
+                .collect(Collectors.toList());
         if (!restoreRelationIds.isEmpty()) {
             roleMenuPermissionMapper.restoreByIds(restoreRelationIds, operator);
             createIds.removeIf(deletedPermissionMap::containsKey);
@@ -195,9 +195,9 @@ public class PermissionServiceImpl implements PermissionService {
     public List<String> getAccountRoleCodes(String accountId) {
         String normalizedAccountId = normalizeId(accountId);
         if (normalizedAccountId == null) {
-            return List.of();
+            return new ArrayList<>();
         }
-        return getAccountRoleCodes(Set.of(normalizedAccountId)).getOrDefault(normalizedAccountId, List.of());
+        return getAccountRoleCodes(Set.of(normalizedAccountId)).getOrDefault(normalizedAccountId, new ArrayList<>());
     }
 
     @Override
@@ -227,7 +227,7 @@ public class PermissionServiceImpl implements PermissionService {
             List<String> roleCodes = entry.getValue().stream()
                     .map(roleCodeMap::get)
                     .filter(Objects::nonNull)
-                    .toList();
+                    .collect(Collectors.toList());
             result.put(entry.getKey(), roleCodes);
         }
         return result;
@@ -284,7 +284,7 @@ public class PermissionServiceImpl implements PermissionService {
     public List<String> getAccountPermissionMarks(String accountId) {
         String normalizedAccountId = normalizeId(accountId);
         if (normalizedAccountId == null) {
-            return List.of();
+            return new ArrayList<>();
         }
 
         boolean isSuperAdmin = getAccountRoleCodes(normalizedAccountId).stream().anyMatch(SystemRoleCode.R_SUPER::equals);
@@ -295,12 +295,12 @@ public class PermissionServiceImpl implements PermissionService {
         if (!isSuperAdmin) {
             Set<String> roleIds = getAccountRoleIds(normalizedAccountId);
             if (roleIds.isEmpty()) {
-                return List.of();
+                return new ArrayList<>();
             }
 
             Set<String> menuIds = getRoleMenuIds(roleIds);
             if (menuIds.isEmpty()) {
-                return List.of();
+                return new ArrayList<>();
             }
             wrapper.in(Menu::getId, menuIds);
         }
@@ -309,7 +309,7 @@ public class PermissionServiceImpl implements PermissionService {
                 .map(Menu::getAuthMark)
                 .filter(mark -> mark != null && !mark.isBlank())
                 .distinct()
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override

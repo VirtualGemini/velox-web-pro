@@ -16,6 +16,7 @@ import com.velox.module.system.auth.service.PasswordCipherService;
 import com.velox.module.system.domain.model.Account;
 import com.velox.module.system.domain.model.AccountSecurity;
 import com.velox.module.system.id.generator.SystemEntityIdGenerator;
+import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
 import com.velox.module.system.permission.service.PermissionService;
 import com.velox.module.system.persistence.AccountMapper;
 import com.velox.module.system.persistence.AccountSecurityMapper;
@@ -25,11 +26,14 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminAccountSecurityServiceImpl implements AdminAccountSecurityService {
@@ -44,6 +48,7 @@ public class AdminAccountSecurityServiceImpl implements AdminAccountSecurityServ
     private final SecuritySessionService securitySessionService;
     private final PermissionService permissionService;
     private final SystemEntityIdGenerator entityIdGenerator;
+    private final SystemFrontendIdCodecSupport frontendIdCodecSupport;
 
     public AdminAccountSecurityServiceImpl(AccountMapper userMapper,
                                            AccountSecurityMapper accountSecurityMapper,
@@ -51,7 +56,8 @@ public class AdminAccountSecurityServiceImpl implements AdminAccountSecurityServ
                                            SystemAccountSecurityProperties accountSecurityProperties,
                                            SecuritySessionService securitySessionService,
                                            PermissionService permissionService,
-                                           SystemEntityIdGenerator entityIdGenerator) {
+                                           SystemEntityIdGenerator entityIdGenerator,
+                                           SystemFrontendIdCodecSupport frontendIdCodecSupport) {
         this.userMapper = userMapper;
         this.accountSecurityMapper = accountSecurityMapper;
         this.passwordCipherService = passwordCipherService;
@@ -59,12 +65,14 @@ public class AdminAccountSecurityServiceImpl implements AdminAccountSecurityServ
         this.securitySessionService = securitySessionService;
         this.permissionService = permissionService;
         this.entityIdGenerator = entityIdGenerator;
+        this.frontendIdCodecSupport = frontendIdCodecSupport;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean resetPassword(String accountId, AdminPasswordResetCommand command) {
-        Account user = getActiveUser(accountId);
+        String decodedAccountId = frontendIdCodecSupport.decodeIdentifier(accountId);
+        Account user = getActiveUser(decodedAccountId);
         ensureCanUpdateUser(user.getId());
         String operator = currentOperator();
 
@@ -84,7 +92,8 @@ public class AdminAccountSecurityServiceImpl implements AdminAccountSecurityServ
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateSecurityEmail(String accountId, AdminSecurityEmailCommand command) {
-        Account user = getActiveUser(accountId);
+        String decodedAccountId = frontendIdCodecSupport.decodeIdentifier(accountId);
+        Account user = getActiveUser(decodedAccountId);
         ensureCanUpdateUser(user.getId());
         String operator = currentOperator();
 
@@ -120,7 +129,8 @@ public class AdminAccountSecurityServiceImpl implements AdminAccountSecurityServ
         if (command.getEnabled() == null) {
             throw new ApiException(BusinessErrorCode.OPERATION_FAILED);
         }
-        Account user = getActiveUser(accountId);
+        String decodedAccountId = frontendIdCodecSupport.decodeIdentifier(accountId);
+        Account user = getActiveUser(decodedAccountId);
         ensureCanUpdateUser(user.getId());
         AccountSecurity security = getOrInitSecurity(user);
 
@@ -144,7 +154,8 @@ public class AdminAccountSecurityServiceImpl implements AdminAccountSecurityServ
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean disableTotp(String accountId) {
-        Account user = getActiveUser(accountId);
+        String decodedAccountId = frontendIdCodecSupport.decodeIdentifier(accountId);
+        Account user = getActiveUser(decodedAccountId);
         ensureCanUpdateUser(user.getId());
         AccountSecurity security = getOrInitSecurity(user);
         security.setMfaTotpEnabled(0);
@@ -158,7 +169,8 @@ public class AdminAccountSecurityServiceImpl implements AdminAccountSecurityServ
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateLoginMethods(String accountId, AdminLoginMethodsCommand command) {
-        Account user = getActiveUser(accountId);
+        String decodedAccountId = frontendIdCodecSupport.decodeIdentifier(accountId);
+        Account user = getActiveUser(decodedAccountId);
         ensureCanUpdateUser(user.getId());
 
         List<String> globalEnabled = accountSecurityProperties.getLoginMethods().getEnabled();
@@ -189,12 +201,13 @@ public class AdminAccountSecurityServiceImpl implements AdminAccountSecurityServ
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean toggleOauthChannel(String accountId, String channel, AdminOauthChannelCommand command) {
+        String decodedAccountId = frontendIdCodecSupport.decodeIdentifier(accountId);
         String key = channel == null ? "" : channel.trim().toLowerCase();
         if (!StringUtils.hasText(key)) {
             throw new ApiException(BusinessErrorCode.OPERATION_FAILED);
         }
         boolean disabled = Boolean.TRUE.equals(command.getDisabled());
-        Account user = getActiveUser(accountId);
+        Account user = getActiveUser(decodedAccountId);
         ensureCanUpdateUser(user.getId());
 
         AccountSecurity security = getOrInitSecurity(user);
@@ -213,7 +226,8 @@ public class AdminAccountSecurityServiceImpl implements AdminAccountSecurityServ
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean unbindOauthChannel(String accountId, String channel) {
-        Account user = getActiveUser(accountId);
+        String decodedAccountId = frontendIdCodecSupport.decodeIdentifier(accountId);
+        Account user = getActiveUser(decodedAccountId);
         ensureCanUpdateUser(user.getId());
         // 第三方登录绑定能力尚未实现，没有真实绑定可解除；此处为占位返回成功，待 OAuth 绑定落地后补全。
         return true;
@@ -303,14 +317,14 @@ public class AdminAccountSecurityServiceImpl implements AdminAccountSecurityServ
 
     private List<String> parseCsv(String value) {
         if (!StringUtils.hasText(value)) {
-            return List.of();
+            return new ArrayList<>();
         }
         return Arrays.stream(value.split(","))
                 .map(String::trim)
                 .filter(StringUtils::hasText)
                 .map(String::toLowerCase)
                 .distinct()
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private String normalizeEmail(String email) {

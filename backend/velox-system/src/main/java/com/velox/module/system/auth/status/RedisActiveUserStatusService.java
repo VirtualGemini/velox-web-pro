@@ -78,7 +78,7 @@ public class RedisActiveUserStatusService implements ActiveUserStatusService {
             }
         }
 
-        List<String> presenceValues = redisKeys.isEmpty() ? List.of() : stringRedisTemplate.opsForValue().multiGet(redisKeys);
+        List<String> presenceValues = redisKeys.isEmpty() ? new ArrayList<>() : stringRedisTemplate.opsForValue().multiGet(redisKeys);
         for (int i = 0; i < normalizedUserIds.size(); i++) {
             String userId = normalizedUserIds.get(i);
             String presence = presenceValues != null && i < presenceValues.size() ? presenceValues.get(i) : null;

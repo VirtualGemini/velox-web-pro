@@ -90,7 +90,7 @@
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
   import type { FormInstance, FormRules } from 'element-plus'
-  import { fetchRegister } from '@/api/auth'
+  import { fetchRegister, fetchGetAccessConfig } from '@/api/auth'
 
   defineOptions({ name: 'Register' })
 
@@ -116,6 +116,19 @@
   // 监听语言切换，重置表单
   watch(locale, () => {
     formKey.value++
+  })
+
+  // 路由保护：通用注册被全局关闭时，禁止访问注册页（防止强行输入 /auth/register）
+  onMounted(async () => {
+    try {
+      const config = await fetchGetAccessConfig()
+      if (!config.generalRegisterEnabled) {
+        ElMessage.warning(t('register.disabled'))
+        router.replace({ name: 'Login' })
+      }
+    } catch {
+      // 配置拉取失败时不阻断页面，后端仍会拒绝被关闭的注册请求（双重保护）
+    }
   })
 
   const formData = reactive<RegisterForm>({

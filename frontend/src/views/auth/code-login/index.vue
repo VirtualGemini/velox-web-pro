@@ -13,7 +13,7 @@
             <p class="sub-title">{{ $t('login.channel.subTitle') }}</p>
 
             <div class="mt-7.5 flex flex-col gap-3">
-              <div class="channel-card" @click="selectChannel('email')">
+              <div v-if="emailEnabled" class="channel-card" @click="selectChannel('email')">
                 <div class="channel-icon channel-icon--bare">
                   <img
                     :src="emailIcon"
@@ -27,7 +27,7 @@
                 <VeloxSvgIcon icon="ri:arrow-right-s-line" class="channel-arrow" />
               </div>
 
-              <div class="channel-card channel-card--disabled">
+              <div v-if="isChannelEnabled('github')" class="channel-card channel-card--disabled">
                 <div class="channel-icon channel-icon--bare">
                   <img
                     :src="githubIcon"
@@ -41,7 +41,7 @@
                 <span class="channel-tag">{{ $t('login.channel.comingSoon') }}</span>
               </div>
 
-              <div class="channel-card channel-card--disabled">
+              <div v-if="isChannelEnabled('linuxdo')" class="channel-card channel-card--disabled">
                 <div class="channel-icon channel-icon--bare">
                   <img
                     :src="linuxdoIcon"
@@ -76,6 +76,7 @@
   import linuxdoIcon from '@/assets/images/svg/linuxdo.svg'
   import { useSettingStore } from '@/store/modules/setting'
   import { grantAuthRouteAccess } from '../shared/routeAccess'
+  import { fetchGetAccessConfig } from '@/api/auth'
 
   defineOptions({ name: 'CodeLogin' })
 
@@ -83,6 +84,22 @@
   const { isDark } = storeToRefs(settingStore)
   const router = useRouter()
   const route = useRoute()
+
+  // 访问控制：控制各登录方式/第三方渠道卡片显隐
+  const emailEnabled = ref(true)
+  const thirdPartyChannels = ref<string[]>([])
+  const isChannelEnabled = (channel: string) => thirdPartyChannels.value.includes(channel)
+
+  onMounted(async () => {
+    try {
+      const config = await fetchGetAccessConfig()
+      emailEnabled.value = config.loginMethods?.includes('email_code') ?? false
+      thirdPartyChannels.value = config.thirdPartyLoginChannels ?? []
+    } catch {
+      // 拉取失败时保持默认（邮箱可用、第三方隐藏），后端仍会拒绝被关闭的方式
+      thirdPartyChannels.value = []
+    }
+  })
 
   const emailIcon = computed(() => (isDark.value ? gmailCleanerLightIcon : gmailCleanerDarkIcon))
   const githubIcon = computed(() => (isDark.value ? githubLightIcon : githubDarkIcon))

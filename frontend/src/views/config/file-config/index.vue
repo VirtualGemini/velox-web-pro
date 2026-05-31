@@ -946,6 +946,7 @@
           formatter: (row: FileConfig) =>
             h(ElSwitch, {
               modelValue: row.enabled === 1,
+              disabled: !canAccess('system:file-config:update'),
               'onUpdate:modelValue': (val: string | number | boolean) =>
                 handleEnabledChange(row, !!val)
             })

@@ -233,7 +233,8 @@
     "emailInvalid": "Invalid email format",
     "codeSent": "Verification code sent, please check your email",
     "passwordMismatch": "The two new passwords do not match",
-    "resetSuccess": "Password reset successful"
+    "resetSuccess": "Password reset successful",
+    "disabled": "Password recovery is disabled"
   },
   "register": {
     "title": "Create account",
@@ -255,7 +256,8 @@
     "submitBtnText": "Register",
     "success": "Registration successful",
     "hasAccount": "Already have an account?",
-    "toLogin": "To login"
+    "toLogin": "To login",
+    "disabled": "Registration is disabled"
   },
   "lockScreen": {
     "pwdError": "Password error",
@@ -316,7 +318,7 @@
       "serverError": "500"
     },
     "system": {
-      "title": "System Settings",
+      "title": "System",
       "account": "Account Manage",
       "role": "Role Manage",
       "accountCenter": "Account Center",
@@ -326,6 +328,10 @@
     "config": {
       "title": "Config",
       "fileConfig": "File Config"
+    },
+    "settings": {
+      "title": "Settings",
+      "accessControl": "Access Control"
     }
   },
   "pages": {
@@ -848,7 +854,7 @@
           }
         },
         "security": {
-          "title": "Security",
+          "title": "Account Security",
           "desc": "Maintain your password, login methods and multi-factor authentication settings to protect account access.",
           "loading": "Loading…",
           "passwordReset": {
@@ -1337,6 +1343,45 @@
           "confirmDelete": "Are you sure you want to delete config \"{name}\"? This action cannot be undone.",
           "deleteTitle": "Delete Confirmation",
           "deleteSuccess": "Deleted successfully"
+        }
+      }
+    },
+    "settings": {
+      "accessControl": {
+        "title": "Access Control",
+        "description": "Centrally manage global switches for pages accessible before login. Disabled features hide their entry on the corresponding page and are rejected by the backend.",
+        "saveSuccess": "Saved successfully",
+        "loadFailed": "Failed to load access control config",
+        "sections": {
+          "generalRegister": {
+            "title": "General Registration",
+            "description": "When disabled, the login page hides the registration entry and the register API is rejected."
+          },
+          "forgotPassword": {
+            "title": "Forgot Password",
+            "description": "When disabled, the login page hides the \"Forgot password\" entry and the recovery API is rejected."
+          },
+          "loginMethod": {
+            "title": "Login Methods",
+            "description": "Controls available login methods. Even if password is disabled, the login page still shows the full form, but submission is rejected by the backend.",
+            "atLeastOne": "Keep at least one login method"
+          },
+          "thirdPartyLogin": {
+            "title": "Third-party Login",
+            "description": "Controls available third-party login channels. Disabled channels hide their entry on the login page."
+          },
+          "thirdPartyRegister": {
+            "title": "Third-party Registration",
+            "description": "Controls available third-party registration channels. Third-party registration reuses the third-party login entry; disabling only affects registration."
+          }
+        },
+        "methods": {
+          "password": "Password",
+          "email_code": "Email Code"
+        },
+        "channels": {
+          "github": "GitHub",
+          "linuxdo": "LinuxDo"
         }
       }
     }

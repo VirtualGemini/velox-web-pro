@@ -20,13 +20,13 @@ const fastEnterConfig: FastEnterConfig = {
       routeName: 'Console'
     },
     {
-      name: '分析页',
-      description: '数据分析与可视化',
+      name: '暂无',
+      description: '暂无',
       icon: 'ri:game-line',
       iconColor: '#ff3b30',
       enabled: true,
       order: 2,
-      routeName: 'Analysis'
+      // routeName: 'Analysis'
     },
     {
       name: '礼花效果',
@@ -47,40 +47,40 @@ const fastEnterConfig: FastEnterConfig = {
       routeName: 'Chat'
     },
     {
-      name: '官方文档',
-      description: '使用指南与开发文档',
+      name: '暂无',
+      description: '暂无',
       icon: 'ri:bill-line',
       iconColor: '#ffb100',
       enabled: true,
       order: 5,
-      link: WEB_LINKS.DOCS
+      // link: WEB_LINKS.DOCS
     },
     {
-      name: '技术支持',
-      description: '技术支持与问题反馈',
+      name: '暂无',
+      description: '暂无',
       icon: 'ri:user-location-line',
       iconColor: '#ff6b6b',
       enabled: true,
       order: 6,
-      link: WEB_LINKS.COMMUNITY
+      // link: WEB_LINKS.COMMUNITY
     },
     {
-      name: '更新日志',
-      description: '版本更新与变更记录',
+      name: '暂无',
+      description: '暂无',
       icon: 'ri:gamepad-line',
       iconColor: '#38C0FC',
       enabled: true,
       order: 7,
-      routeName: 'ChangeLog'
+      // routeName: 'ChangeLog'
     },
     {
-      name: '哔哩哔哩',
-      description: '技术分享与交流',
+      name: '暂无',
+      description: '暂无',
       icon: 'ri:bilibili-line',
       iconColor: '#FB7299',
       enabled: true,
       order: 8,
-      link: WEB_LINKS.BILIBILI
+      // link: WEB_LINKS.BILIBILI
     }
   ],
   // 快速链接

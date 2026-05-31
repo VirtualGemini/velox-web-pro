@@ -12,6 +12,7 @@ import com.velox.module.system.persistence.support.MenuQuerySupport;
 import com.velox.framework.security.api.session.SecuritySessionService;
 import com.velox.framework.web.RequestDateTimeFormatter;
 import com.velox.module.system.id.generator.SystemEntityIdGenerator;
+import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
 import com.velox.module.system.permission.service.PermissionService;
 import com.velox.module.system.menu.dto.AuthItemDTO;
 import com.velox.module.system.menu.dto.MenuMetaDTO;
@@ -36,9 +37,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 public class MenuServiceImpl implements MenuService {
 
+    private static final Logger log = LoggerFactory.getLogger(MenuServiceImpl.class);
     private static final String MENU_TYPE_BUTTON = "button";
     private final MenuMapper menuMapper;
     private final RoleMapper roleMapper;
@@ -46,6 +51,7 @@ public class MenuServiceImpl implements MenuService {
     private final PermissionService permissionService;
     private final SystemEntityIdGenerator entityIdGenerator;
     private final SecuritySessionService securitySessionService;
+    private final SystemFrontendIdCodecSupport frontendIdCodecSupport;
 
     public MenuServiceImpl(
             MenuMapper menuMapper,
@@ -53,7 +59,8 @@ public class MenuServiceImpl implements MenuService {
             RoleMenuPermissionMapper roleMenuPermissionMapper,
             PermissionService permissionService,
             SystemEntityIdGenerator entityIdGenerator,
-            SecuritySessionService securitySessionService
+            SecuritySessionService securitySessionService,
+            SystemFrontendIdCodecSupport frontendIdCodecSupport
     ) {
         this.menuMapper = menuMapper;
         this.roleMapper = roleMapper;
@@ -61,6 +68,7 @@ public class MenuServiceImpl implements MenuService {
         this.permissionService = permissionService;
         this.entityIdGenerator = entityIdGenerator;
         this.securitySessionService = securitySessionService;
+        this.frontendIdCodecSupport = frontendIdCodecSupport;
     }
 
     @Override
@@ -74,10 +82,18 @@ public class MenuServiceImpl implements MenuService {
     }
 
     private List<MenuRouteDTO> buildMenus(boolean preservePermissionGrouping) {
-        Set<String> permittedMenuIds = permissionService.getAccountPermittedMenuIds(
-                securitySessionService.requireCurrentLoginId());
+        String currentLoginId = securitySessionService.requireCurrentLoginId();
+        Set<String> permittedMenuIds = permissionService.getAccountPermittedMenuIds(currentLoginId);
+
+        // 调试日志
+        // log.warn("=== DEBUG buildMenus ===");
+        // log.warn("currentLoginId: {}", currentLoginId);
+        // log.warn("permittedMenuIds size: {}", permittedMenuIds.size());
+        // log.warn("permittedMenuIds: {}", permittedMenuIds);
+
         if (permittedMenuIds.isEmpty()) {
-            return List.of();
+            log.error("WARNING: permittedMenuIds is empty, returning empty list");
+            return new ArrayList<>();
         }
 
         // 把祖先菜单一并纳入：仅用于让路由树保持连通（譬如 /system/account-center 需要 System 父节点），
@@ -122,6 +138,37 @@ public class MenuServiceImpl implements MenuService {
             parent.getMeta().getAuthList().add(authItemDTO);
         }
 
+        // 页面级闸门（仅作用于导航/路由下发，不影响角色授权树）：
+        // 对定义了 *:view 按钮的页面，若当前用户未获得该 view 权限，
+        // 则整页不下发（导航不显示、路由不注册，强行输入 URL 由前端路由守卫拦回首页）。
+        // 依据：route 的 authList 已是「已授权」按钮集合（超管拥有全部，自然不被过滤）。
+
+        // 临时禁用页面级闸门进行调试
+        if (!preservePermissionGrouping) {
+            Map<String, String> pageViewMarks = loadPageViewMarks();
+            if (!pageViewMarks.isEmpty()) {
+                Set<String> hiddenRouteIds = new LinkedHashSet<>();
+                for (MenuRouteDTO route : routeMap.values()) {
+                    String viewMark = pageViewMarks.get(route.getId());
+                    if (viewMark == null) {
+                        continue;
+                    }
+                    // 只对「真实可导航页面」生效（有 component）；隐藏的权限分组节点
+                    // （如账号中心，无 path/component，其按钮在 flatten 阶段上提父级）不在此过滤。
+                    if (!StringUtils.hasText(route.getComponent())) {
+                        continue;
+                    }
+                    boolean hasView = route.getMeta() != null
+                            && route.getMeta().getAuthList().stream()
+                            .anyMatch(item -> viewMark.equals(item.getAuthMark()));
+                    if (!hasView) {
+                        hiddenRouteIds.add(route.getId());
+                    }
+                }
+                hiddenRouteIds.forEach(routeMap::remove);
+            }
+        }
+
         List<MenuRouteDTO> roots = new ArrayList<>();
         for (Menu menu : menus) {
             if (MENU_TYPE_BUTTON.equalsIgnoreCase(menu.getMenuType())) {
@@ -144,7 +191,83 @@ public class MenuServiceImpl implements MenuService {
         }
 
         sortRoutes(roots);
-        return preservePermissionGrouping ? roots : flattenPermissionGroupingMenus(roots);
+
+        // log.warn("Before pruneEmptyDirectories: roots size = {}", roots.size());
+
+        // 临时禁用 pruneEmptyDirectories，因为页面级闸门已被禁用
+        /*
+        if (!preservePermissionGrouping) {
+            // 页面闸门可能把某个父目录的全部数据页过滤掉，导致空目录残留；按 DB 中的父子关系剪枝。
+            Set<String> directoryIds = menus.stream()
+                    .map(Menu::getParentId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+
+            log.warn("directoryIds size: {}", directoryIds.size());
+            log.warn("directoryIds: {}", directoryIds);
+
+            roots = pruneEmptyDirectories(roots, directoryIds);
+
+            log.warn("After pruneEmptyDirectories: roots size = {}", roots.size());
+        }
+        */
+
+        List<MenuRouteDTO> result = preservePermissionGrouping ? roots : flattenPermissionGroupingMenus(roots);
+
+        // 调试日志：查看最终返回结果
+        // log.warn("=== Final menu result ===");
+        // log.warn("Result size: {}", result.size());
+        // if (!result.isEmpty()) {
+        //     log.warn("First menu: id={}, name={}, path={}",
+        //         result.get(0).getId(),
+        //         result.get(0).getName(),
+        //         result.get(0).getPath());
+        // }
+
+        return result;
+    }
+
+    /**
+     * 加载页面访问权限标识：DB 中所有以 {@code :view} 结尾的按钮，映射「所属页面菜单ID → authMark」。
+     * 用于页面级闸门——与当前用户的授权无关，仅声明「哪些页面需要 view 权限才能访问」。
+     */
+    private Map<String, String> loadPageViewMarks() {
+        List<Menu> viewButtons = menuMapper.selectList(
+                MenuQuerySupport.selectColumns(new LambdaQueryWrapper<Menu>())
+                        .eq(Menu::getDeleted, 0)
+                        .eq(Menu::getIsEnable, 1)
+                        .eq(Menu::getMenuType, MENU_TYPE_BUTTON)
+                        .isNotNull(Menu::getAuthMark)
+        );
+        Map<String, String> result = new LinkedHashMap<>();
+        for (Menu button : viewButtons) {
+            String authMark = button.getAuthMark();
+            String parentId = button.getParentId();
+            if (authMark != null && authMark.endsWith(":view") && parentId != null) {
+                result.put(parentId, authMark);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 自底向上剪掉「空目录」：原本是父目录（在 DB 中作为他人 parentId 出现）但过滤后已无任何子路由的节点。
+     * 叶子页面（非目录）即使无子节点也会保留。
+     */
+    private List<MenuRouteDTO> pruneEmptyDirectories(List<MenuRouteDTO> routes, Set<String> directoryIds) {
+        List<MenuRouteDTO> kept = new ArrayList<>();
+        for (MenuRouteDTO route : routes) {
+            if (route.getChildren() != null && !route.getChildren().isEmpty()) {
+                route.setChildren(pruneEmptyDirectories(route.getChildren(), directoryIds));
+            }
+            boolean isDirectory = directoryIds.contains(route.getId());
+            boolean hasChildren = route.getChildren() != null && !route.getChildren().isEmpty();
+            if (isDirectory && !hasChildren) {
+                continue;
+            }
+            kept.add(route);
+        }
+        return kept;
     }
 
     private List<MenuRouteDTO> flattenPermissionGroupingMenus(List<MenuRouteDTO> routes) {
@@ -246,9 +369,10 @@ public class MenuServiceImpl implements MenuService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean update(String menuId, MenuSaveCommand command) {
-        Menu menu = getActiveMenu(menuId);
-        validateMenuCommand(command, menuId);
-        ensureAuthMarkUnique(command.getAuthMark(), menuId);
+        String decodedMenuId = frontendIdCodecSupport.decodeIdentifier(menuId);
+        Menu menu = getActiveMenu(decodedMenuId);
+        validateMenuCommand(command, decodedMenuId);
+        ensureAuthMarkUnique(command.getAuthMark(), decodedMenuId);
         applyCommand(menu, command);
         menu.setUpdateBy(currentOperator());
         menuMapper.updateById(menu);
@@ -258,15 +382,27 @@ public class MenuServiceImpl implements MenuService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean delete(String menuId) {
-        getActiveMenu(menuId);
-        Set<String> deleteIds = collectDescendantIds(Set.of(menuId));
+        String decodedMenuId = frontendIdCodecSupport.decodeIdentifier(menuId);
+        Menu menu = getActiveMenu(decodedMenuId);
+
+        // 检查是否有子菜单
+        long childCount = menuMapper.selectCount(new LambdaQueryWrapper<Menu>()
+                .eq(Menu::getParentId, decodedMenuId)
+                .eq(Menu::getDeleted, 0));
+
+        if (childCount > 0) {
+            throw new ApiException(BusinessErrorCode.MENU_HAS_CHILDREN);
+        }
+
         String operator = currentOperator();
 
+        // 删除角色菜单权限关联
         roleMenuPermissionMapper.delete(new LambdaQueryWrapper<com.velox.module.system.domain.model.RoleMenuPermission>()
-                .in(com.velox.module.system.domain.model.RoleMenuPermission::getMenuId, deleteIds));
+                .eq(com.velox.module.system.domain.model.RoleMenuPermission::getMenuId, decodedMenuId));
 
+        // 逻辑删除菜单
         menuMapper.update(null, new LambdaUpdateWrapper<Menu>()
-                .in(Menu::getId, deleteIds)
+                .eq(Menu::getId, decodedMenuId)
                 .eq(Menu::getDeleted, 0)
                 .set(Menu::getDeleted, 1)
                 .set(Menu::getUpdateTime, LocalDateTime.now(ZoneOffset.UTC))
@@ -342,9 +478,7 @@ public class MenuServiceImpl implements MenuService {
             throw new ApiException(BusinessErrorCode.MENU_PATH_REQUIRED);
         }
 
-        if (!StringUtils.hasText(command.getAuthMark())) {
-            throw new ApiException(BusinessErrorCode.MENU_AUTH_MARK_REQUIRED);
-        }
+        // 权限标识为可选字段，不做非空校验
 
         ensureNameUnique(command.getName(), menuId);
     }
@@ -467,7 +601,7 @@ public class MenuServiceImpl implements MenuService {
             List<String> roleCodes = entry.getValue().stream()
                     .map(roleCodeMap::get)
                     .filter(Objects::nonNull)
-                    .toList();
+                    .collect(Collectors.toList());
             if (!roleCodes.isEmpty()) {
                 result.put(entry.getKey(), roleCodes);
             }

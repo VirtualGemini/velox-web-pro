@@ -165,6 +165,7 @@ public class SystemAuthProperties {
                 "/login-code/send",
                 "/login-code/login",
                 "/captcha",
+                "/access-config",
                 "/register",
                 "/forgot-password/code",
                 "/forgot-password/reset",

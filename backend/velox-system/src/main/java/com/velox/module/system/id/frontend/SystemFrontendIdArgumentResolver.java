@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class SystemFrontendIdArgumentResolver implements HandlerMethodArgumentResolver {
@@ -79,18 +80,18 @@ public class SystemFrontendIdArgumentResolver implements HandlerMethodArgumentRe
         if (pathVariable != null) {
             HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
             if (request == null) {
-                return List.of();
+                return new ArrayList<>();
             }
             Object attribute = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
             if (!(attribute instanceof Map<?, ?> variables)) {
-                return List.of();
+                return new ArrayList<>();
             }
             Object value = variables.get(parameterName);
             if (value == null) {
                 if (isRequired(parameter)) {
                     throw new ServletRequestBindingException("Missing required path variable: " + parameterName);
                 }
-                return List.of();
+                return new ArrayList<>();
             }
             return List.of(String.valueOf(value));
         }
@@ -100,7 +101,7 @@ public class SystemFrontendIdArgumentResolver implements HandlerMethodArgumentRe
             if (isRequired(parameter)) {
                 throw new ServletRequestBindingException("Missing required request parameter: " + parameterName);
             }
-            return List.of();
+            return new ArrayList<>();
         }
         List<String> values = new ArrayList<>();
         for (String parameterValue : parameterValues) {
@@ -114,7 +115,7 @@ public class SystemFrontendIdArgumentResolver implements HandlerMethodArgumentRe
             values.addAll(Arrays.stream(parameterValue.split(","))
                     .map(String::trim)
                     .filter(token -> !token.isEmpty())
-                    .toList());
+                    .collect(Collectors.toList()));
         }
         return values;
     }

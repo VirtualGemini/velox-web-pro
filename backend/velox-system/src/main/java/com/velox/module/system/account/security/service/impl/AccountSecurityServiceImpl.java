@@ -616,7 +616,7 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
     private List<String> hashRecoveryCodes(List<String> recoveryCodes) {
         return recoveryCodes.stream()
                 .map(this::hashRecoveryCode)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private String hashRecoveryCode(String recoveryCode) {

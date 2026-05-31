@@ -10,10 +10,14 @@ import com.velox.module.system.auth.dto.MfaChallengeVerifyCommand;
 import com.velox.module.system.auth.dto.RegisterCommand;
 import com.velox.module.system.auth.dto.ResetPasswordCommand;
 import com.velox.module.system.auth.dto.TokenDTO;
+import com.velox.module.system.accesscontrol.vo.AccessControlRespVO;
 
 public interface LoginService {
 
     CaptchaDTO generateCaptcha();
+
+    /** 登录页等匿名页面读取的访问控制配置（决定展示哪些入口）。 */
+    AccessControlRespVO getAccessConfig();
 
     TokenDTO login(LoginCommand command);
 

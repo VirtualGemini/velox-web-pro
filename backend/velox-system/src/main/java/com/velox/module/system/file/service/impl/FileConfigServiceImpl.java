@@ -16,6 +16,7 @@ import com.velox.framework.file.spi.client.FileClientManager;
 import com.velox.module.system.file.persistence.FileConfigMapper;
 import com.velox.framework.web.RequestDateTimeFormatter;
 import com.velox.module.system.id.generator.SystemEntityIdGenerator;
+import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
 import com.velox.module.system.file.service.FileConfigService;
 import com.velox.module.system.file.support.FileStorageConfigClassResolver;
 import com.velox.module.system.file.vo.FileConfigPageReqVO;
@@ -37,6 +38,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Validated
@@ -69,16 +71,20 @@ public class FileConfigServiceImpl implements FileConfigService {
 
     private final FileFailureReasonResolver fileFailureReasonResolver;
 
+    private final SystemFrontendIdCodecSupport frontendIdCodecSupport;
+
     public FileConfigServiceImpl(FileClientManager fileClientManager,
                                  FileConfigMapper fileConfigMapper,
                                  Validator validator,
                                  SystemEntityIdGenerator entityIdGenerator,
-                                 FileFailureReasonResolver fileFailureReasonResolver) {
+                                 FileFailureReasonResolver fileFailureReasonResolver,
+                                 SystemFrontendIdCodecSupport frontendIdCodecSupport) {
         this.fileClientManager = fileClientManager;
         this.fileConfigMapper = fileConfigMapper;
         this.validator = validator;
         this.entityIdGenerator = entityIdGenerator;
         this.fileFailureReasonResolver = fileFailureReasonResolver;
+        this.frontendIdCodecSupport = frontendIdCodecSupport;
     }
 
     public LoadingCache<String, FileClient> getClientCache() {
@@ -102,10 +108,11 @@ public class FileConfigServiceImpl implements FileConfigService {
 
     @Override
     public void updateFileConfig(FileConfigSaveReqVO updateReqVO) {
-        FileConfig config = validateFileConfigExists(updateReqVO.getId());
+        String decodedId = frontendIdCodecSupport.decodeIdentifier(updateReqVO.getId());
+        FileConfig config = validateFileConfigExists(decodedId);
         validateClientConfig(updateReqVO.getStorage(), updateReqVO.getConfig());
         FileConfig updateObj = new FileConfig();
-        updateObj.setId(updateReqVO.getId());
+        updateObj.setId(decodedId);
         updateObj.setName(updateReqVO.getName());
         updateObj.setStorage(updateReqVO.getStorage());
         updateObj.setConfig(updateReqVO.getConfig());
@@ -119,10 +126,11 @@ public class FileConfigServiceImpl implements FileConfigService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateFileConfigMaster(String id) {
-        validateFileConfigExists(id);
+        String decodedId = frontendIdCodecSupport.decodeIdentifier(id);
+        validateFileConfigExists(decodedId);
         fileConfigMapper.updateNoneMaster();
         FileConfig updateObj = new FileConfig();
-        updateObj.setId(id);
+        updateObj.setId(decodedId);
         updateObj.setMaster(true);
         fileConfigMapper.updateById(updateObj);
         clearCache(null, true);
@@ -130,12 +138,13 @@ public class FileConfigServiceImpl implements FileConfigService {
 
     @Override
     public void updateFileConfigEnabled(String id, Integer enabled) {
-        validateFileConfigExists(id);
+        String decodedId = frontendIdCodecSupport.decodeIdentifier(id);
+        validateFileConfigExists(decodedId);
         FileConfig updateObj = new FileConfig();
-        updateObj.setId(id);
+        updateObj.setId(decodedId);
         updateObj.setEnabled(enabled);
         fileConfigMapper.updateById(updateObj);
-        clearCache(id, null);
+        clearCache(decodedId, null);
     }
 
     private void validateClientConfig(Integer storage, String config) {
@@ -161,24 +170,26 @@ public class FileConfigServiceImpl implements FileConfigService {
 
     @Override
     public void deleteFileConfig(String id) {
-        FileConfig config = validateFileConfigExists(id);
+        String decodedId = frontendIdCodecSupport.decodeIdentifier(id);
+        FileConfig config = validateFileConfigExists(decodedId);
         if (Boolean.TRUE.equals(config.getMaster())) {
             throw new ApiException(BusinessErrorCode.FILE_CONFIG_DELETE_FAIL_MASTER);
         }
-        fileConfigMapper.deleteById(id);
-        clearCache(id, null);
+        fileConfigMapper.deleteById(decodedId);
+        clearCache(decodedId, null);
     }
 
     @Override
     public void deleteFileConfigList(List<String> ids) {
-        List<FileConfig> configs = fileConfigMapper.selectByIds(ids);
+        List<String> decodedIds = frontendIdCodecSupport.decodeIdentifiers(ids);
+        List<FileConfig> configs = fileConfigMapper.selectByIds(decodedIds);
         for (FileConfig config : configs) {
             if (Boolean.TRUE.equals(config.getMaster())) {
                 throw new ApiException(BusinessErrorCode.FILE_CONFIG_DELETE_FAIL_MASTER);
             }
         }
-        fileConfigMapper.deleteByIds(ids);
-        ids.forEach(id -> clearCache(id, null));
+        fileConfigMapper.deleteByIds(decodedIds);
+        decodedIds.forEach(id -> clearCache(id, null));
     }
 
     private void clearCache(String id, Boolean master) {
@@ -200,7 +211,8 @@ public class FileConfigServiceImpl implements FileConfigService {
 
     @Override
     public FileConfigRespVO getFileConfig(String id) {
-        return toFileConfigRespVO(fileConfigMapper.selectById(id));
+        String decodedId = frontendIdCodecSupport.decodeIdentifier(id);
+        return toFileConfigRespVO(fileConfigMapper.selectById(decodedId));
     }
 
     @Override
@@ -222,20 +234,21 @@ public class FileConfigServiceImpl implements FileConfigService {
         Page<FileConfig> page = fileConfigMapper.selectPage(
                 new Page<>(pageReqVO.getPage(), pageReqVO.getSize()), wrapper);
         return PageResult.of(page.getTotal(), page.getCurrent(), page.getSize(),
-                page.getRecords().stream().map(this::toFileConfigRespVO).toList());
+                page.getRecords().stream().map(this::toFileConfigRespVO).collect(Collectors.toList()));
     }
 
     @Override
     public List<Integer> getSupportedStorageTypes() {
-        return fileClientManager.getSupportedStorageTypes().stream().sorted().toList();
+        return fileClientManager.getSupportedStorageTypes().stream().sorted().collect(Collectors.toList());
     }
 
     @Override
     public String testFileConfig(String id) {
-        validateFileConfigExists(id);
+        String decodedId = frontendIdCodecSupport.decodeIdentifier(id);
+        validateFileConfigExists(decodedId);
         byte[] content = "test".getBytes();
         try {
-            return getFileClient(id).upload(content, IdUtil.fastSimpleUUID() + ".txt", "text/plain");
+            return getFileClient(decodedId).upload(content, IdUtil.fastSimpleUUID() + ".txt", "text/plain");
         } catch (ApiException exception) {
             throw exception;
         } catch (ExecutionError exception) {

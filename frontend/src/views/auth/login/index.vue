@@ -66,9 +66,12 @@
                 <ElCheckbox v-model="formData.rememberPassword">{{
                   $t('login.rememberPwd')
                 }}</ElCheckbox>
-                <RouterLink class="text-theme" :to="{ name: 'ForgetPassword' }">{{
-                  $t('login.forgetPwd')
-                }}</RouterLink>
+                <RouterLink
+                  v-if="forgotPasswordEnabled"
+                  class="text-theme"
+                  :to="{ name: 'ForgetPassword' }"
+                  >{{ $t('login.forgetPwd') }}</RouterLink
+                >
               </div>
 
               <div style="margin-top: 30px">
@@ -83,16 +86,22 @@
                 </ElButton>
               </div>
 
-              <div class="mt-5 flex-cb text-sm text-gray-600">
-                <div>
+              <div
+                v-if="generalRegisterEnabled || otherLoginEnabled"
+                class="mt-5 flex-cb text-sm text-gray-600"
+              >
+                <div v-if="generalRegisterEnabled">
                   <span>{{ $t('login.noAccount') }}</span>
                   <RouterLink class="text-theme" :to="{ name: 'Register' }">{{
                     $t('login.register')
                   }}</RouterLink>
                 </div>
-                <RouterLink class="text-theme" :to="{ name: 'CodeLogin' }">{{
-                  $t('login.otherLogin')
-                }}</RouterLink>
+                <RouterLink
+                  v-if="otherLoginEnabled"
+                  class="text-theme"
+                  :to="{ name: 'CodeLogin' }"
+                  >{{ $t('login.otherLogin') }}</RouterLink
+                >
               </div>
             </ElForm>
           </AuthLoggedInGuard>
@@ -106,7 +115,7 @@
   import { useUserStore } from '@/store/modules/user'
   import { useI18n } from 'vue-i18n'
   import { HttpError } from '@/utils/http/error'
-  import { fetchLogin } from '@/api/auth'
+  import { fetchLogin, fetchGetAccessConfig } from '@/api/auth'
   import type { FormInstance, FormRules } from 'element-plus'
   import { useSettingStore } from '@/store/modules/setting'
   import { completeLogin } from '../shared/completeLogin'
@@ -118,6 +127,27 @@
   const { isDark } = storeToRefs(settingStore)
   const { t, locale } = useI18n()
   const formKey = ref(0)
+
+  // 访问控制：决定登录页展示哪些入口（密码表单始终显示）
+  const generalRegisterEnabled = ref(false)
+  const forgotPasswordEnabled = ref(false)
+  const otherLoginEnabled = ref(false)
+
+  const loadAccessConfig = async () => {
+    try {
+      const config = await fetchGetAccessConfig()
+      generalRegisterEnabled.value = config.generalRegisterEnabled
+      forgotPasswordEnabled.value = config.forgotPasswordEnabled
+      // “使用其它方式登录”入口：邮箱验证码或任一第三方登录渠道开启时显示
+      otherLoginEnabled.value =
+        (config.loginMethods?.includes('email_code') ?? false) ||
+        (config.thirdPartyLoginChannels?.length ?? 0) > 0
+    } catch {
+      // 拉取失败时保持入口隐藏（最小暴露），不阻塞密码登录
+    }
+  }
+
+  onMounted(loadAccessConfig)
 
   // 监听语言切换，重置表单
   watch(locale, () => {
@@ -237,7 +267,7 @@
 
   // 重置拖拽验证
   const resetDragVerify = () => {
-    dragVerify.value.reset()
+    dragVerify.value?.reset()
   }
 </script>
 

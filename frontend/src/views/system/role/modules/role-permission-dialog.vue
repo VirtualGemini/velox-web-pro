@@ -5,7 +5,7 @@
     width="520px"
     align-center
     class="el-dialog-border"
-    @close="handleClose"
+    @closed="handleClosed"
   >
     <ElScrollbar height="70vh">
       <ElTree
@@ -155,10 +155,17 @@
   )
 
   /**
-   * 关闭弹窗并清空选中状态
+   * 关闭弹窗
    */
   const handleClose = () => {
     visible.value = false
+  }
+
+  /**
+   * 弹窗关闭动画完成后清空选中状态
+   * 使用 @closed 事件而不是 @close，避免关闭时内容闪烁
+   */
+  const handleClosed = () => {
     treeRef.value?.setCheckedKeys([])
     isSelectAll.value = false
   }

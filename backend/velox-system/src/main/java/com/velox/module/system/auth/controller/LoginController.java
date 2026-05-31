@@ -12,6 +12,7 @@ import com.velox.module.system.auth.dto.RegisterCommand;
 import com.velox.module.system.auth.dto.ResetPasswordCommand;
 import com.velox.module.system.auth.dto.TokenDTO;
 import com.velox.module.system.auth.service.LoginService;
+import com.velox.module.system.accesscontrol.vo.AccessControlRespVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -32,6 +33,12 @@ public class LoginController {
     @GetMapping("/captcha")
     public Result<CaptchaDTO> getCaptcha() {
         return Result.ok(loginService.generateCaptcha());
+    }
+
+    @Operation(summary = "openapi.system.auth.login.access_config.summary")
+    @GetMapping("/access-config")
+    public Result<AccessControlRespVO> getAccessConfig() {
+        return Result.ok(loginService.getAccessConfig());
     }
 
     @Operation(summary = "openapi.system.auth.login.login.summary")

@@ -40,11 +40,14 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -250,7 +253,7 @@ public class AccountInfoServiceImpl implements AccountInfoService {
                 .filter(s -> !s.isEmpty())
                 .distinct()
                 .limit(10)
-                .toList();
+                .collect(Collectors.toList());
         if (normalized.isEmpty()) {
             return "[]";
         }
@@ -372,7 +375,7 @@ public class AccountInfoServiceImpl implements AccountInfoService {
     private List<String> getCurrentButtons(String userId) {
         Set<String> roleIds = permissionService.getAccountRoleIds(userId);
         if (roleIds.isEmpty()) {
-            return List.of();
+            return new ArrayList<>();
         }
 
         Set<String> menuIds = permissionService.getRoleMenuIds(roleIds).stream()
@@ -380,7 +383,7 @@ public class AccountInfoServiceImpl implements AccountInfoService {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
         if (menuIds.isEmpty()) {
-            return List.of();
+            return new ArrayList<>();
         }
 
         // 同时返回菜单级与按钮级 auth_mark，便于前端做权限判断和路由优先级。
@@ -391,7 +394,7 @@ public class AccountInfoServiceImpl implements AccountInfoService {
                 .map(Menu::getAuthMark)
                 .filter(mark -> mark != null && !mark.isBlank())
                 .distinct()
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private Account requireCurrentUser(String userId) {
@@ -555,12 +558,12 @@ public class AccountInfoServiceImpl implements AccountInfoService {
 
     private List<String> parseTags(String tags) {
         if (!StringUtils.hasText(tags)) {
-            return List.of();
+            return new ArrayList<>();
         }
         try {
             List<String> values = objectMapper.readValue(tags, new TypeReference<List<String>>() {
             });
-            return values == null ? List.of() : values;
+            return values == null ? new ArrayList<>() : values;
         } catch (Exception ex) {
             return Collections.emptyList();
         }

@@ -8,7 +8,7 @@
     "
     width="30%"
     align-center
-    @close="handleClose"
+    @closed="handleClosed"
   >
     <ElForm ref="formRef" :model="form" :rules="rules" label-width="auto">
       <ElFormItem v-if="dialogType === 'edit'" :label="t('pages.system.role.dialog.fields.type')">
@@ -186,10 +186,17 @@
   }
 
   /**
-   * 关闭弹窗并重置表单
+   * 关闭弹窗
    */
   const handleClose = () => {
     visible.value = false
+  }
+
+  /**
+   * 弹窗关闭动画完成后重置表单
+   * 使用 @closed 事件而不是 @close，避免关闭时表单闪烁
+   */
+  const handleClosed = () => {
     formRef.value?.resetFields()
   }
 

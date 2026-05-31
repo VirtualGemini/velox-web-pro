@@ -128,6 +128,15 @@ declare namespace Api {
       confirmPassword: string
     }
 
+    /** 登录页访问控制配置（匿名读取） */
+    interface AccessConfig {
+      generalRegisterEnabled: boolean
+      forgotPasswordEnabled: boolean
+      loginMethods: string[]
+      thirdPartyLoginChannels: string[]
+      thirdPartyRegisterChannels: string[]
+    }
+
     /** 用户基础信息（仅保留支撑系统运行所需字段） */
     interface AccountInfo {
       buttons: string[]
