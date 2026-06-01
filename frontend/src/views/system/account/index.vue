@@ -185,7 +185,7 @@
         {
           prop: 'status',
           label: 'pages.system.account.columns.accountStatus',
-          minWidth: 120,
+          minWidth: 150,
           formatter: (row: AccountListItem) => {
             const statusConfig = getAccountStatusConfig(row.status)
             return h(ElTag, { type: statusConfig.type }, () => t(statusConfig.textKey))
@@ -194,7 +194,7 @@
         {
           prop: 'activeStatus',
           label: 'pages.system.account.columns.activeStatus',
-          minWidth: 110,
+          minWidth: 150,
           formatter: (row: AccountListItem) => {
             const activeConfig = getActiveStatusConfig(row.activeStatus)
             return h(ElTag, { type: activeConfig.type, effect: 'plain' }, () =>
