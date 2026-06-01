@@ -1,7 +1,6 @@
 package com.velox.module.system.account.security.controller;
 
 import com.velox.common.result.Result;
-import com.velox.framework.security.api.annotation.RequirePermission;
 import com.velox.module.system.account.security.dto.EmailRebindCommand;
 import com.velox.module.system.account.security.dto.EmailRebindProofDTO;
 import com.velox.module.system.account.security.dto.EmailRebindProofVerifyCommand;
@@ -38,14 +37,12 @@ public class AccountSecurityController {
 
     @Operation(summary = "openapi.system.user.security.get_status.summary")
     @GetMapping("/status")
-    @RequirePermission("system:account-center:security-query")
     public Result<SecurityStatusDTO> getStatus() {
         return Result.ok(accountSecurityService.getStatus());
     }
 
     @Operation(summary = "openapi.system.user.security.send_email_unbind_code.summary")
     @PostMapping("/email/unbind/send-code")
-    @RequirePermission("system:account-center:email-unbind")
     public Result<Void> sendEmailUnbindCode() {
         accountSecurityService.sendEmailUnbindCode();
         return Result.ok();
@@ -53,7 +50,6 @@ public class AccountSecurityController {
 
     @Operation(summary = "openapi.system.user.security.send_email_rebind_proof_code.summary")
     @PostMapping("/email/rebind/proof/send-code")
-    @RequirePermission("system:account-center:email-rebind")
     public Result<Void> sendEmailRebindProofCode() {
         accountSecurityService.sendEmailRebindProofCode();
         return Result.ok();
@@ -61,7 +57,6 @@ public class AccountSecurityController {
 
     @Operation(summary = "openapi.system.user.security.verify_email_rebind_proof.summary")
     @PostMapping("/email/rebind/proof/verify")
-    @RequirePermission("system:account-center:email-rebind")
     public Result<EmailRebindProofDTO> verifyEmailRebindProof(
             @Valid @RequestBody EmailRebindProofVerifyCommand command) {
         return Result.ok(accountSecurityService.verifyEmailRebindProof(command));
@@ -69,7 +64,6 @@ public class AccountSecurityController {
 
     @Operation(summary = "openapi.system.user.security.send_email_rebind_code.summary")
     @PostMapping("/email/rebind/send-code")
-    @RequirePermission("system:account-center:email-rebind")
     public Result<Void> sendEmailRebindCode(@Valid @RequestBody EmailRebindSendCodeCommand command) {
         accountSecurityService.sendEmailRebindCode(command);
         return Result.ok();
@@ -77,28 +71,24 @@ public class AccountSecurityController {
 
     @Operation(summary = "openapi.system.user.security.rebind_email.summary")
     @PutMapping("/email/rebind")
-    @RequirePermission("system:account-center:email-rebind")
     public Result<Boolean> rebindEmail(@Valid @RequestBody EmailRebindCommand command) {
         return Result.ok(accountSecurityService.rebindEmail(command));
     }
 
     @Operation(summary = "openapi.system.user.security.unbind_email.summary")
     @PutMapping("/email/unbind")
-    @RequirePermission("system:account-center:email-unbind")
     public Result<Boolean> unbindEmail(@Valid @RequestBody EmailUnbindCommand command) {
         return Result.ok(accountSecurityService.unbindEmail(command));
     }
 
     @Operation(summary = "openapi.system.user.security.update_login_methods.summary")
     @PutMapping("/login-methods")
-    @RequirePermission("system:account-center:login-method-manage")
     public Result<Boolean> updateLoginMethods(@Valid @RequestBody LoginMethodsUpdateCommand command) {
         return Result.ok(accountSecurityService.updateLoginMethods(command));
     }
 
     @Operation(summary = "openapi.system.user.security.send_mfa_email_code.summary")
     @PostMapping("/mfa/email/send-code")
-    @RequirePermission("system:account-center:mfa-manage")
     public Result<Void> sendMfaEmailCode() {
         accountSecurityService.sendMfaEmailCode();
         return Result.ok();
@@ -106,28 +96,24 @@ public class AccountSecurityController {
 
     @Operation(summary = "openapi.system.user.security.update_mfa_email.summary")
     @PutMapping("/mfa/email")
-    @RequirePermission("system:account-center:mfa-manage")
     public Result<Boolean> updateMfaEmail(@Valid @RequestBody MfaEmailUpdateCommand command) {
         return Result.ok(accountSecurityService.updateMfaEmail(command));
     }
 
     @Operation(summary = "openapi.system.user.security.provision_mfa_totp.summary")
     @PostMapping("/mfa/totp/provision")
-    @RequirePermission("system:account-center:mfa-manage")
     public Result<MfaTotpProvisionDTO> provisionMfaTotp() {
         return Result.ok(accountSecurityService.provisionMfaTotp());
     }
 
     @Operation(summary = "openapi.system.user.security.enable_mfa_totp.summary")
     @PutMapping("/mfa/totp/enable")
-    @RequirePermission("system:account-center:mfa-manage")
     public Result<MfaTotpEnableResultDTO> enableMfaTotp(@Valid @RequestBody MfaTotpEnableCommand command) {
         return Result.ok(accountSecurityService.enableMfaTotp(command));
     }
 
     @Operation(summary = "openapi.system.user.security.disable_mfa_totp.summary")
     @PutMapping("/mfa/totp/disable")
-    @RequirePermission("system:account-center:mfa-manage")
     public Result<Boolean> disableMfaTotp(@Valid @RequestBody MfaTotpDisableCommand command) {
         return Result.ok(accountSecurityService.disableMfaTotp(command));
     }

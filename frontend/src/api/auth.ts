@@ -44,7 +44,7 @@ export function fetchGetAccountInfo() {
 }
 
 /**
- * 获取当前用户详细信息（账号中心使用，需要 system:account-center:profile-query 权限）
+ * 获取当前用户详细信息（账号中心使用，登录后即可调用）
  */
 export function fetchGetAccountDetail() {
   return request.get<Api.Auth.AccountDetail>({
