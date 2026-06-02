@@ -37,20 +37,41 @@ export class RouteRegistry {
       return
     }
 
-    // 验证路由配置
-    const validationResult = this.validator.validate(menuList)
-    if (!validationResult.valid) {
-      throw new Error(`路由配置验证失败: ${validationResult.errors.join(', ')}`)
+    // 输出非致命的诊断告警（重复路由名/组件、嵌套 Layout 误用等），仅记录不中断流程
+    const { warnings } = this.validator.validate(menuList)
+    warnings.forEach((msg) => console.warn(`[RouteRegistry] 路由配置告警: ${msg}`))
+
+    // 清洗路由：剔除无法注册的非法菜单（缺少 component 且非外链/iframe/目录），
+    // 不再因单条坏数据中断整个注册流程，避免一条菜单导致整站 500 不可用
+    const { routes: sanitizedMenuList, removed } = this.validator.sanitizeRoutes(menuList)
+    if (removed.length > 0) {
+      console.warn(
+        `[RouteRegistry] 已跳过 ${removed.length} 条无法注册的非法菜单（不影响其余菜单正常使用）:\n` +
+          removed
+            .map(
+              (item) =>
+                `  - ${item.title} (name: ${item.name || '-'}, path: ${item.path || '-'}) — ${item.reason}`
+            )
+            .join('\n')
+      )
     }
 
-    // 转换并注册路由
+    // 转换并注册路由（逐条容错：单条菜单注册失败仅跳过该条，不影响其余菜单）
     const removeRouteFns: (() => void)[] = []
 
-    menuList.forEach((route) => {
-      if (route.name && !this.router.hasRoute(route.name)) {
+    sanitizedMenuList.forEach((route) => {
+      if (!route.name || this.router.hasRoute(route.name)) {
+        return
+      }
+      try {
         const routeConfig = this.transformer.transform(route)
         const removeRouteFn = this.router.addRoute(routeConfig as RouteRecordRaw)
         removeRouteFns.push(removeRouteFn)
+      } catch (error) {
+        console.error(
+          `[RouteRegistry] 菜单注册失败，已跳过该条（name: ${String(route.name)}, path: ${route.path}）:`,
+          error
+        )
       }
     })
 

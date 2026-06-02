@@ -39,11 +39,17 @@ export class RouteTransformer {
       component: undefined
     }
 
+    const hasChildren = !!children?.length
+
     // 处理不同类型的路由
     if (route.meta.isIframe) {
       this.handleIframeRoute(converted, route, depth)
     } else if (this.isFirstLevelRoute(route, depth)) {
       this.handleFirstLevelRoute(converted, route, component as string)
+    } else if (depth === 0 && hasChildren && !component) {
+      // 一级目录菜单缺少 component：自动指向布局容器，
+      // 保证后台新增的顶级菜单即便未配置组件，其子菜单也能正常渲染
+      converted.component = this.componentLoader.loadLayout()
     } else {
       this.handleNormalRoute(converted, component as string)
     }
