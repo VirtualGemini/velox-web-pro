@@ -327,7 +327,8 @@
     },
     "config": {
       "title": "配置管理",
-      "fileConfig": "文件配置"
+      "fileConfig": "文件配置",
+      "mailAccount": "邮件配置"
     },
     "settings": {
       "title": "设置",
@@ -1344,6 +1345,174 @@
           "testSuccess": "测试成功",
           "acknowledged": "我知道了",
           "confirmDelete": "确定删除配置'{name}'吗？删除后无法恢复。",
+          "deleteTitle": "删除确认",
+          "deleteSuccess": "删除成功"
+        }
+      },
+      "mailAccount": {
+        "actions": {
+          "add": "新增邮箱",
+          "group": "分组管理",
+          "channel": "发件渠道",
+          "test": "测试发信",
+          "recover": "手动恢复"
+        },
+        "form": {
+          "titles": {
+            "create": "新增发件邮箱",
+            "edit": "编辑发件邮箱"
+          },
+          "fields": {
+            "name": "邮箱名称",
+            "group": "所属分组",
+            "channel": "发件渠道",
+            "username": "登录账号",
+            "password": "密码/授权码",
+            "fromAddress": "发件地址",
+            "fromName": "发件人名称",
+            "host": "服务器地址",
+            "port": "端口",
+            "ssl": "SSL",
+            "starttls": "STARTTLS",
+            "weight": "权重",
+            "failThreshold": "失败阈值",
+            "retryInterval": "重试间隔（秒）",
+            "maxUnavailable": "死亡阈值",
+            "enabled": "启用",
+            "remark": "备注"
+          },
+          "placeholders": {
+            "name": "请输入邮箱名称",
+            "group": "请选择所属分组",
+            "channel": "请选择发件渠道",
+            "username": "请输入登录账号，通常为邮箱地址",
+            "passwordCreate": "请输入密码或授权码",
+            "passwordEdit": "留空表示保留原密码/授权码",
+            "fromAddress": "选填，默认与登录账号一致",
+            "fromName": "选填，收件人看到的发件人名称",
+            "host": "留空将按邮箱域名自动识别",
+            "port": "留空将自动识别",
+            "remark": "请输入备注信息"
+          },
+          "options": {
+            "triState": {
+              "auto": "自动识别",
+              "on": "开启",
+              "off": "关闭"
+            }
+          },
+          "tooltips": {
+            "group": "邮箱仅属于一个分组，分组是发件池的过滤维度，停用分组会使其下邮箱移出可用池。",
+            "channel": "发件渠道即发件协议（如 SMTP / SMTPS），同样是发件池的过滤维度。",
+            "host": "SMTP 服务器地址。留空时系统会根据邮箱域名自动识别常见服务商配置。",
+            "port": "SMTP 端口。留空时按是否启用 SSL 自动选择（如 465 / 587）。",
+            "ssl": "是否使用 SSL 加密连接。留空为自动识别，SMTPS 渠道通常开启。",
+            "starttls": "是否使用 STARTTLS 升级加密。留空为自动识别。",
+            "weight": "数字越低优先级越高、被选中的概率越大；存在高权重邮箱使用次数保底机制，低权重邮箱被使用次数不会超过高权重邮箱。",
+            "failThreshold": "连续发送失败达到该次数后，邮箱被标记为异常。",
+            "retryInterval": "邮箱异常后，经过该秒数将再次被尝试使用。",
+            "maxUnavailable": "累计被标记异常达到该次数后，邮箱被标记为死亡，不可自动恢复，仅可手动恢复。"
+          }
+        },
+        "search": {
+          "name": "邮箱名称",
+          "group": "所属分组",
+          "channel": "发件渠道",
+          "healthStatus": "健康状态",
+          "enabled": "启用状态",
+          "createTimeRange": "创建时间",
+          "updateTimeRange": "编辑时间",
+          "rangeSeparator": "至",
+          "placeholders": {
+            "startTime": "开始时间",
+            "endTime": "结束时间"
+          }
+        },
+        "columns": {
+          "name": "邮箱名称",
+          "username": "登录账号",
+          "group": "分组",
+          "channel": "渠道",
+          "weight": "权重",
+          "healthStatus": "健康状态",
+          "usageCount": "使用次数",
+          "enabled": "状态",
+          "remark": "备注",
+          "createTime": "创建时间",
+          "updateTime": "编辑时间",
+          "operation": "操作"
+        },
+        "health": {
+          "normal": "正常",
+          "unavailable": "异常",
+          "dead": "死亡"
+        },
+        "group": {
+          "title": "分组管理",
+          "add": "新增分组",
+          "columns": {
+            "name": "分组名称",
+            "active": "生效",
+            "sort": "排序",
+            "accountCount": "邮箱数",
+            "remark": "备注",
+            "operation": "操作"
+          },
+          "form": {
+            "titles": {
+              "create": "新增分组",
+              "edit": "编辑分组"
+            },
+            "fields": {
+              "name": "分组名称",
+              "active": "生效",
+              "sort": "排序",
+              "remark": "备注"
+            },
+            "placeholders": {
+              "name": "请输入分组名称",
+              "remark": "请输入备注信息"
+            }
+          },
+          "messages": {
+            "enterName": "请输入分组名称",
+            "createSuccess": "新增成功",
+            "updateSuccess": "更新成功",
+            "confirmDelete": "确定删除分组'{name}'吗？",
+            "deleteTitle": "删除确认",
+            "deleteSuccess": "删除成功",
+            "activeSuccess": "已生效",
+            "inactiveSuccess": "已停用"
+          }
+        },
+        "channel": {
+          "title": "发件渠道",
+          "tip": "勾选生效的发件渠道，仅在生效渠道范围内的邮箱才会参与发件池。",
+          "active": "生效",
+          "accountCount": "邮箱数：{count}",
+          "empty": "暂无可配置的发件渠道",
+          "saveSuccess": "已更新生效渠道"
+        },
+        "messages": {
+          "missingId": "当前邮箱缺少 id，请确认列表接口返回内容",
+          "enterName": "请输入邮箱名称",
+          "selectGroup": "请选择所属分组",
+          "selectChannel": "请选择发件渠道",
+          "enterUsername": "请输入登录账号",
+          "enterPassword": "请输入密码或授权码",
+          "createSuccess": "新增成功",
+          "updateSuccess": "更新成功",
+          "enabledSuccess": "已启用",
+          "disabledSuccess": "已禁用",
+          "testPromptTitle": "发送测试邮件",
+          "testPromptPlaceholder": "请输入接收测试邮件的目标邮箱",
+          "testEmailInvalid": "请输入正确的邮箱地址",
+          "testSending": "正在发送测试邮件…",
+          "testSuccess": "测试邮件已发送，请前往目标邮箱查收以验证是否可用",
+          "confirmRecover": "确定恢复邮箱'{name}'吗？恢复后将重置失败计数并重新参与发件。",
+          "recoverTitle": "恢复确认",
+          "recoverSuccess": "已恢复",
+          "confirmDelete": "确定删除邮箱'{name}'吗？删除后无法恢复。",
           "deleteTitle": "删除确认",
           "deleteSuccess": "删除成功"
         }

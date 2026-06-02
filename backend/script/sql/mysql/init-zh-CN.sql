@@ -72,7 +72,10 @@ INSERT INTO `sys_id_sequence` (`business_type`, `current_value`) VALUES
   ('sys_role_menu_permission',0),
   ('sys_file_config',0),
   ('sys_file',0),
-  ('sys_file_content',0);
+  ('sys_file_content',0),
+  ('sys_mail_group',0),
+  ('sys_mail_channel',0),
+  ('sys_mail_account',0);
 /*!40000 ALTER TABLE `sys_id_sequence` ENABLE KEYS */;
 
 --
@@ -113,6 +116,107 @@ INSERT INTO `sys_file_config` VALUES
   ('1900000000000000011','FTP存储',11,'FTP 文件存储示例',0,'{\"host\": \"127.0.0.1\", \"port\": 21, \"username\": \"ftp-user\", \"password\": \"ftp-password\", \"mode\": \"Passive\", \"basePath\": \"/uploads\", \"domain\": \"http://127.0.0.1:3006\"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000072','SFTP存储',12,'SFTP 文件存储示例',0,'{\"host\": \"127.0.0.1\", \"port\": 22, \"username\": \"sftp-user\", \"password\": \"sftp-password\", \"basePath\": \"/uploads\", \"domain\": \"http://127.0.0.1:3006\"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 /*!40000 ALTER TABLE `sys_file_config` ENABLE KEYS */;
+
+--
+-- Table structure for table `sys_mail_group`
+--
+
+DROP TABLE IF EXISTS `sys_mail_group`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_mail_group` (
+  `id` bigint NOT NULL COMMENT '主键ID',
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '分组名称',
+  `active` tinyint DEFAULT '1' COMMENT '是否生效(0-否 1-是)',
+  `sort` int DEFAULT '1' COMMENT '排序',
+  `remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_by` bigint DEFAULT NULL COMMENT '创建人',
+  `update_by` bigint DEFAULT NULL COMMENT '更新人',
+  `deleted` tinyint DEFAULT '0' COMMENT '逻辑删除(0-未删除 1-已删除)',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='发件分组表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+/*!40000 ALTER TABLE `sys_mail_group` DISABLE KEYS */;
+INSERT INTO `sys_mail_group` VALUES
+  ('1900000000000000210','默认分组',1,1,'系统默认发件分组','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+/*!40000 ALTER TABLE `sys_mail_group` ENABLE KEYS */;
+
+--
+-- Table structure for table `sys_mail_channel`
+--
+
+DROP TABLE IF EXISTS `sys_mail_channel`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_mail_channel` (
+  `id` bigint NOT NULL COMMENT '主键ID',
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '渠道名称',
+  `protocol` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '协议(SMTP/SMTPS)',
+  `active` tinyint DEFAULT '1' COMMENT '是否生效(0-否 1-是)',
+  `sort` int DEFAULT '1' COMMENT '排序',
+  `remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_by` bigint DEFAULT NULL COMMENT '创建人',
+  `update_by` bigint DEFAULT NULL COMMENT '更新人',
+  `deleted` tinyint DEFAULT '0' COMMENT '逻辑删除(0-未删除 1-已删除)',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='发件渠道表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+/*!40000 ALTER TABLE `sys_mail_channel` DISABLE KEYS */;
+INSERT INTO `sys_mail_channel` VALUES
+  ('1900000000000000211','SMTP','SMTP',1,1,'SMTP 明文/STARTTLS 发件协议','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000212','SMTPS','SMTPS',1,2,'SMTPS 加密发件协议','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+/*!40000 ALTER TABLE `sys_mail_channel` ENABLE KEYS */;
+
+--
+-- Table structure for table `sys_mail_account`
+--
+
+DROP TABLE IF EXISTS `sys_mail_account`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_mail_account` (
+  `id` bigint NOT NULL COMMENT '主键ID',
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '名称/别名',
+  `group_id` bigint DEFAULT NULL COMMENT '所属分组ID',
+  `channel_id` bigint DEFAULT NULL COMMENT '所属渠道ID',
+  `username` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'SMTP用户名',
+  `password` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'SMTP授权码/密码',
+  `from_address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '发件地址(留空用username)',
+  `from_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '发件人名称',
+  `host` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'SMTP主机(留空自动识别)',
+  `port` int DEFAULT NULL COMMENT 'SMTP端口(留空自动识别)',
+  `ssl_enabled` tinyint DEFAULT NULL COMMENT '是否SSL(0-否 1-是 null-自动)',
+  `starttls` tinyint DEFAULT NULL COMMENT '是否STARTTLS(0-否 1-是 null-自动)',
+  `weight` int DEFAULT '100' COMMENT '权重(越低越优先)',
+  `fail_threshold` int DEFAULT '3' COMMENT '触发异常的连续失败次数',
+  `retry_interval` int DEFAULT '300' COMMENT '重试间隔(秒)',
+  `max_unavailable` int DEFAULT '5' COMMENT '累计异常达到该次数则死亡',
+  `health_status` tinyint DEFAULT '0' COMMENT '健康状态(0-正常 1-异常 2-死亡)',
+  `usage_count` bigint DEFAULT '0' COMMENT '已使用次数',
+  `fail_count` int DEFAULT '0' COMMENT '当前连续失败次数',
+  `unavailable_count` int DEFAULT '0' COMMENT '累计被标记异常次数',
+  `next_retry_time` datetime DEFAULT NULL COMMENT '下次可重试时间',
+  `last_used_time` datetime DEFAULT NULL COMMENT '上次使用时间',
+  `remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
+  `enabled` tinyint DEFAULT '1' COMMENT '启用状态(0-禁用 1-启用)',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_by` bigint DEFAULT NULL COMMENT '创建人',
+  `update_by` bigint DEFAULT NULL COMMENT '更新人',
+  `deleted` tinyint DEFAULT '0' COMMENT '逻辑删除(0-未删除 1-已删除)',
+  PRIMARY KEY (`id`),
+  KEY `idx_sys_mail_account_group_id` (`group_id`),
+  KEY `idx_sys_mail_account_channel_id` (`channel_id`),
+  KEY `idx_sys_mail_account_enabled` (`enabled`),
+  KEY `idx_sys_mail_account_health_status` (`health_status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='发件邮箱表';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `sys_file`
@@ -515,6 +619,14 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `menu_type`, `name`, `title`, `path`,
   ('1900000000000000039','1900000000000000003','button','FileConfigCreate','新增',NULL,NULL,NULL,NULL,'system:file-config:create',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000076','1900000000000000003','button','FileConfigUpdate','编辑',NULL,NULL,NULL,NULL,'system:file-config:update',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000044','1900000000000000003','button','FileConfigDelete','删除',NULL,NULL,NULL,NULL,'system:file-config:delete',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- Config > MailAccount
+  ('1900000000000003001','1900000000000000029','menu','MailAccount','menus.config.mailAccount','mail-account','/config/mail-account',NULL,'',NULL,1,2,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003002','1900000000000003001','button','MailAccountQuery','查询',NULL,NULL,NULL,NULL,'system:mail-account:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003003','1900000000000003001','button','MailAccountCreate','新增',NULL,NULL,NULL,NULL,'system:mail-account:create',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003004','1900000000000003001','button','MailAccountUpdate','编辑',NULL,NULL,NULL,NULL,'system:mail-account:update',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003005','1900000000000003001','button','MailAccountDelete','删除',NULL,NULL,NULL,NULL,'system:mail-account:delete',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003006','1900000000000003001','button','MailAccountGroup','分组管理',NULL,NULL,NULL,NULL,'system:mail-account:group',1,5,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003007','1900000000000003001','button','MailAccountChannel','发件渠道',NULL,NULL,NULL,NULL,'system:mail-account:channel',1,6,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- Settings
   ('1900000000000002001',NULL,'menu','Settings','menus.settings.title','/settings','/index/index',NULL,'ri:settings-4-line',NULL,1,90,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- Settings > AccessControl

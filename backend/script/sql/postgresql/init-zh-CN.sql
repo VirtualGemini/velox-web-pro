@@ -11,6 +11,9 @@ DROP TABLE IF EXISTS sys_role CASCADE;
 DROP TABLE IF EXISTS sys_file_content CASCADE;
 DROP TABLE IF EXISTS sys_file CASCADE;
 DROP TABLE IF EXISTS sys_file_config CASCADE;
+DROP TABLE IF EXISTS sys_mail_account CASCADE;
+DROP TABLE IF EXISTS sys_mail_group CASCADE;
+DROP TABLE IF EXISTS sys_mail_channel CASCADE;
 DROP TABLE IF EXISTS sys_id_sequence CASCADE;
 
 CREATE TABLE sys_id_sequence (
@@ -32,7 +35,10 @@ INSERT INTO sys_id_sequence (business_type, current_value) VALUES
   ('sys_role_menu_permission',0),
   ('sys_file_config',0),
   ('sys_file',0),
-  ('sys_file_content',0);
+  ('sys_file_content',0),
+  ('sys_mail_group',0),
+  ('sys_mail_channel',0),
+  ('sys_mail_account',0);
 
 CREATE TABLE sys_file_config (
   id bigint PRIMARY KEY,
@@ -58,6 +64,77 @@ INSERT INTO sys_file_config (id, name, storage, remark, master, config, enabled,
   ('1900000000000000041','S3云存储',20,'S3/OSS云存储(当前仅测试阿里云，理论上 S3 类型都支持，若遇到问题请提出您宝贵的 issue，这将有利于我们完善和优化)',false,'{"bucket": "bucket", "endpoint": "oss-cn-beijing.aliyuncs.com", "accessKey": "Your Access Key", "accessSecret": "Your Access Secret", "enablePublicAccess": true, "enablePathStyleAccess": false}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000011','FTP存储',11,'FTP 文件存储示例',false,'{"host": "127.0.0.1", "port": 21, "username": "ftp-user", "password": "ftp-password", "mode": "Passive", "basePath": "/uploads", "domain": "http://127.0.0.1:3006"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000072','SFTP存储',12,'SFTP 文件存储示例',false,'{"host": "127.0.0.1", "port": 22, "username": "sftp-user", "password": "sftp-password", "basePath": "/uploads", "domain": "http://127.0.0.1:3006"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+
+CREATE TABLE sys_mail_group (
+  id bigint PRIMARY KEY,
+  name varchar(100) NOT NULL,
+  active smallint DEFAULT 1,
+  sort integer DEFAULT 1,
+  remark varchar(500),
+  create_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  update_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  create_by bigint,
+  update_by bigint,
+  deleted smallint DEFAULT 0
+);
+
+INSERT INTO sys_mail_group (id, name, active, sort, remark, create_time, update_time, create_by, update_by, deleted) VALUES
+  ('1900000000000000210','默认分组',1,1,'系统默认发件分组','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+
+CREATE TABLE sys_mail_channel (
+  id bigint PRIMARY KEY,
+  name varchar(100) NOT NULL,
+  protocol varchar(20) NOT NULL,
+  active smallint DEFAULT 1,
+  sort integer DEFAULT 1,
+  remark varchar(500),
+  create_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  update_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  create_by bigint,
+  update_by bigint,
+  deleted smallint DEFAULT 0
+);
+
+INSERT INTO sys_mail_channel (id, name, protocol, active, sort, remark, create_time, update_time, create_by, update_by, deleted) VALUES
+  ('1900000000000000211','SMTP','SMTP',1,1,'SMTP 明文/STARTTLS 发件协议','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000212','SMTPS','SMTPS',1,2,'SMTPS 加密发件协议','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+
+CREATE TABLE sys_mail_account (
+  id bigint PRIMARY KEY,
+  name varchar(100) NOT NULL,
+  group_id bigint,
+  channel_id bigint,
+  username varchar(255) NOT NULL,
+  password varchar(500),
+  from_address varchar(255),
+  from_name varchar(100),
+  host varchar(255),
+  port integer,
+  ssl_enabled smallint,
+  starttls smallint,
+  weight integer DEFAULT 100,
+  fail_threshold integer DEFAULT 3,
+  retry_interval integer DEFAULT 300,
+  max_unavailable integer DEFAULT 5,
+  health_status smallint DEFAULT 0,
+  usage_count bigint DEFAULT 0,
+  fail_count integer DEFAULT 0,
+  unavailable_count integer DEFAULT 0,
+  next_retry_time timestamp,
+  last_used_time timestamp,
+  remark varchar(500),
+  enabled smallint DEFAULT 1,
+  create_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  update_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  create_by bigint,
+  update_by bigint,
+  deleted smallint DEFAULT 0
+);
+
+CREATE INDEX idx_sys_mail_account_group_id ON sys_mail_account (group_id);
+CREATE INDEX idx_sys_mail_account_channel_id ON sys_mail_account (channel_id);
+CREATE INDEX idx_sys_mail_account_enabled ON sys_mail_account (enabled);
+CREATE INDEX idx_sys_mail_account_health_status ON sys_mail_account (health_status);
 
 CREATE TABLE sys_file (
   id bigint PRIMARY KEY,
@@ -329,6 +406,14 @@ INSERT INTO sys_menu (id, parent_id, menu_type, name, title, path, component, re
   ('1900000000000000039','1900000000000000003','button','FileConfigCreate','新增',NULL,NULL,NULL,NULL,'system:file-config:create',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000076','1900000000000000003','button','FileConfigUpdate','编辑',NULL,NULL,NULL,NULL,'system:file-config:update',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000044','1900000000000000003','button','FileConfigDelete','删除',NULL,NULL,NULL,NULL,'system:file-config:delete',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- Config > MailAccount
+  ('1900000000000003001','1900000000000000029','menu','MailAccount','menus.config.mailAccount','mail-account','/config/mail-account',NULL,'',NULL,1,2,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003002','1900000000000003001','button','MailAccountQuery','查询',NULL,NULL,NULL,NULL,'system:mail-account:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003003','1900000000000003001','button','MailAccountCreate','新增',NULL,NULL,NULL,NULL,'system:mail-account:create',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003004','1900000000000003001','button','MailAccountUpdate','编辑',NULL,NULL,NULL,NULL,'system:mail-account:update',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003005','1900000000000003001','button','MailAccountDelete','删除',NULL,NULL,NULL,NULL,'system:mail-account:delete',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003006','1900000000000003001','button','MailAccountGroup','分组管理',NULL,NULL,NULL,NULL,'system:mail-account:group',1,5,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003007','1900000000000003001','button','MailAccountChannel','发件渠道',NULL,NULL,NULL,NULL,'system:mail-account:channel',1,6,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
     -- Settings
   ('1900000000000002001',NULL,'menu','Settings','menus.settings.title','/settings','/index/index',NULL,'ri:settings-4-line',NULL,1,90,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
     -- Settings > AccessControl

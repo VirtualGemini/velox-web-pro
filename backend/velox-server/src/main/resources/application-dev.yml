@@ -106,18 +106,18 @@ velox:
     # 是否启用文件能力；开发环境显式开启，避免依赖默认值
     enabled: true
   email:
-    # 是否启用邮件模块；false 时注入 disabled/noop 实现，true 时启用真实发送能力
-    enabled: ${MAIL_ENABLED:false}
-    # SMTP 用户名，通常与发件邮箱相同
-    username: ${MAIL_USERNAME:${MAIL_SENDER:}}
-    # 发件邮箱授权码或 SMTP 密码
-    password: ${MAIL_PASSWORD:}
-    # 默认发件人地址
-    from: ${MAIL_FROM:${MAIL_SENDER:}}
+    # false 时注入 disabled/noop 实现；true 时启用邮件能力
+    # 发件邮箱（host/username/password/from/ssl 等）已改为数据库热配置：配置管理 - 邮箱管理（sys_mail_account 发件池），
+    # 由 PooledMailChannel 在发送时按账号动态挑选并覆盖发件人，业务调用点零改动。
+    # 下方 username/password 仅为占位，用于满足 starter 在 enabled=true 时的非空校验，实际发送不再使用本处凭据。
+    enabled: true
+    # 占位用户名（真实发件账号来自数据库发件池）
+    username: ${MAIL_USERNAME:pool@velox.local}
+    # 占位密码（真实授权码来自数据库发件池）
+    password: ${MAIL_PASSWORD:pool-placeholder}
+    # 默认发件人名称（账号未单独配置发件人名称时的兜底）
     # 默认发件人名称
     from-name: Velox
-    # 是否启用 SSL；未显式配置 host/port 时会按邮箱域名自动推断
-    ssl: ${MAIL_SSL:true}
     async:
       enabled: true
       virtual-threads: true

@@ -127,6 +127,16 @@ public enum BusinessErrorCode implements ErrorCode {
     USER_UPDATE_FORBIDDEN(22005, "无权限修改该用户"),
     SYSTEM_ROLE_CODE_IMMUTABLE(22006, "系统角色编码不允许修改"),
     ROLE_MENU_GRANT_BEYOND_SCOPE(22007, "无权授予超出自身范围的菜单权限"),
+
+    // ---- 邮件发件池模块 (23000-23999) ----
+    MAIL_ACCOUNT_NOT_FOUND(23000, "发件邮箱不存在"),
+    MAIL_GROUP_NOT_FOUND(23001, "发件分组不存在"),
+    MAIL_CHANNEL_NOT_FOUND(23002, "发件渠道不存在"),
+    MAIL_GROUP_IN_USE(23003, "该分组下存在发件邮箱，无法删除"),
+    MAIL_TEST_EMAIL_INVALID(23004, "目标邮箱格式不正确"),
+    MAIL_ACCOUNT_TEST_FAILED(23005, "测试邮件发送失败: %s"),
+    MAIL_NO_AVAILABLE_ACCOUNT(23006, "当前没有可用的发件邮箱"),
+    MAIL_SEND_FAILED(23007, "邮件发送失败: %s"),
     ;
 
     private final int code;

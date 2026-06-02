@@ -20,17 +20,6 @@
               {{ t('pages.system.account.actions.addAccount') }}
             </ElButton>
             <ElButton
-              v-if="hasAuth('system:account:delete')"
-              class="velox-batch-delete"
-              type="danger"
-              plain
-              :disabled="selectedRows.length === 0"
-              @click="handleBatchDelete"
-              v-ripple
-            >
-              {{ t('common.batchDelete') }}
-            </ElButton>
-            <ElButton
               v-if="hasAuth('system:account:update')"
               class="velox-batch-cancel"
               type="warning"
@@ -40,6 +29,17 @@
               v-ripple
             >
               {{ t('common.batchCancel') }}
+            </ElButton>
+            <ElButton
+              v-if="hasAuth('system:account:delete')"
+              class="velox-batch-delete"
+              type="danger"
+              plain
+              :disabled="selectedRows.length === 0"
+              @click="handleBatchDelete"
+              v-ripple
+            >
+              {{ t('common.batchDelete') }}
             </ElButton>
           </ElSpace>
         </template>

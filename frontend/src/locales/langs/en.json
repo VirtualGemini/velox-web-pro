@@ -327,7 +327,8 @@
     },
     "config": {
       "title": "Config",
-      "fileConfig": "File Config"
+      "fileConfig": "File Config",
+      "mailAccount": "Mail Config"
     },
     "settings": {
       "title": "Settings",
@@ -1341,6 +1342,174 @@
           "testSuccess": "Test succeeded",
           "acknowledged": "Got it",
           "confirmDelete": "Are you sure you want to delete config \"{name}\"? This action cannot be undone.",
+          "deleteTitle": "Delete Confirmation",
+          "deleteSuccess": "Deleted successfully"
+        }
+      },
+      "mailAccount": {
+        "actions": {
+          "add": "Add Mailbox",
+          "group": "Groups",
+          "channel": "Channels",
+          "test": "Send Test",
+          "recover": "Recover"
+        },
+        "form": {
+          "titles": {
+            "create": "Add Sending Mailbox",
+            "edit": "Edit Sending Mailbox"
+          },
+          "fields": {
+            "name": "Name",
+            "group": "Group",
+            "channel": "Channel",
+            "username": "Login Account",
+            "password": "Password / Auth Code",
+            "fromAddress": "From Address",
+            "fromName": "From Name",
+            "host": "Host",
+            "port": "Port",
+            "ssl": "SSL",
+            "starttls": "STARTTLS",
+            "weight": "Weight",
+            "failThreshold": "Fail Threshold",
+            "retryInterval": "Retry Interval (s)",
+            "maxUnavailable": "Dead Threshold",
+            "enabled": "Enabled",
+            "remark": "Remark"
+          },
+          "placeholders": {
+            "name": "Please enter a mailbox name",
+            "group": "Please select a group",
+            "channel": "Please select a channel",
+            "username": "Login account, usually the email address",
+            "passwordCreate": "Please enter the password or auth code",
+            "passwordEdit": "Leave blank to keep the current password / auth code",
+            "fromAddress": "Optional, defaults to the login account",
+            "fromName": "Optional, the sender name recipients see",
+            "host": "Leave blank to auto-detect by email domain",
+            "port": "Leave blank to auto-detect",
+            "remark": "Please enter a remark"
+          },
+          "options": {
+            "triState": {
+              "auto": "Auto",
+              "on": "On",
+              "off": "Off"
+            }
+          },
+          "tooltips": {
+            "group": "A mailbox belongs to a single group. Groups are a filter of the sending pool; disabling a group removes its mailboxes from the pool.",
+            "channel": "The channel is the sending protocol (e.g. SMTP / SMTPS) and is also a filter of the sending pool.",
+            "host": "SMTP server host. Leave blank to auto-detect common provider settings by email domain.",
+            "port": "SMTP port. Leave blank to auto-select based on SSL (e.g. 465 / 587).",
+            "ssl": "Whether to use an SSL-encrypted connection. Leave blank for auto; usually on for SMTPS.",
+            "starttls": "Whether to upgrade the connection with STARTTLS. Leave blank for auto.",
+            "weight": "The lower the number, the higher the priority and the greater the chance of being selected. A minimum-usage guarantee ensures lower-weight mailboxes are never used more than higher-weight ones.",
+            "failThreshold": "After this many consecutive send failures, the mailbox is marked abnormal.",
+            "retryInterval": "After being marked abnormal, the mailbox is retried again once this many seconds elapse.",
+            "maxUnavailable": "Once the mailbox has been marked abnormal this many times in total, it is marked dead and can only be recovered manually."
+          }
+        },
+        "search": {
+          "name": "Name",
+          "group": "Group",
+          "channel": "Channel",
+          "healthStatus": "Health",
+          "enabled": "Status",
+          "createTimeRange": "Created",
+          "updateTimeRange": "Updated",
+          "rangeSeparator": "to",
+          "placeholders": {
+            "startTime": "Start time",
+            "endTime": "End time"
+          }
+        },
+        "columns": {
+          "name": "Name",
+          "username": "Login Account",
+          "group": "Group",
+          "channel": "Channel",
+          "weight": "Weight",
+          "healthStatus": "Health",
+          "usageCount": "Usage",
+          "enabled": "Status",
+          "remark": "Remark",
+          "createTime": "Created",
+          "updateTime": "Updated",
+          "operation": "Operation"
+        },
+        "health": {
+          "normal": "Normal",
+          "unavailable": "Abnormal",
+          "dead": "Dead"
+        },
+        "group": {
+          "title": "Group Management",
+          "add": "Add Group",
+          "columns": {
+            "name": "Name",
+            "active": "Active",
+            "sort": "Sort",
+            "accountCount": "Mailboxes",
+            "remark": "Remark",
+            "operation": "Operation"
+          },
+          "form": {
+            "titles": {
+              "create": "Add Group",
+              "edit": "Edit Group"
+            },
+            "fields": {
+              "name": "Name",
+              "active": "Active",
+              "sort": "Sort",
+              "remark": "Remark"
+            },
+            "placeholders": {
+              "name": "Please enter a group name",
+              "remark": "Please enter a remark"
+            }
+          },
+          "messages": {
+            "enterName": "Please enter a group name",
+            "createSuccess": "Added successfully",
+            "updateSuccess": "Updated successfully",
+            "confirmDelete": "Are you sure you want to delete group \"{name}\"?",
+            "deleteTitle": "Delete Confirmation",
+            "deleteSuccess": "Deleted successfully",
+            "activeSuccess": "Activated",
+            "inactiveSuccess": "Deactivated"
+          }
+        },
+        "channel": {
+          "title": "Sending Channels",
+          "tip": "Check the channels that should take effect. Only mailboxes within active channels participate in the sending pool.",
+          "active": "Active",
+          "accountCount": "Mailboxes: {count}",
+          "empty": "No configurable sending channels",
+          "saveSuccess": "Active channels updated"
+        },
+        "messages": {
+          "missingId": "This mailbox is missing an id; please check the list response",
+          "enterName": "Please enter a mailbox name",
+          "selectGroup": "Please select a group",
+          "selectChannel": "Please select a channel",
+          "enterUsername": "Please enter a login account",
+          "enterPassword": "Please enter the password or auth code",
+          "createSuccess": "Added successfully",
+          "updateSuccess": "Updated successfully",
+          "enabledSuccess": "Enabled",
+          "disabledSuccess": "Disabled",
+          "testPromptTitle": "Send Test Email",
+          "testPromptPlaceholder": "Enter the destination mailbox to receive the test email",
+          "testEmailInvalid": "Please enter a valid email address",
+          "testSending": "Sending test email…",
+          "testSuccess": "Test email sent. Please check the destination mailbox to verify availability.",
+          "confirmRecover": "Are you sure you want to recover mailbox \"{name}\"? This resets failure counters and resumes sending.",
+          "recoverTitle": "Recover Confirmation",
+          "recoverSuccess": "Recovered",
+          "confirmDelete": "Are you sure you want to delete mailbox \"{name}\"? This action cannot be undone.",
           "deleteTitle": "Delete Confirmation",
           "deleteSuccess": "Deleted successfully"
         }

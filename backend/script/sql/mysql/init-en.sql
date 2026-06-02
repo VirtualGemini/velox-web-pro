@@ -72,7 +72,10 @@ INSERT INTO `sys_id_sequence` (`business_type`, `current_value`) VALUES
   ('sys_role_menu_permission',0),
   ('sys_file_config',0),
   ('sys_file',0),
-  ('sys_file_content',0);
+  ('sys_file_content',0),
+  ('sys_mail_group',0),
+  ('sys_mail_channel',0),
+  ('sys_mail_account',0);
 /*!40000 ALTER TABLE `sys_id_sequence` ENABLE KEYS */;
 
 --
@@ -113,6 +116,107 @@ INSERT INTO `sys_file_config` VALUES
   ('1900000000000000011','FTP Storage',11,'FTP file storage example',0,'{\"host\": \"127.0.0.1\", \"port\": 21, \"username\": \"ftp-user\", \"password\": \"ftp-password\", \"mode\": \"Passive\", \"basePath\": \"/uploads\", \"domain\": \"http://127.0.0.1:3006\"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000072','SFTP Storage',12,'SFTP file storage example',0,'{\"host\": \"127.0.0.1\", \"port\": 22, \"username\": \"sftp-user\", \"password\": \"sftp-password\", \"basePath\": \"/uploads\", \"domain\": \"http://127.0.0.1:3006\"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 /*!40000 ALTER TABLE `sys_file_config` ENABLE KEYS */;
+
+--
+-- Table structure for table `sys_mail_group`
+--
+
+DROP TABLE IF EXISTS `sys_mail_group`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_mail_group` (
+  `id` bigint NOT NULL COMMENT 'Primary Key ID',
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Group name',
+  `active` tinyint DEFAULT '1' COMMENT 'Active (0-no 1-yes)',
+  `sort` int DEFAULT '1' COMMENT 'Sort',
+  `remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Remark',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Create time',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+  `create_by` bigint DEFAULT NULL COMMENT 'Create by',
+  `update_by` bigint DEFAULT NULL COMMENT 'Update by',
+  `deleted` tinyint DEFAULT '0' COMMENT 'Logical delete (0-no 1-yes)',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Mail group table';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+/*!40000 ALTER TABLE `sys_mail_group` DISABLE KEYS */;
+INSERT INTO `sys_mail_group` VALUES
+  ('1900000000000000210','Default Group',1,1,'System default mail group','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+/*!40000 ALTER TABLE `sys_mail_group` ENABLE KEYS */;
+
+--
+-- Table structure for table `sys_mail_channel`
+--
+
+DROP TABLE IF EXISTS `sys_mail_channel`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_mail_channel` (
+  `id` bigint NOT NULL COMMENT 'Primary Key ID',
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Channel name',
+  `protocol` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Protocol (SMTP/SMTPS)',
+  `active` tinyint DEFAULT '1' COMMENT 'Active (0-no 1-yes)',
+  `sort` int DEFAULT '1' COMMENT 'Sort',
+  `remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Remark',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Create time',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+  `create_by` bigint DEFAULT NULL COMMENT 'Create by',
+  `update_by` bigint DEFAULT NULL COMMENT 'Update by',
+  `deleted` tinyint DEFAULT '0' COMMENT 'Logical delete (0-no 1-yes)',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Mail channel table';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+/*!40000 ALTER TABLE `sys_mail_channel` DISABLE KEYS */;
+INSERT INTO `sys_mail_channel` VALUES
+  ('1900000000000000211','SMTP','SMTP',1,1,'SMTP plaintext/STARTTLS protocol','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000212','SMTPS','SMTPS',1,2,'SMTPS encrypted protocol','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+/*!40000 ALTER TABLE `sys_mail_channel` ENABLE KEYS */;
+
+--
+-- Table structure for table `sys_mail_account`
+--
+
+DROP TABLE IF EXISTS `sys_mail_account`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_mail_account` (
+  `id` bigint NOT NULL COMMENT 'Primary Key ID',
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Name/Alias',
+  `group_id` bigint DEFAULT NULL COMMENT 'Group ID',
+  `channel_id` bigint DEFAULT NULL COMMENT 'Channel ID',
+  `username` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'SMTP username',
+  `password` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'SMTP auth code/password',
+  `from_address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'From address (blank uses username)',
+  `from_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'From name',
+  `host` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'SMTP host (blank=auto detect)',
+  `port` int DEFAULT NULL COMMENT 'SMTP port (blank=auto detect)',
+  `ssl_enabled` tinyint DEFAULT NULL COMMENT 'SSL (0-no 1-yes null-auto)',
+  `starttls` tinyint DEFAULT NULL COMMENT 'STARTTLS (0-no 1-yes null-auto)',
+  `weight` int DEFAULT '100' COMMENT 'Weight (lower=higher priority)',
+  `fail_threshold` int DEFAULT '3' COMMENT 'Consecutive failures to mark abnormal',
+  `retry_interval` int DEFAULT '300' COMMENT 'Retry interval (seconds)',
+  `max_unavailable` int DEFAULT '5' COMMENT 'Dead after this many abnormal marks',
+  `health_status` tinyint DEFAULT '0' COMMENT 'Health (0-normal 1-abnormal 2-dead)',
+  `usage_count` bigint DEFAULT '0' COMMENT 'Usage count',
+  `fail_count` int DEFAULT '0' COMMENT 'Current consecutive failures',
+  `unavailable_count` int DEFAULT '0' COMMENT 'Total abnormal marks',
+  `next_retry_time` datetime DEFAULT NULL COMMENT 'Next retry time',
+  `last_used_time` datetime DEFAULT NULL COMMENT 'Last used time',
+  `remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Remark',
+  `enabled` tinyint DEFAULT '1' COMMENT 'Enabled (0-disabled 1-enabled)',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Create time',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update time',
+  `create_by` bigint DEFAULT NULL COMMENT 'Create by',
+  `update_by` bigint DEFAULT NULL COMMENT 'Update by',
+  `deleted` tinyint DEFAULT '0' COMMENT 'Logical delete (0-no 1-yes)',
+  PRIMARY KEY (`id`),
+  KEY `idx_sys_mail_account_group_id` (`group_id`),
+  KEY `idx_sys_mail_account_channel_id` (`channel_id`),
+  KEY `idx_sys_mail_account_enabled` (`enabled`),
+  KEY `idx_sys_mail_account_health_status` (`health_status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Mail account table';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `sys_file`
@@ -515,6 +619,14 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `menu_type`, `name`, `title`, `path`,
   ('1900000000000000039','1900000000000000003','button','FileConfigCreate','Create',NULL,NULL,NULL,NULL,'system:file-config:create',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000076','1900000000000000003','button','FileConfigUpdate','Edit',NULL,NULL,NULL,NULL,'system:file-config:update',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000044','1900000000000000003','button','FileConfigDelete','Delete',NULL,NULL,NULL,NULL,'system:file-config:delete',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- Config > MailAccount
+  ('1900000000000003001','1900000000000000029','menu','MailAccount','menus.config.mailAccount','mail-account','/config/mail-account',NULL,'',NULL,1,2,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003002','1900000000000003001','button','MailAccountQuery','Query',NULL,NULL,NULL,NULL,'system:mail-account:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003003','1900000000000003001','button','MailAccountCreate','Create',NULL,NULL,NULL,NULL,'system:mail-account:create',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003004','1900000000000003001','button','MailAccountUpdate','Edit',NULL,NULL,NULL,NULL,'system:mail-account:update',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003005','1900000000000003001','button','MailAccountDelete','Delete',NULL,NULL,NULL,NULL,'system:mail-account:delete',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003006','1900000000000003001','button','MailAccountGroup','Group',NULL,NULL,NULL,NULL,'system:mail-account:group',1,5,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003007','1900000000000003001','button','MailAccountChannel','Sending Channel',NULL,NULL,NULL,NULL,'system:mail-account:channel',1,6,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- Settings
   ('1900000000000002001',NULL,'menu','Settings','menus.settings.title','/settings','/index/index',NULL,'ri:settings-4-line',NULL,1,90,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- Settings > AccessControl
