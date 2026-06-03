@@ -302,10 +302,6 @@
     "outside": {
       "title": "内嵌页面"
     },
-    "dashboard": {
-      "title": "仪表盘",
-      "console": "工作台"
-    },
     "result": {
       "title": "结果页面",
       "success": "成功页",
@@ -316,23 +312,6 @@
       "forbidden": "403",
       "notFound": "404",
       "serverError": "500"
-    },
-    "system": {
-      "title": "系统管理",
-      "account": "账号管理",
-      "role": "角色管理",
-      "accountCenter": "账号中心",
-      "menu": "菜单管理",
-      "fileManage": "文件管理"
-    },
-    "config": {
-      "title": "配置管理",
-      "fileConfig": "文件配置",
-      "mailAccount": "邮件配置"
-    },
-    "settings": {
-      "title": "设置",
-      "accessControl": "访问控制"
     }
   },
   "pages": {

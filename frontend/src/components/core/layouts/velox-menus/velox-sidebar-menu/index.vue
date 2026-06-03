@@ -19,7 +19,7 @@
             <ElTooltip
               class="box-item"
               effect="dark"
-              :content="$t(menu.meta.title)"
+              :content="formatMenuTitle(menu.meta.title)"
               placement="right"
               :offset="15"
               :hide-after="0"
@@ -44,7 +44,7 @@
                   }"
                 />
                 <span v-if="dualMenuShowText" class="text-md text-g-700">
-                  {{ $t(menu.meta.title) }}
+                  {{ formatMenuTitle(menu.meta.title) }}
                 </span>
                 <div v-if="menu.meta.showBadge" class="velox-badge velox-badge-dual" />
               </div>
@@ -136,6 +136,7 @@
   import { useMenuStore } from '@/store/modules/menu'
   import { isIframe } from '@/utils/navigation'
   import { handleMenuJump } from '@/utils/navigation'
+  import { formatMenuTitle } from '@/utils'
   import SidebarSubmenu from './widget/SidebarSubmenu.vue'
   import { useCommon } from '@/hooks/core/useCommon'
   import { useWindowSize, useTimeoutFn } from '@vueuse/core'

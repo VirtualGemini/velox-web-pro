@@ -5,7 +5,7 @@ export const settingsRoutes: AppRouteRecord = {
   name: 'Settings',
   component: '/index/index',
   meta: {
-    title: 'menus.settings.title',
+    title: '设置',
     icon: 'ri:settings-4-line',
     roles: ['R_SUPER']
   },
@@ -15,7 +15,7 @@ export const settingsRoutes: AppRouteRecord = {
       name: 'AccessControl',
       component: '/settings/access-control',
       meta: {
-        title: 'menus.settings.accessControl',
+        title: '访问控制',
         keepAlive: true,
         roles: ['R_SUPER'],
         authList: [

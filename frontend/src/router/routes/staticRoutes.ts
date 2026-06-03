@@ -16,7 +16,7 @@ export const staticRoutes: AppRouteRecordRaw[] = [
   //   path: '/welcome',
   //   name: 'WelcomeStatic',
   //   component: () => import('@views/dashboard/console/index.vue'),
-  //   meta: { title: 'menus.dashboard.title' }
+  //   meta: { title: '欢迎页' }
   // },
   {
     path: '/auth/login',

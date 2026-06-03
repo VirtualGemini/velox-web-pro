@@ -5,7 +5,7 @@ export const configRoutes: AppRouteRecord = {
   name: 'Config',
   component: '/index/index',
   meta: {
-    title: 'menus.config.title',
+    title: '配置管理',
     icon: 'ri:settings-3-line',
     roles: ['R_SUPER']
   },
@@ -15,7 +15,7 @@ export const configRoutes: AppRouteRecord = {
       name: 'FileConfig',
       component: '/config/file-config',
       meta: {
-        title: 'menus.config.fileConfig',
+        title: '文件配置',
         keepAlive: true,
         roles: ['R_SUPER'],
         authList: [
@@ -31,7 +31,7 @@ export const configRoutes: AppRouteRecord = {
       name: 'MailAccount',
       component: '/config/mail-account',
       meta: {
-        title: 'menus.config.mailAccount',
+        title: '邮件配置',
         keepAlive: true,
         roles: ['R_SUPER'],
         authList: [

@@ -302,10 +302,6 @@
     "outside": {
       "title": "Outside"
     },
-    "dashboard": {
-      "title": "Dashboard",
-      "console": "Console"
-    },
     "result": {
       "title": "Result Page",
       "success": "Success",
@@ -316,23 +312,6 @@
       "forbidden": "403",
       "notFound": "404",
       "serverError": "500"
-    },
-    "system": {
-      "title": "System",
-      "account": "Account Manage",
-      "role": "Role Manage",
-      "accountCenter": "Account Center",
-      "menu": "Menu Manage",
-      "fileManage": "File Manage"
-    },
-    "config": {
-      "title": "Config",
-      "fileConfig": "File Config",
-      "mailAccount": "Mail Config"
-    },
-    "settings": {
-      "title": "Settings",
-      "accessControl": "Access Control"
     }
   },
   "pages": {
