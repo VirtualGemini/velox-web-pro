@@ -36,7 +36,11 @@
   const loginMethodKeys = ['password', 'email_code'] as const
 
   const isMethodEnabled = (key: string) => status.value?.loginMethods?.includes(key) ?? false
+  // 全局策略（访问控制）是否开放该方式 —— 只有这里才叫“全局”。
   const isMethodAllowed = (key: string) => status.value?.allowedLoginMethods?.includes(key) ?? false
+  // 管理员针对本账号单独禁用该方式（账号管理），与“全局未开放”是两回事。
+  const isMethodAdminDisabled = (key: string) =>
+    status.value?.adminDisabledLoginMethods?.includes(key) ?? false
 
   const emailMfaOn = computed(() => status.value?.mfa?.email ?? false)
   const totpMfaOn = computed(() => status.value?.mfa?.totp ?? false)
@@ -198,10 +202,13 @@
               <div v-if="!isMethodAllowed(key)" class="mt-1 text-xs text-g-500">
                 {{ t('pages.system.accountCenter.security.loginMethods.globalDisabled') }}
               </div>
+              <div v-else-if="isMethodAdminDisabled(key)" class="mt-1 text-xs text-g-500">
+                {{ t('pages.system.accountCenter.security.loginMethods.adminDisabled') }}
+              </div>
             </div>
             <ElSwitch
               :model-value="isMethodEnabled(key)"
-              :disabled="!isMethodAllowed(key)"
+              :disabled="!isMethodAllowed(key) || isMethodAdminDisabled(key)"
               @change="(val: string | number | boolean) => onMethodChange(key, Boolean(val))"
             />
           </div>

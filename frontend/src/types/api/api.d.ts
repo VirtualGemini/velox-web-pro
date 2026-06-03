@@ -453,6 +453,7 @@ declare namespace Api {
         loginMethods: string[]
         effectiveLoginMethods: string[]
         allowedLoginMethods: string[]
+        adminDisabledLoginMethods: string[]
         passwordRequired: boolean
         mfa: MfaStatus
         emailVerifiedAt?: string

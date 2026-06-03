@@ -951,6 +951,7 @@
             "title": "Login Methods",
             "desc": "Choose allowed login methods; keep at least one. Methods outside the global policy are disabled.",
             "globalDisabled": "Disabled by global policy",
+            "adminDisabled": "Disabled by an administrator, temporarily unavailable",
             "atLeastOne": "At least one login method must remain",
             "items": {
               "password": "Password",

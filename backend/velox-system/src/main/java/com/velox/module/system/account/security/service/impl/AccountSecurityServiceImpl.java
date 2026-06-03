@@ -9,6 +9,7 @@ import com.velox.email.api.builder.EmailBuilder;
 import com.velox.email.api.message.SendResponse;
 import com.velox.email.common.error.EmailErrorCode;
 import com.velox.framework.security.api.session.SecuritySessionService;
+import com.velox.module.system.accesscontrol.service.AccessControlService;
 import com.velox.module.system.auth.properties.SystemAccountSecurityProperties;
 import com.velox.module.system.auth.service.PasswordCipherService;
 import com.velox.module.system.auth.store.VerificationCodeStore;
@@ -70,6 +71,7 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
     private final AccountSecurityMapper userSecurityMapper;
     private final SecuritySessionService securitySessionService;
     private final SystemAccountSecurityProperties accountSecurityProperties;
+    private final AccessControlService accessControlService;
     private final SystemEntityIdGenerator entityIdGenerator;
     private final VerificationCodeStore verificationCodeStore;
     private final ObjectProvider<EmailBuilder> emailBuilderProvider;
@@ -81,6 +83,7 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
             AccountSecurityMapper userSecurityMapper,
             SecuritySessionService securitySessionService,
             SystemAccountSecurityProperties accountSecurityProperties,
+            AccessControlService accessControlService,
             SystemEntityIdGenerator entityIdGenerator,
             VerificationCodeStore verificationCodeStore,
             ObjectProvider<EmailBuilder> emailBuilderProvider,
@@ -90,6 +93,7 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
         this.userSecurityMapper = userSecurityMapper;
         this.securitySessionService = securitySessionService;
         this.accountSecurityProperties = accountSecurityProperties;
+        this.accessControlService = accessControlService;
         this.entityIdGenerator = entityIdGenerator;
         this.verificationCodeStore = verificationCodeStore;
         this.emailBuilderProvider = emailBuilderProvider;
@@ -103,16 +107,25 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
         Account user = requireUser(userId);
         AccountSecurity security = getOrInitSecurity(user);
 
-        List<String> allowed = new ArrayList<>(accountSecurityProperties.getLoginMethods().getEnabled());
-        List<String> disabled = parseLoginMethods(security.getDisabledLoginMethods());
-        allowed.removeAll(disabled);
+        // “全局策略”一律以访问控制配置为准（与登录校验 LoginServiceImpl.ensureLoginMethodAllowed 一致），
+        // allowedLoginMethods = 系统支持的方式 ∩ 访问控制全局启用的方式；只有这里才叫“全局”。
+        List<String> supported = accountSecurityProperties.getLoginMethods().getEnabled();
+        List<String> globalEnabled = accessControlService.getEnabledLoginMethods();
+        List<String> allowed = supported.stream()
+                .filter(globalEnabled::contains)
+                .collect(Collectors.toList());
+
+        // 管理员针对该账号单独禁用的方式（账号管理），与“全局未开放”是两回事，单独返回供前端区分提示。
+        List<String> adminDisabled = parseLoginMethods(security.getDisabledLoginMethods());
 
         List<String> stored = parseLoginMethods(security.getLoginMethods());
         if (stored.isEmpty()) {
             stored = new ArrayList<>(accountSecurityProperties.getLoginMethods().getDefaults());
         }
+        // 实际可用 = 用户已选 ∩ 全局允许 − 管理员禁用。
         List<String> effective = stored.stream()
                 .filter(allowed::contains)
+                .filter(method -> !adminDisabled.contains(method))
                 .collect(Collectors.toList());
 
         SecurityStatusDTO dto = new SecurityStatusDTO();
@@ -121,6 +134,7 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
         dto.setLoginMethods(stored);
         dto.setEffectiveLoginMethods(effective);
         dto.setAllowedLoginMethods(allowed);
+        dto.setAdminDisabledLoginMethods(adminDisabled);
         dto.setPasswordRequired(false);
 
         SecurityStatusDTO.MfaStatus mfa = new SecurityStatusDTO.MfaStatus();

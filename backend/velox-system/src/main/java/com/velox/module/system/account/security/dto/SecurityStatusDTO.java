@@ -9,6 +9,7 @@ public class SecurityStatusDTO {
     private List<String> loginMethods;
     private List<String> effectiveLoginMethods;
     private List<String> allowedLoginMethods;
+    private List<String> adminDisabledLoginMethods;
     private boolean passwordRequired;
     private MfaStatus mfa = new MfaStatus();
     private String emailVerifiedAt;
@@ -52,6 +53,14 @@ public class SecurityStatusDTO {
 
     public void setAllowedLoginMethods(List<String> allowedLoginMethods) {
         this.allowedLoginMethods = allowedLoginMethods;
+    }
+
+    public List<String> getAdminDisabledLoginMethods() {
+        return adminDisabledLoginMethods;
+    }
+
+    public void setAdminDisabledLoginMethods(List<String> adminDisabledLoginMethods) {
+        this.adminDisabledLoginMethods = adminDisabledLoginMethods;
     }
 
     public boolean isPasswordRequired() {

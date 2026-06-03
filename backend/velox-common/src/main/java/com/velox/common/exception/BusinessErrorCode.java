@@ -66,6 +66,7 @@ public enum BusinessErrorCode implements ErrorCode {
     MFA_CHALLENGE_EXPIRED(12035, "MFA 挑战已过期"),
     LOGIN_METHOD_EMPTY(12036, "至少保留一种登录方式"),
     LOGIN_METHOD_NOT_ALLOWED(12037, "选择了系统未启用的登录方式"),
+    LOGIN_METHOD_DISABLED_BY_ADMIN(12038, "该登录方式已被管理员禁用，暂时无法使用"),
     EMAIL_NOT_BOUND_TO_USER(12039, "当前账号未绑定邮箱"),
     LOGIN_METHOD_DISABLED(12040, "当前登录方式已被禁用"),
     MFA_ALREADY_ENABLED(12041, "已开启另一种虚拟 MFA 设备验证方式，请先关闭"),

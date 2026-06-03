@@ -662,9 +662,10 @@ public class LoginServiceImpl implements LoginService {
         if (enabled == null || !enabled.contains(method)) {
             throw new ApiException(BusinessErrorCode.LOGIN_METHOD_DISABLED);
         }
+        // 管理员针对该账号单独禁用：区别于“全局未开放”，返回专属错误码以提示“被管理员禁用，暂时无法使用”。
         List<String> disabled = parseLoginMethods(security.getDisabledLoginMethods());
         if (disabled.contains(method)) {
-            throw new ApiException(BusinessErrorCode.LOGIN_METHOD_DISABLED);
+            throw new ApiException(BusinessErrorCode.LOGIN_METHOD_DISABLED_BY_ADMIN);
         }
         List<String> stored = parseLoginMethods(security.getLoginMethods());
         if (stored.isEmpty()) {

@@ -954,6 +954,7 @@
             "title": "登录方式",
             "desc": "选择允许的账号登录方式，至少保留一种；超出全局策略的方式会被禁用",
             "globalDisabled": "全局策略未开放该方式",
+            "adminDisabled": "该方式已被管理员禁用，暂时无法使用",
             "atLeastOne": "至少需要保留一种登录方式",
             "items": {
               "password": "密码登录",
