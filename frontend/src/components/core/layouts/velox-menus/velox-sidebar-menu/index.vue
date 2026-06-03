@@ -211,12 +211,15 @@
   })
 
   // 双列菜单收起时的滚动条样式
+  // 收起时用负 margin-top 上移（而非 transform），使滚动条的流式高度同步减小，
+  // 避免溢出 .menu-left(100vh) 导致页面底部出现额外空白与滚动高度。
+  // margin-top 与 height 同步过渡，保证动画过程中流式底部始终锁定在 100vh。
   const scrollbarStyle = computed(() => {
     const isCollapsed = isDualMenu.value && !menuOpen.value
     return {
-      transform: isCollapsed ? 'translateY(-50px)' : 'translateY(0)',
-      height: isCollapsed ? 'calc(100% + 50px)' : 'calc(100% - 60px)',
-      transition: 'transform 0.3s ease'
+      marginTop: isCollapsed ? '-50px' : '0px',
+      height: isCollapsed ? 'calc(100% - 10px)' : 'calc(100% - 60px)',
+      transition: 'margin-top 0.3s ease, height 0.3s ease'
     }
   })
 
