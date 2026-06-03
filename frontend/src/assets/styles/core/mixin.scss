@@ -1,3 +1,5 @@
+@use 'sass:math';
+
 // sass 混合宏（函数）
 
 /**
@@ -154,4 +156,24 @@
   backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast)
     var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert)
     var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+}
+
+// 抽屉左缘“粒子化”立体阴影
+// 循环生成极密集多层阴影（默认 50 层，偏移按 0.1px 递进、覆盖 0.1px~5px），
+// 不透明度由 $from 线性递减到 $to，模拟细腻柔和的渐变边缘——既有立体感，
+// 又不会在页面上形成生硬的暗色“影子”。用于右侧抽屉（阴影向左投射）。
+// 设置面板抽屉(.setting-modal)与账号详情抽屉(.account-drawer-modal)共用此 mixin。
+@mixin layeredEdgeShadow($n: 50, $from: 0.2, $to: 0.091) {
+  $shadows: ();
+
+  @for $i from 1 through $n {
+    $alpha: $from - ($from - $to) * math.div($i - 1, $n - 1);
+    $shadows: append(
+      $shadows,
+      (-$i * 0.1px) 0 ($i * 0.2px) (-$i * 0.05px) rgba(0, 0, 0, $alpha),
+      comma
+    );
+  }
+
+  box-shadow: $shadows !important;
 }

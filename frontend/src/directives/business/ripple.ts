@@ -49,14 +49,32 @@ export type RippleDirective = Directive<HTMLElement, RippleOptions>
 const MANUAL_RIPPLE_MARK = 'veloxRippleManual'
 let autoRippleBound = false
 
-function prepareRippleContainer(el: HTMLElement) {
+const RIPPLE_HOST_CLASS = 'velox-ripple-host'
+
+function prepareRippleContainer(el: HTMLElement): HTMLElement {
   if (!el.style.position) {
     el.style.position = 'relative'
   }
-  el.style.overflow = 'hidden'
+  // 不再给按钮本身加 overflow:hidden —— 它会让圆角的「裁剪边」叠在 1px 边框上，
+  // 低分辨率 / 远程缩放显示时，边框就像被钝锯子锯过一样发锯齿。
+  // 改用一个独立子层来裁剪水波纹，按钮自身的圆角边框 / 背景因此走正常抗锯齿绘制，边缘更顺滑。
+  let host = el.querySelector<HTMLElement>(`:scope > .${RIPPLE_HOST_CLASS}`)
+  if (!host) {
+    host = document.createElement('span')
+    host.className = RIPPLE_HOST_CLASS
+    host.style.cssText =
+      'position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none;z-index:1;'
+    el.appendChild(host)
+  }
+  return host
 }
 
-function createRipple(el: HTMLElement, e: MouseEvent, options: RippleOptions = {}) {
+function createRipple(
+  el: HTMLElement,
+  host: HTMLElement,
+  e: MouseEvent,
+  options: RippleOptions = {}
+) {
   const rect = el.getBoundingClientRect()
   const left = e.clientX - rect.left
   const top = e.clientY - rect.top
@@ -89,7 +107,7 @@ function createRipple(el: HTMLElement, e: MouseEvent, options: RippleOptions = {
   ripple.style.transition = `transform ${animationDuration}ms cubic-bezier(0.3, 0, 0.2, 1), opacity ${animationDuration}ms cubic-bezier(0.3, 0, 0.5, 1)`
   ripple.style.zIndex = '1'
 
-  el.appendChild(ripple)
+  host.appendChild(ripple)
 
   requestAnimationFrame(() => {
     ripple.style.transform = 'scale(2)'
@@ -104,7 +122,8 @@ function createRipple(el: HTMLElement, e: MouseEvent, options: RippleOptions = {
 function bindRipple(el: HTMLElement, options: RippleOptions = {}) {
   prepareRippleContainer(el)
   el.addEventListener('mousedown', (e: MouseEvent) => {
-    createRipple(el, e, options)
+    const host = prepareRippleContainer(el)
+    createRipple(el, host, e, options)
   })
 }
 
@@ -135,7 +154,7 @@ export function setupRippleDirective(app: App) {
     const target = e.target as HTMLElement | null
     const button = target?.closest('.el-button') as HTMLElement | null
     if (!button || !isAutoRippleButton(button)) return
-    prepareRippleContainer(button)
-    createRipple(button, e)
+    const host = prepareRippleContainer(button)
+    createRipple(button, host, e)
   })
 }

@@ -79,6 +79,13 @@
   }
 }
 
+// 夜间模式抽屉阴影：与账号详情抽屉(.account-drawer-modal)共用 layeredEdgeShadow mixin。
+// 浅色态那条 `0 0 30px / 10%` 对称弱光在深色背景上几乎不可见、缺乏立体感，
+// 故改用密集多层左向阴影（实现与说明见 mixin），让抽屉左缘自然过渡、立体清晰。
+.dark .setting-modal .el-drawer {
+  @include layeredEdgeShadow();
+}
+
 // 去除火狐浏览器滚动条
 :deep(.el-drawer__body) {
   scrollbar-width: none;
