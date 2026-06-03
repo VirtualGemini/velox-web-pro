@@ -104,6 +104,7 @@
             :list="menuList"
             :isMobile="isMobileMode"
             :theme="getMenuTheme"
+            :parent-icon="currentParentMenu?.meta?.icon"
             @close="handleMenuClose"
           />
         </ElMenu>
@@ -208,6 +209,13 @@
     const currentTopPath = `/${route.path.split('/')[1]}`
     const currentMenu = allMenus.find((menu) => menu.path === currentTopPath)
     return currentMenu?.children ?? []
+  })
+
+  // 当前右侧菜单所属的一级菜单（双列折叠时作为子项图标回退的父级）
+  const currentParentMenu = computed(() => {
+    const allMenus = useMenuStore().menuList
+    const currentTopPath = `/${route.path.split('/')[1]}`
+    return allMenus.find((menu) => menu.path === currentTopPath)
   })
 
   // 双列菜单收起时的滚动条样式

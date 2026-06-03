@@ -2,9 +2,9 @@
   <template v-for="(item, index) in filteredMenuItems" :key="getUniqueKey(item, index)">
     <ElSubMenu v-if="hasChildren(item)" :index="item.path || item.meta.title" :level="level">
       <template #title>
-        <div v-if="item.meta.icon" class="menu-icon flex-cc">
+        <div v-if="resolveMenuIcon(item)" class="menu-icon flex-cc">
           <VeloxSvgIcon
-            :icon="item.meta.icon"
+            :icon="resolveMenuIcon(item)"
             :color="theme?.iconColor"
             :style="{ color: theme.iconColor }"
           />
@@ -20,6 +20,7 @@
         :is-mobile="isMobile"
         :level="level + 1"
         :theme="theme"
+        :parent-icon="item.meta.icon || parentIcon"
         @close="closeMenu"
       />
     </ElSubMenu>
@@ -30,9 +31,9 @@
       :level-item="level + 1"
       @click="goPage(item)"
     >
-      <div v-if="item.meta.icon" class="menu-icon flex-cc">
+      <div v-if="resolveMenuIcon(item)" class="menu-icon flex-cc">
         <VeloxSvgIcon
-          :icon="item.meta.icon"
+          :icon="resolveMenuIcon(item)"
           :color="theme?.iconColor"
           :style="{ color: theme.iconColor }"
         />
@@ -62,6 +63,10 @@
   import { formatMenuTitle } from '@/utils/router'
   import { handleMenuJump } from '@/utils/navigation'
   import { useSettingStore } from '@/store/modules/setting'
+  import { MenuTypeEnum } from '@/enums/appEnum'
+
+  /** 菜单项无图标时的默认兜底图标 */
+  const DEFAULT_MENU_ICON = 'ri:menu-line'
 
   interface MenuTheme {
     iconColor?: string
@@ -78,6 +83,8 @@
     isMobile?: boolean
     /** 菜单层级 */
     level?: number
+    /** 父级菜单图标（双列菜单折叠时用于图标回退） */
+    parentIcon?: string
   }
 
   interface Emits {
@@ -97,7 +104,29 @@
 
   const settingStore = useSettingStore()
 
-  const { menuOpen } = storeToRefs(settingStore)
+  const { menuOpen, menuType, dualMenuShowText } = storeToRefs(settingStore)
+
+  /**
+   * 双列菜单「左侧文本」与「右侧菜单」是否同时折叠
+   * 此状态下右侧菜单仅显示图标，需保证每个菜单项都有图标可展示
+   */
+  const isDualMenuFullyCollapsed = computed(
+    () =>
+      menuType.value === MenuTypeEnum.DUAL_MENU && !dualMenuShowText.value && !menuOpen.value
+  )
+
+  /**
+   * 解析菜单项最终展示的图标
+   * 双列菜单完全折叠时，无图标的菜单项回退到父级图标；父级仍无图标则使用默认图标。
+   * 其它情况下保持原行为：无图标则不展示。
+   * @param item 菜单项数据
+   */
+  const resolveMenuIcon = (item: AppRouteRecord): string => {
+    if (isDualMenuFullyCollapsed.value) {
+      return item.meta.icon || props.parentIcon || DEFAULT_MENU_ICON
+    }
+    return item.meta.icon || ''
+  }
 
   /**
    * 过滤后的菜单项列表
