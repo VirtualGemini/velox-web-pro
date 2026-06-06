@@ -747,6 +747,11 @@
           minWidth: 180
         },
         {
+          prop: 'updateTime',
+          label: 'pages.config.mailAccount.columns.updateTime',
+          minWidth: 180
+        },
+        {
           prop: 'operation',
           label: 'pages.config.mailAccount.columns.operation',
           width: 168,
