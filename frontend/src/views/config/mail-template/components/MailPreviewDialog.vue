@@ -8,9 +8,6 @@
     append-to-body
   >
     <div class="mail-preview">
-      <div class="mail-preview__tip">
-        {{ t('pages.config.mailTemplate.preview.sampleTip') }}
-      </div>
       <div class="mail-preview__client">
         <div class="mail-preview__meta">
           <div class="mail-preview__subject">{{ renderedSubject || '—' }}</div>
@@ -49,20 +46,18 @@
   import { useI18n } from 'vue-i18n'
   import { useWindowSize } from '@vueuse/core'
   import { buildPreviewVariables } from '../metadata'
-  import type { MailTemplateLanguage, MailTemplateMetadata } from '@/api/mailTemplate'
+  import type { MailTemplateMetadata } from '@/api/mailTemplate'
 
   const props = withDefaults(
     defineProps<{
       visible: boolean
       metadata: MailTemplateMetadata
       type: string
-      language: MailTemplateLanguage
       subject: string
       content: string
     }>(),
     {
       type: '',
-      language: 'zh',
       subject: '',
       content: ''
     }
@@ -70,7 +65,7 @@
 
   const emit = defineEmits<{ 'update:visible': [value: boolean] }>()
 
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const { width } = useWindowSize()
 
   const innerVisible = computed({
@@ -82,7 +77,7 @@
 
   const VARIABLE_PATTERN = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g
 
-  const sampleVars = computed(() => buildPreviewVariables(props.metadata, props.type, props.language))
+  const sampleVars = computed(() => buildPreviewVariables(props.metadata, props.type))
 
   function escapeHtml(value: string) {
     return value
@@ -108,7 +103,7 @@
     const body = substitute(props.content, true)
     return [
       '<!DOCTYPE html>',
-      `<html lang="${props.language}">`,
+      `<html lang="${locale.value}">`,
       '<head><meta charset="utf-8" />',
       '<meta name="viewport" content="width=device-width, initial-scale=1" />',
       '<style>html,body{margin:0;padding:0;}',
@@ -129,14 +124,6 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-  }
-
-  .mail-preview__tip {
-    padding: 8px 12px;
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
-    background: var(--el-fill-color-light);
-    border-radius: 6px;
   }
 
   .mail-preview__client {

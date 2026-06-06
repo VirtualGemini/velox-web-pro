@@ -6,9 +6,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
  * 邮件模板
- * <p>
- * 每个发件类型只需要一行模板，行内保存中英文两套主题/正文；发件时按收件人语言取对应内容，
- * 若该语言为空则回退到另一种语言，再回退到内置默认模板。
  */
 @TableName(value = "sys_mail_template")
 public class MailTemplate extends BaseEntity {
@@ -22,17 +19,11 @@ public class MailTemplate extends BaseEntity {
     /** 模板类型：SYSTEM / CUSTOM */
     private String templateType;
 
-    /** 中文邮件主题，可含 {@code {{变量}}} */
-    private String subjectZh;
+    /** 邮件主题，可含 {@code {{变量}}} */
+    private String subject;
 
-    /** 中文邮件正文 HTML，含 {@code {{变量}}} 占位 */
-    private String contentZh;
-
-    /** 英文邮件主题，可含 {@code {{变量}}} */
-    private String subjectEn;
-
-    /** 英文邮件正文 HTML，含 {@code {{变量}}} 占位 */
-    private String contentEn;
+    /** 邮件正文 HTML，含 {@code {{变量}}} 占位 */
+    private String content;
 
     /** 是否启用(0-否 1-是)；同一发件类型至多一条启用 */
     private Integer enabled;
@@ -67,36 +58,20 @@ public class MailTemplate extends BaseEntity {
         this.templateType = templateType;
     }
 
-    public String getSubjectZh() {
-        return subjectZh;
+    public String getSubject() {
+        return subject;
     }
 
-    public void setSubjectZh(String subjectZh) {
-        this.subjectZh = subjectZh;
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 
-    public String getContentZh() {
-        return contentZh;
+    public String getContent() {
+        return content;
     }
 
-    public void setContentZh(String contentZh) {
-        this.contentZh = contentZh;
-    }
-
-    public String getSubjectEn() {
-        return subjectEn;
-    }
-
-    public void setSubjectEn(String subjectEn) {
-        this.subjectEn = subjectEn;
-    }
-
-    public String getContentEn() {
-        return contentEn;
-    }
-
-    public void setContentEn(String contentEn) {
-        this.contentEn = contentEn;
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public Integer getEnabled() {

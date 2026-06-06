@@ -6,10 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class MailTemplatePreviewSampleRespVO {
 
     @Schema(description = "openapi.common.name")
-    private String usernameZh;
-
-    @Schema(description = "openapi.common.name")
-    private String usernameEn;
+    private String username;
 
     @Schema(description = "openapi.system.auth.code_login_command.code")
     private String code;
@@ -23,20 +20,12 @@ public class MailTemplatePreviewSampleRespVO {
     @Schema(description = "openapi.system.mail_template.field.to_address")
     private String toAddress;
 
-    public String getUsernameZh() {
-        return usernameZh;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUsernameZh(String usernameZh) {
-        this.usernameZh = usernameZh;
-    }
-
-    public String getUsernameEn() {
-        return usernameEn;
-    }
-
-    public void setUsernameEn(String usernameEn) {
-        this.usernameEn = usernameEn;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getCode() {

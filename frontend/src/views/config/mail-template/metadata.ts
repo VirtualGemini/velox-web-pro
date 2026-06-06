@@ -1,15 +1,13 @@
-import type { MailTemplateLanguage, MailTemplateMetadata } from '@/api/mailTemplate'
+import type { MailTemplateMetadata } from '@/api/mailTemplate'
 
 export function createEmptyMailTemplateMetadata(): MailTemplateMetadata {
   return {
     sendTypes: [],
     templateTypes: [],
-    languages: [],
     variables: [],
     validityMinutes: {},
     previewSample: {
-      usernameZh: '',
-      usernameEn: '',
+      username: '',
       code: '',
       appName: '',
       fromAddress: '',
@@ -20,12 +18,11 @@ export function createEmptyMailTemplateMetadata(): MailTemplateMetadata {
 
 export function buildPreviewVariables(
   metadata: MailTemplateMetadata,
-  typeCode: string,
-  language: MailTemplateLanguage
+  typeCode: string
 ): Record<string, string> {
   const sample = metadata.previewSample
   return {
-    username: language === 'en' ? sample.usernameEn : sample.usernameZh,
+    username: sample.username,
     code: sample.code,
     validityMinutes: String(metadata.validityMinutes[typeCode] ?? ''),
     appName: sample.appName

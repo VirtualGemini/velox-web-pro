@@ -6,7 +6,6 @@ import com.velox.framework.security.api.annotation.RequirePermission;
 import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
 import com.velox.module.system.mail.service.MailTemplateService;
 import com.velox.module.system.mail.template.MailTemplateKind;
-import com.velox.module.system.mail.template.MailTemplateLanguage;
 import com.velox.module.system.mail.template.MailTemplateType;
 import com.velox.module.system.mail.vo.MailTemplateMetadataRespVO;
 import com.velox.module.system.mail.vo.MailTemplatePageReqVO;
@@ -104,7 +103,6 @@ public class MailTemplateController {
         MailTemplateMetadataRespVO respVO = new MailTemplateMetadataRespVO();
         respVO.setSendTypes(Arrays.stream(MailTemplateType.values()).map(MailTemplateType::code).toList());
         respVO.setTemplateTypes(Arrays.stream(MailTemplateKind.values()).map(MailTemplateKind::code).toList());
-        respVO.setLanguages(Arrays.stream(MailTemplateLanguage.values()).map(MailTemplateLanguage::code).toList());
         respVO.setVariables(List.of("username", "code", "validityMinutes", "appName"));
         respVO.setValidityMinutes(Map.of(
                 MailTemplateType.AUTH_RESET_PASSWORD_CODE.code(), 10,
@@ -121,8 +119,7 @@ public class MailTemplateController {
 
     private MailTemplatePreviewSampleRespVO buildPreviewSample() {
         MailTemplatePreviewSampleRespVO sample = new MailTemplatePreviewSampleRespVO();
-        sample.setUsernameZh("张三");
-        sample.setUsernameEn("John Doe");
+        sample.setUsername("User");
         sample.setCode("123456");
         sample.setAppName("Velox");
         sample.setFromAddress("no-reply@example.com");

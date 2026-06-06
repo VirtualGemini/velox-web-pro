@@ -1,12 +1,9 @@
 import request from '@/utils/http'
 
-/** 模板语言：zh / en */
-export type MailTemplateLanguage = 'zh' | 'en'
 export type MailTemplateKind = 'SYSTEM' | 'CUSTOM'
 
 export interface MailTemplatePreviewSample {
-  usernameZh: string
-  usernameEn: string
+  username: string
   code: string
   appName: string
   fromAddress: string
@@ -22,17 +19,9 @@ export interface MailTemplate {
   sendType: string
   /** 模板类型：SYSTEM / CUSTOM */
   templateType: MailTemplateKind
-  /** 当前默认展示语言 */
-  language: MailTemplateLanguage
-  /** 当前默认展示语言主题 */
   subject: string
-  /** 当前默认展示语言正文，仅详情(get)返回 */
+  /** 仅详情(get)返回 */
   content?: string
-  subjectZh?: string
-  contentZh?: string
-  subjectEn?: string
-  contentEn?: string
-  availableLanguages?: string
   enabled: number
   sort: number
   remark: string
@@ -65,7 +54,6 @@ export interface MailTemplatePageResult {
 export interface MailTemplateMetadata {
   sendTypes: string[]
   templateTypes: MailTemplateKind[]
-  languages: MailTemplateLanguage[]
   variables: string[]
   validityMinutes: Record<string, number>
   previewSample: MailTemplatePreviewSample
@@ -78,14 +66,8 @@ export interface MailTemplateSaveCommand {
   sendType: string
   /** 新建默认 CUSTOM；系统内置模板由种子数据提供 */
   templateType?: MailTemplateKind
-  /** 当前编辑语言，编辑器按语言保存时使用 */
-  language?: MailTemplateLanguage
   subject?: string
   content?: string
-  subjectZh?: string
-  contentZh?: string
-  subjectEn?: string
-  contentEn?: string
   enabled?: number
   sort?: number
   remark?: string

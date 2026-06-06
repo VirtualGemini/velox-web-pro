@@ -38,6 +38,7 @@
     "previous": "Previous",
     "next": "Next",
     "confirm": "Confirm",
+    "loading": "Loading...",
     "batchDelete": "Batch Delete",
     "batchDeleteTitle": "Batch Delete Confirmation",
     "batchDeleteConfirm": "Are you sure you want to delete the selected {count} item(s)? This action cannot be undone.",
@@ -1512,11 +1513,8 @@
             "type": "Sending Type",
             "sendType": "Sending Type",
             "templateType": "Template Type",
-            "language": "Language",
             "enabled": "Enabled",
             "subject": "Subject",
-            "subjectZh": "Chinese Subject",
-            "subjectEn": "English Subject",
             "content": "Body",
             "remark": "Remark"
           },
@@ -1525,16 +1523,13 @@
             "type": "Please select a sending type",
             "sendType": "Please select a sending type",
             "templateType": "Please select a template type",
-            "language": "Please select a language",
             "subject": "Enter the email subject; variables are allowed",
-            "subjectZh": "Enter the Chinese email subject; variables are allowed",
-            "subjectEn": "Enter the English email subject; variables are allowed",
             "content": "Enter the email body HTML source; you can use the variables above",
             "remark": "Please enter a remark"
           },
           "tooltips": {
-            "type": "The sending type maps to a specific sending scenario. Templates are rendered by sending type and recipient language. Sending type cannot be changed once created.",
-            "sendType": "The sending type maps to a specific sending scenario. Templates are rendered by sending type and recipient language. Sending type cannot be changed once created.",
+            "type": "The sending type maps to a specific sending scenario. Templates are rendered by sending type. Sending type cannot be changed once created.",
+            "sendType": "The sending type maps to a specific sending scenario. Templates are rendered by sending type. Sending type cannot be changed once created.",
             "enabled": "At most one template is enabled per sending type; enabling this one disables the others in the same group.",
             "content": "The body is HTML source using variable placeholders; the backend substitutes real values and HTML-escapes them when sending."
           },
@@ -1545,7 +1540,6 @@
           "type": "Sending Type",
           "sendType": "Sending Type",
           "templateType": "Template Type",
-          "language": "Language",
           "enabled": "Status",
           "remark": "Remark",
           "createTimeRange": "Create Time",
@@ -1561,8 +1555,6 @@
           "type": "Sending Type",
           "sendType": "Sending Type",
           "templateType": "Template Type",
-          "language": "Language",
-          "languages": "Languages",
           "subject": "Subject",
           "enabled": "Status",
           "remark": "Remark",
@@ -1579,10 +1571,6 @@
           "ACCOUNT_EMAIL_REBIND_CODE": "Email Change Code",
           "ACCOUNT_MFA_CODE": "Two-Factor Code"
         },
-        "languages": {
-          "zh": "Chinese",
-          "en": "English"
-        },
         "templateTypes": {
           "SYSTEM": "Built-in",
           "CUSTOM": "Custom"
@@ -1595,7 +1583,6 @@
         },
         "preview": {
           "title": "Email Preview",
-          "sampleTip": "Below is a preview rendered with sample data; variables are replaced with example values and nothing is actually sent.",
           "from": "From",
           "to": "To",
           "close": "Close"
@@ -1612,7 +1599,6 @@
           "layersTitle": "Layers",
           "propertiesTitle": "Properties",
           "sourceTitle": "Source",
-          "switchLanguage": "Switch email language",
           "noBlockSelected": "Select a component on the canvas to edit its properties",
           "emptyState": "Drag or click a component from the left panel to start building your email",
           "emptyLayers": "No components yet",
@@ -1625,7 +1611,10 @@
           "desktop": "Desktop",
           "tablet": "Tablet",
           "mobile": "Mobile",
-          "sourceReadonly": "Source is read-only and generated automatically from the visual editor.",
+          "sourceApply": "Apply Source",
+          "sourceReset": "Reset",
+          "sourceApplySuccess": "Source synced to canvas",
+          "sourceApplyError": "Failed to parse source",
           "blockTypes": {
             "heading": "Heading",
             "text": "Text",
@@ -1653,7 +1642,7 @@
           },
           "properties": {
             "content": "Content",
-            "contentPlaceholder": "Enter text content; you can use {{variable}} placeholders",
+            "contentPlaceholder": "Enter text content; variable placeholders are supported",
             "level": "Heading Level",
             "href": "Link URL",
             "hrefPlaceholder": "https://",
@@ -1693,6 +1682,8 @@
           "enabledSuccess": "Enabled",
           "disabledSuccess": "Disabled",
           "previewEmpty": "The body is empty; please fill in the email body first",
+          "exitEditorTitle": "Exit Mail Editor",
+          "confirmExitEditor": "Unsaved changes will be lost after exiting. Continue?",
           "confirmDelete": "Are you sure you want to delete template \"{name}\"? This action cannot be undone.",
           "systemTemplateDeleteForbidden": "Built-in templates cannot be deleted",
           "deleteTitle": "Delete Confirmation",

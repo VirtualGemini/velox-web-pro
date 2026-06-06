@@ -14,16 +14,8 @@
       >
         <VeloxSvgIcon icon="ri:search-line" :class="showSearchBar ? 'text-white' : 'text-g-700'" />
       </div>
-      <div
-        v-if="shouldShow('refresh')"
-        class="button"
-        @click="refresh"
-        :class="{ loading: loading && isManualRefresh }"
-      >
-        <VeloxSvgIcon
-          icon="ri:refresh-line"
-          :class="loading && isManualRefresh ? 'animate-spin text-g-600' : ''"
-        />
+      <div v-if="shouldShow('refresh')" class="button" @click="refresh">
+        <VeloxSvgIcon icon="ri:refresh-line" />
       </div>
 
       <ElDropdown v-if="shouldShow('size')" @command="handleTableSizeChange">
@@ -258,7 +250,6 @@
 
   /** 刷新事件处理 */
   const refresh = () => {
-    isManualRefresh.value = true
     emit('refresh')
   }
 
@@ -269,9 +260,6 @@
   const handleTableSizeChange = (command: TableSizeEnum) => {
     useTableStore().setTableSize(command)
   }
-
-  /** 是否手动点击刷新 */
-  const isManualRefresh = ref(false)
 
   /** 加载中 */
   const isFullScreen = ref(false)

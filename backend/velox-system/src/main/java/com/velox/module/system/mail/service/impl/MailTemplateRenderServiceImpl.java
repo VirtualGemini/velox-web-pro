@@ -1,6 +1,5 @@
 package com.velox.module.system.mail.service.impl;
 
-import cn.hutool.core.util.StrUtil;
 import com.velox.common.exception.ApiException;
 import com.velox.common.exception.BusinessErrorCode;
 import com.velox.module.system.mail.domain.model.MailTemplate;
@@ -28,11 +27,10 @@ public class MailTemplateRenderServiceImpl implements MailTemplateRenderService 
 
     @Override
     public RenderedEmail render(MailTemplateType type, String language, Map<String, String> variables) {
-        String lang = normalizeLanguage(language);
         MailTemplate row = resolveTemplate(type);
         Map<String, String> vars = variables != null ? variables : Map.of();
-        String subject = substitute(resolveSubject(row, lang), vars, false);
-        String html = substitute(resolveBody(row, lang), vars, true);
+        String subject = substitute(row.getSubject(), vars, false);
+        String html = substitute(row.getContent(), vars, true);
         return new RenderedEmail(subject, html);
     }
 
@@ -43,27 +41,6 @@ public class MailTemplateRenderServiceImpl implements MailTemplateRenderService 
             throw new ApiException(BusinessErrorCode.MAIL_TEMPLATE_NOT_FOUND);
         }
         return row;
-    }
-
-    private String normalizeLanguage(String language) {
-        if (language != null && language.trim().toLowerCase().startsWith("zh")) {
-            return "zh";
-        }
-        return "en";
-    }
-
-    private String resolveSubject(MailTemplate row, String lang) {
-        if ("en".equals(lang)) {
-            return StrUtil.blankToDefault(row.getSubjectEn(), row.getSubjectZh());
-        }
-        return StrUtil.blankToDefault(row.getSubjectZh(), row.getSubjectEn());
-    }
-
-    private String resolveBody(MailTemplate row, String lang) {
-        if ("en".equals(lang)) {
-            return StrUtil.blankToDefault(row.getContentEn(), row.getContentZh());
-        }
-        return StrUtil.blankToDefault(row.getContentZh(), row.getContentEn());
     }
 
     /** 替换 {@code {{key}}} 占位；HTML 正文对变量值做转义，主题保持原值 */

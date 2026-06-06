@@ -14,9 +14,6 @@ public class MailTemplateMetadataRespVO {
     @Schema(description = "openapi.system.mail_template.field.template_type")
     private List<String> templateTypes;
 
-    @Schema(description = "openapi.system.mail_template.field.available_languages")
-    private List<String> languages;
-
     @Schema(description = "openapi.system.mail_template.field.preview_variables")
     private List<String> variables;
 
@@ -40,14 +37,6 @@ public class MailTemplateMetadataRespVO {
 
     public void setTemplateTypes(List<String> templateTypes) {
         this.templateTypes = templateTypes;
-    }
-
-    public List<String> getLanguages() {
-        return languages;
-    }
-
-    public void setLanguages(List<String> languages) {
-        this.languages = languages;
     }
 
     public List<String> getVariables() {

@@ -287,147 +287,166 @@ export function renderMarkdown(src: string): string {
 export function parseHtmlToBlocks(html: string): EmailBlock[] {
   if (!html || !html.trim()) return []
 
-  const blocks: EmailBlock[] = []
-  let remaining = html.trim()
-
-  const bodyMatch = /<body[^>]*>([\s\S]*)<\/body>/i.exec(remaining)
-  if (bodyMatch) {
-    remaining = bodyMatch[1].trim()
-  } else {
-    remaining = remaining
-      .replace(/<!DOCTYPE[^>]*>/gi, '')
-      .replace(/<html[^>]*>/gi, '')
-      .replace(/<\/html>/gi, '')
-      .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
-      .replace(/<meta[^>]*>/gi, '')
-      .replace(/<title>[^<]*<\/title>/gi, '')
-      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-      .replace(/<link[^>]*>/gi, '')
-      .replace(/<body[^>]*>/gi, '')
-      .replace(/<\/body>/gi, '')
-      .trim()
+  if (typeof DOMParser === 'undefined') {
+    return extractTextBlocks(html)
   }
 
-  if (!remaining) return []
-
-  const BLOCK_TAG_RE =
-    /(<h[1-6][^>]*>[\s\S]*?<\/h[1-6]>|<pre[^>]*>[\s\S]*?<\/pre>|<code[^>]*>[\s\S]*?<\/code>|<p[^>]*>[\s\S]*?<\/p>|<a[^>]*href[^>]*>[\s\S]*?<\/a>|<img[^>]*\/?>|<hr[^>]*\/?>|<table[^>]*>[\s\S]*?<\/table>)/gi
-
-  let match: RegExpExecArray | null
-  let lastIndex = 0
-  const tagRe = new RegExp(BLOCK_TAG_RE.source, 'gi')
-
-  while ((match = tagRe.exec(remaining)) !== null) {
-    if (match.index > lastIndex) {
-      const before = remaining.slice(lastIndex, match.index).trim()
-      if (before) {
-        blocks.push(...extractTextBlocks(before))
-      }
-    }
-
-    const tagHtml = match[0]
-    const block = tagToBlock(tagHtml)
-    if (block) blocks.push(block)
-    lastIndex = tagRe.lastIndex
-  }
-
-  if (lastIndex < remaining.length) {
-    const tail = remaining.slice(lastIndex).trim()
-    if (tail) {
-      blocks.push(...extractTextBlocks(tail))
-    }
-  }
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  const root = resolveEditableRoot(doc)
+  const headCodeNodes = Array.from(doc.head.querySelectorAll('style, script'))
+  const blocks = [...nodesToBlocks(headCodeNodes), ...nodesToBlocks(Array.from(root.childNodes))]
 
   if (blocks.length === 0) {
     blocks.push({
       id: `block_custom_${Date.now()}`,
       type: 'text',
-      props: { content: remaining }
+      props: { content: normalizeText(textWithLineBreaks(root)) }
     })
   }
 
   return blocks
 }
 
-function tagToBlock(html: string): EmailBlock | null {
-  const id = `block_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+function resolveEditableRoot(doc: Document): HTMLElement {
+  let root = doc.body
+  while (root.children.length === 1 && isWrapperElement(root.children[0])) {
+    root = root.children[0] as HTMLElement
+  }
+  return root
+}
 
-  const preMatch = /<pre([^>]*)>([\s\S]*?)<\/pre>/i.exec(html)
-  if (preMatch) {
-    const style = extractAttr(preMatch[1], 'style')
-    const inner = /<code[^>]*>([\s\S]*?)<\/code>/i.exec(preMatch[2])
+function isWrapperElement(element: Element): boolean {
+  const tag = element.tagName.toLowerCase()
+  if (tag !== 'div' && tag !== 'main' && tag !== 'section') return false
+  const style = element.getAttribute('style') || ''
+  return (
+    element.children.length > 0 &&
+    /max-width|margin|padding|font-family|line-height|color/i.test(style)
+  )
+}
+
+function nodesToBlocks(nodes: Node[]): EmailBlock[] {
+  const blocks: EmailBlock[] = []
+  let textBuffer = ''
+
+  const flushText = () => {
+    const text = normalizeText(textBuffer)
+    if (text) blocks.push(createTextBlock(text))
+    textBuffer = ''
+  }
+
+  for (const node of nodes) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      textBuffer += node.textContent || ''
+      continue
+    }
+
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      continue
+    }
+
+    flushText()
+    blocks.push(...elementToBlocks(node as HTMLElement))
+  }
+
+  flushText()
+  return blocks
+}
+
+function elementToBlocks(element: HTMLElement): EmailBlock[] {
+  const block = elementToBlock(element)
+  if (block) return [block]
+
+  if (hasBlockElementChildren(element)) {
+    return nodesToBlocks(Array.from(element.childNodes))
+  }
+
+  const text = normalizeText(textWithLineBreaks(element))
+  return text ? [createTextBlock(text, element)] : []
+}
+
+function elementToBlock(element: HTMLElement): EmailBlock | null {
+  const id = `block_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+  const tag = element.tagName.toLowerCase()
+
+  if (tag === 'script' || tag === 'style') {
     return {
       id,
       type: 'code',
       props: {
-        content: decodeHtml(stripTags(inner ? inner[1] : preMatch[2])),
-        lang: '',
-        fontSize: extractCssValue(style, 'font-size') || '13px',
-        backgroundColor: extractCssValue(style, 'background') || '#0f172a'
+        content: element.textContent || '',
+        lang: tag === 'script' ? 'javascript' : 'css',
+        fontSize: styleValue(element, 'font-size') || '13px',
+        backgroundColor: styleValue(element, 'background-color') || '#0f172a'
       }
     }
   }
 
-  const inlineCodeMatch = /^<code([^>]*)>([\s\S]*?)<\/code>$/i.exec(html.trim())
-  if (inlineCodeMatch) {
-    const style = extractAttr(inlineCodeMatch[1], 'style')
+  if (tag === 'pre') {
+    const code = element.querySelector('code')
+    const className = code?.className || element.className || ''
+    return {
+      id,
+      type: 'code',
+      props: {
+        content: code?.textContent || element.textContent || '',
+        lang: extractCodeLanguage(className),
+        fontSize: styleValue(element, 'font-size') || '13px',
+        backgroundColor: styleValue(element, 'background-color') || '#0f172a'
+      }
+    }
+  }
+
+  if (tag === 'code') {
     return {
       id,
       type: 'inlineCode',
       props: {
-        content: decodeHtml(stripTags(inlineCodeMatch[2])),
-        color: extractCssValue(style, 'color') || '#111827',
-        backgroundColor: extractCssValue(style, 'background') || '#f1f5f9'
+        content: element.textContent || '',
+        color: styleValue(element, 'color') || '#111827',
+        backgroundColor: styleValue(element, 'background-color') || '#f1f5f9'
       }
     }
   }
 
-  const headingMatch = /<h([1-6])([^>]*)>([\s\S]*?)<\/h\1>/i.exec(html)
-  if (headingMatch) {
-    const style = extractAttr(headingMatch[2], 'style')
+  if (/^h[1-6]$/.test(tag)) {
     return {
       id,
       type: 'heading',
       props: {
-        level: `h${headingMatch[1]}`,
-        content: decodeHtml(stripTags(headingMatch[3])),
-        textAlign: extractCssValue(style, 'text-align') || 'left',
-        color: extractCssValue(style, 'color') || '#111827'
+        level: tag,
+        content: normalizeText(textWithLineBreaks(element)),
+        textAlign: styleValue(element, 'text-align') || 'left',
+        color: styleValue(element, 'color') || '#111827'
       }
     }
   }
 
-  const hrMatch = /<hr([^>]*)\/?>/i.exec(html)
-  if (hrMatch) {
-    const style = extractAttr(hrMatch[1], 'style')
+  if (tag === 'hr') {
     return {
       id,
       type: 'divider',
-      props: { color: extractCssValue(style, 'border-top-color') || '#e5e7eb' }
+      props: { color: styleValue(element, 'border-top-color') || '#e5e7eb' }
     }
   }
 
-  const imgMatch = /<img([^>]*)\/?>/i.exec(html)
-  if (imgMatch) {
-    const attrs = imgMatch[1]
+  if (tag === 'img') {
     return {
       id,
       type: 'image',
       props: {
-        src: extractAttr(attrs, 'src') || '',
-        alt: extractAttr(attrs, 'alt') || '',
-        width: extractAttr(attrs, 'width') || '',
-        textAlign: 'center'
+        src: element.getAttribute('src') || '',
+        alt: element.getAttribute('alt') || '',
+        width: element.getAttribute('width') || styleValue(element, 'width') || '',
+        textAlign: styleValue(element.parentElement, 'text-align') || 'center'
       }
     }
   }
 
-  const anchorMatch = /<a([^>]*)>([\s\S]*?)<\/a>/i.exec(html)
-  if (anchorMatch) {
-    const style = extractAttr(anchorMatch[1], 'style')
-    const text = decodeHtml(stripTags(anchorMatch[2]))
-    const href = extractAttr(anchorMatch[1], 'href') || ''
-    const backgroundColor = extractCssValue(style, 'background-color')
+  if (tag === 'a') {
+    const text = normalizeText(textWithLineBreaks(element))
+    const href = element.getAttribute('href') || ''
+    const backgroundColor = styleValue(element, 'background-color')
     if (backgroundColor) {
       return {
         id,
@@ -435,9 +454,9 @@ function tagToBlock(html: string): EmailBlock | null {
         props: {
           content: text,
           href,
-          textAlign: 'center',
+          textAlign: styleValue(element.parentElement, 'text-align') || 'center',
           backgroundColor,
-          color: extractCssValue(style, 'color') || '#ffffff'
+          color: styleValue(element, 'color') || '#ffffff'
         }
       }
     }
@@ -447,45 +466,81 @@ function tagToBlock(html: string): EmailBlock | null {
       props: {
         content: text || href,
         href,
-        textAlign: extractCssValue(style, 'text-align') || 'left',
-        color: extractCssValue(style, 'color') || '#2563eb'
+        textAlign: styleValue(element, 'text-align') || styleValue(element.parentElement, 'text-align') || 'left',
+        color: styleValue(element, 'color') || '#2563eb'
       }
     }
   }
 
-  const paragraphMatch = /<(p|div)([^>]*)>([\s\S]*?)<\/\1>/i.exec(html)
-  if (paragraphMatch) {
-    const style = extractAttr(paragraphMatch[2], 'style')
-    const inner = paragraphMatch[3].trim()
-    if (/<(strong|em|ul|ol|li|code|a)\b/i.test(inner)) {
+  if (tag === 'ul' || tag === 'ol') {
+    return {
+      id,
+      type: 'markdown',
+      props: { content: listToMarkdown(element, tag === 'ol') }
+    }
+  }
+
+  if (tag === 'p' || tag === 'span' || (tag === 'div' && !hasBlockElementChildren(element))) {
+    if (hasRichInlineMarkup(element)) {
       return {
         id,
         type: 'markdown',
-        props: { content: decodeHtml(stripTagsWithLineBreaks(inner)).trim() }
+        props: { content: normalizeText(textWithLineBreaks(element)) }
       }
     }
     return {
       id,
       type: 'text',
       props: {
-        content: decodeHtml(stripTags(inner)),
-        textAlign: extractCssValue(style, 'text-align') || 'left',
-        color: extractCssValue(style, 'color') || '#374151',
-        fontSize: extractCssValue(style, 'font-size') || '14px'
+        content: normalizeText(textWithLineBreaks(element)),
+        textAlign: styleValue(element, 'text-align') || 'left',
+        color: styleValue(element, 'color') || '#374151',
+        fontSize: styleValue(element, 'font-size') || '14px'
       }
     }
   }
 
-  const tableMatch = /<table[^>]*>([\s\S]*?)<\/table>/i.exec(html)
-  if (tableMatch) {
+  if (tag === 'table') {
+    const cells = Array.from(element.querySelectorAll('td'))
+    if (cells.length === 2) {
+      const first = cells[0] as HTMLElement
+      const second = cells[1] as HTMLElement
+      return {
+        id,
+        type: 'columns',
+        props: {
+          col1: normalizeText(textWithLineBreaks(first)),
+          col2: normalizeText(textWithLineBreaks(second)),
+          textAlign: styleValue(first, 'text-align') || 'left'
+        }
+      }
+    }
+    const cell = cells[0] as HTMLElement | undefined
     return {
       id,
       type: 'section',
-      props: { backgroundColor: '#f9fafb', padding: '16px', content: decodeHtml(stripTags(tableMatch[1])) }
+      props: {
+        backgroundColor: styleValue(cell, 'background-color') || styleValue(element, 'background-color') || '#f9fafb',
+        padding: styleValue(cell, 'padding') || '16px',
+        content: normalizeText(textWithLineBreaks(cell || element))
+      }
     }
   }
 
   return null
+}
+
+function createTextBlock(content: string, element?: HTMLElement): EmailBlock {
+  return {
+    id: `block_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    type: 'text',
+    props: {
+      content,
+      textAlign: styleValue(element, 'text-align') || 'left',
+      color: styleValue(element, 'color') || '#374151',
+      fontSize: styleValue(element, 'font-size') || '14px'
+    }
+  }
 }
 
 function extractTextBlocks(html: string): EmailBlock[] {
@@ -500,9 +555,61 @@ function extractTextBlocks(html: string): EmailBlock[] {
   ]
 }
 
-function extractAttr(attrs: string, name: string): string {
-  const match = new RegExp(`${name}="([^"]*)"|${name}='([^']*)'|${name}=([^\\s>]+)`, 'i').exec(attrs)
-  return match?.[1] || match?.[2] || match?.[3] || ''
+function hasBlockElementChildren(element: HTMLElement): boolean {
+  return Array.from(element.children).some((child) =>
+    /^(div|p|h[1-6]|table|section|main|article|header|footer|ul|ol|li|pre|script|style|hr|img)$/i.test(
+      child.tagName
+    )
+  )
+}
+
+function hasRichInlineMarkup(element: HTMLElement): boolean {
+  return Array.from(element.children).some((child) =>
+    /^(strong|b|em|i|u|s|del|ul|ol|li|code|a)$/i.test(child.tagName)
+  )
+}
+
+function styleValue(element: Element | null | undefined, name: string): string {
+  if (!element || !(element instanceof HTMLElement)) return ''
+  return element.style.getPropertyValue(name).trim() || extractCssValue(element.getAttribute('style') || '', name)
+}
+
+function textWithLineBreaks(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) return node.textContent || ''
+  if (node.nodeType !== Node.ELEMENT_NODE) return ''
+
+  const element = node as HTMLElement
+  const tag = element.tagName.toLowerCase()
+  if (tag === 'br') return '\n'
+  if (tag === 'script' || tag === 'style') return element.textContent || ''
+
+  let value = ''
+  element.childNodes.forEach((child) => {
+    value += textWithLineBreaks(child)
+  })
+  if (/^(p|div|section|li|tr)$/i.test(tag)) value += '\n'
+  return value
+}
+
+function normalizeText(value: string): string {
+  return value
+    .replace(/\r\n/g, '\n')
+    .replace(/\u00a0/g, ' ')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+function listToMarkdown(element: HTMLElement, ordered: boolean): string {
+  return Array.from(element.children)
+    .filter((child) => child.tagName.toLowerCase() === 'li')
+    .map((child, index) => `${ordered ? `${index + 1}.` : '-'} ${normalizeText(textWithLineBreaks(child))}`)
+    .join('\n')
+}
+
+function extractCodeLanguage(className: string): string {
+  const match = /(?:language|lang)-([a-z0-9_+-]+)/i.exec(className)
+  return match?.[1] || ''
 }
 
 function extractCssValue(style: string, name: string): string {
@@ -510,13 +617,10 @@ function extractCssValue(style: string, name: string): string {
   return match?.[1]?.trim() || ''
 }
 
-function stripTags(html: string): string {
-  return html.replace(/<[^>]+>/g, '')
-}
-
 function stripTagsWithLineBreaks(html: string): string {
   return html
-    .replace(/<(br|\/p|\/div|\/li)>/gi, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|li)>/gi, '\n')
     .replace(/<li[^>]*>/gi, '- ')
     .replace(/<[^>]+>/g, '')
 }
@@ -539,7 +643,7 @@ export function serializeBlocksToHtml(blocks: EmailBlock[]): string {
         case 'heading':
           return `<${block.props.level || 'h2'} style="margin:16px 0 8px;font-weight:600;text-align:${block.props.textAlign || 'left'};color:${block.props.color || '#111827'};">${escapeHtmlEntities(block.props.content || '')}</${block.props.level || 'h2'}>`
         case 'text':
-          return `<p style="margin:16px 0;text-align:${block.props.textAlign || 'left'};color:${block.props.color || '#374151'};font-size:${block.props.fontSize || '14px'};line-height:24px;">${escapeHtmlEntities(block.props.content || '')}</p>`
+          return `<p style="margin:16px 0;text-align:${block.props.textAlign || 'left'};color:${block.props.color || '#374151'};font-size:${block.props.fontSize || '14px'};line-height:24px;">${renderTextContent(block.props.content || '')}</p>`
         case 'button':
           return `<div style="text-align:${block.props.textAlign || 'center'};margin:16px 0;"><a href="${block.props.href || '#'}" style="display:inline-block;padding:12px 24px;background-color:${block.props.backgroundColor || '#1d4ed8'};color:${block.props.color || '#ffffff'};border-radius:6px;text-decoration:none;font-weight:500;font-size:14px;">${escapeHtmlEntities(block.props.content || '')}</a></div>`
         case 'link':
@@ -549,11 +653,11 @@ export function serializeBlocksToHtml(blocks: EmailBlock[]): string {
         case 'markdown':
           return renderMarkdown(block.props.content || '')
         case 'container':
-          return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;margin:16px auto;background-color:${block.props.backgroundColor || '#ffffff'};"><tr><td style="padding:${block.props.padding || '20px'};font-size:14px;line-height:24px;color:#374151;">${escapeHtmlEntities(block.props.content || '')}</td></tr></table>`
+          return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;margin:16px auto;background-color:${block.props.backgroundColor || '#ffffff'};"><tr><td style="padding:${block.props.padding || '20px'};font-size:14px;line-height:24px;color:#374151;">${renderTextContent(block.props.content || '')}</td></tr></table>`
         case 'section':
-          return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td style="background-color:${block.props.backgroundColor || '#f9fafb'};padding:${block.props.padding || '16px'};border-radius:8px;font-size:14px;line-height:24px;color:#374151;">${escapeHtmlEntities(block.props.content || '')}</td></tr></table>`
+          return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td style="background-color:${block.props.backgroundColor || '#f9fafb'};padding:${block.props.padding || '16px'};border-radius:8px;font-size:14px;line-height:24px;color:#374151;">${renderTextContent(block.props.content || '')}</td></tr></table>`
         case 'columns':
-          return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td style="padding:0 8px;text-align:${block.props.textAlign || 'left'};font-size:14px;line-height:24px;color:#374151;">${escapeHtmlEntities(block.props.col1 || '')}</td><td style="padding:0 8px;text-align:${block.props.textAlign || 'left'};font-size:14px;line-height:24px;color:#374151;">${escapeHtmlEntities(block.props.col2 || '')}</td></tr></table>`
+          return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td style="padding:0 8px;text-align:${block.props.textAlign || 'left'};font-size:14px;line-height:24px;color:#374151;">${renderTextContent(block.props.col1 || '')}</td><td style="padding:0 8px;text-align:${block.props.textAlign || 'left'};font-size:14px;line-height:24px;color:#374151;">${renderTextContent(block.props.col2 || '')}</td></tr></table>`
         case 'divider':
           return `<hr style="border:0;border-top:1px solid ${block.props.color || '#e5e7eb'};margin:20px 0;" />`
         case 'spacer':
@@ -571,4 +675,8 @@ export function serializeBlocksToHtml(blocks: EmailBlock[]): string {
     .join('')
 
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /></head><body><div style="max-width:600px;margin:0 auto;padding:20px;">${body}</div></body></html>`
+}
+
+function renderTextContent(value: string): string {
+  return escapeHtmlEntities(value).replace(/\r\n|\r|\n/g, '<br />')
 }

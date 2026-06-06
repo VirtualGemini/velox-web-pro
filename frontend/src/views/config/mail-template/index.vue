@@ -1,5 +1,9 @@
 <template>
-  <div class="mail-template-page velox-full-height">
+  <div
+    v-loading="pageLoading"
+    class="mail-template-page velox-full-height"
+    :element-loading-text="t('common.loading')"
+  >
     <VeloxSearchBar
       v-show="showSearchBar && activeTab === 'list'"
       v-model="searchForm"
@@ -18,13 +22,13 @@
         <VeloxTableHeader
           v-model:columns="columnChecks"
           v-model:showSearchBar="showSearchBar"
-          :loading="loading"
           @refresh="refreshData"
         >
           <template #left>
             <ElSpace wrap>
               <ElButton
                 v-if="canAccess('system:mail-template:create')"
+                :disabled="pageLoading"
                 @click="openCreateDialog"
                 v-ripple
               >
@@ -35,7 +39,7 @@
                 class="velox-batch-delete"
                 type="danger"
                 plain
-                :disabled="selectedRows.length === 0 || hasSelectedSystemTemplate"
+                :disabled="pageLoading || selectedRows.length === 0 || hasSelectedSystemTemplate"
                 @click="handleBatchDelete"
                 v-ripple
               >
@@ -59,6 +63,7 @@
 
       <MailEditor
         v-else-if="activeTab === 'editor' && editingTemplate"
+        ref="mailEditorRef"
         :key="editingTemplate.id"
         class="mail-template-editor-view"
         :template="editingTemplate"
@@ -84,9 +89,11 @@
     >
       <ElForm
         ref="formRef"
+        v-loading="submitLoading"
         :model="formModel"
         :rules="formRules"
         :label-width="formLabelWidth"
+        :element-loading-text="t('common.loading')"
         label-position="right"
         class="mail-template-form"
       >
@@ -154,32 +161,13 @@
           </ElCol>
         </ElRow>
 
-        <ElRow :gutter="16">
-          <ElCol :span="formHalfSpan">
-            <ElFormItem
-              :label="t('pages.config.mailTemplate.form.fields.subjectZh')"
-              prop="subjectZh"
-            >
-              <ElInput
-                v-model="formModel.subjectZh"
-                maxlength="255"
-                :placeholder="t('pages.config.mailTemplate.form.placeholders.subjectZh')"
-              />
-            </ElFormItem>
-          </ElCol>
-          <ElCol :span="formHalfSpan">
-            <ElFormItem
-              :label="t('pages.config.mailTemplate.form.fields.subjectEn')"
-              prop="subjectEn"
-            >
-              <ElInput
-                v-model="formModel.subjectEn"
-                maxlength="255"
-                :placeholder="t('pages.config.mailTemplate.form.placeholders.subjectEn')"
-              />
-            </ElFormItem>
-          </ElCol>
-        </ElRow>
+        <ElFormItem :label="t('pages.config.mailTemplate.form.fields.subject')" prop="subject">
+          <ElInput
+            v-model="formModel.subject"
+            maxlength="255"
+            :placeholder="t('pages.config.mailTemplate.form.placeholders.subject')"
+          />
+        </ElFormItem>
 
         <ElFormItem :label="t('pages.config.mailTemplate.form.fields.remark')">
           <ElInput
@@ -194,16 +182,18 @@
       </ElForm>
 
       <template #footer>
-        <ElButton @click="handleDialogClose">{{ t('common.cancel') }}</ElButton>
+        <ElButton :disabled="submitLoading" @click="handleDialogClose">
+          {{ t('common.cancel') }}
+        </ElButton>
         <ElButton
           v-if="dialogMode === 'edit'"
           type="primary"
-          :loading="submitLoading"
+          :disabled="submitLoading"
           @click="handleSubmitAndEditMail"
         >
           {{ t('pages.config.mailTemplate.actions.editMail') }}
         </ElButton>
-        <ElButton type="primary" @click="handleSubmit">
+        <ElButton type="primary" :disabled="submitLoading" @click="handleSubmit">
           {{ t('table.form.submit') }}
         </ElButton>
       </template>
@@ -213,7 +203,6 @@
       v-model:visible="previewVisible"
       :metadata="metadata"
       :type="previewPayload.sendType"
-      :language="previewPayload.language"
       :subject="previewPayload.subject"
       :content="previewPayload.content"
     />
@@ -248,7 +237,6 @@
     type MailTemplate,
     type MailTemplateKind,
     type MailTemplateMetadata,
-    type MailTemplateLanguage,
     type MailTemplateSaveCommand,
     fetchMailTemplateCreate,
     fetchMailTemplateDelete,
@@ -269,8 +257,7 @@
     name: string
     sendType: string
     templateType: MailTemplateKind
-    subjectZh: string
-    subjectEn: string
+    subject: string
     enabled: boolean
     remark: string
   }
@@ -317,26 +304,6 @@
     if (kind === 'SYSTEM') return t('common.status.builtin')
     if (kind === 'CUSTOM') return t('common.status.custom')
     return kind
-  }
-
-  function languageLabel(language: string) {
-    return t(`pages.config.mailTemplate.languages.${language}`)
-  }
-
-  function renderLanguageTags(value?: string) {
-    const languages = (value || 'zh')
-      .split(',')
-      .map((item) => item.trim())
-      .filter(Boolean)
-    return h(
-      'div',
-      { class: 'mail-template-language-tags' },
-      languages.map((language) =>
-        h(ElTag, { type: language === 'en' ? 'warning' : 'success', size: 'small' }, () =>
-          languageLabel(language)
-        )
-      )
-    )
   }
 
   const searchForm = ref<MailTemplateSearchForm>({
@@ -423,10 +390,10 @@
   const selectedRows = ref<MailTemplate[]>([])
   const formRef = ref<FormInstance>()
   const formModel = reactive(createDefaultForm())
-  const formContentZh = ref('')
-  const formContentEn = ref('')
+  const formContent = ref('')
+  const mailEditorRef = ref<InstanceType<typeof MailEditor>>()
 
-  // ── 编辑器模式：URL query + localStorage 共同保持刷新和跨路由后的编辑状态 ──
+  // ── 编辑器模式：URL query + sessionStorage 共同保持当前标签页内的编辑状态 ──
   const EDITOR_QUERY_KEY = 'editorId'
   const EDITOR_SESSION_KEY = 'velox:mail-template:editor-session'
   const activeTab = ref<'list' | 'editor'>('list')
@@ -436,12 +403,10 @@
   const previewVisible = ref(false)
   const previewPayload = reactive<{
     sendType: string
-    language: MailTemplateLanguage
     subject: string
     content: string
   }>({
     sendType: '',
-    language: 'zh',
     subject: '',
     content: ''
   })
@@ -486,14 +451,6 @@
     }
   })
 
-  function validateAnySubject(_rule: unknown, _value: string, callback: (error?: Error) => void) {
-    if (formModel.subjectZh.trim() || formModel.subjectEn.trim()) {
-      callback()
-      return
-    }
-    callback(new Error(t('pages.config.mailTemplate.messages.enterSubject')))
-  }
-
   const formRules = reactive<FormRules<MailTemplateFormModel>>({
     name: [
       {
@@ -509,19 +466,17 @@
         trigger: 'change'
       }
     ],
-    subjectZh: [
+    subject: [
       {
-        validator: validateAnySubject,
-        trigger: 'blur'
-      }
-    ],
-    subjectEn: [
-      {
-        validator: validateAnySubject,
+        required: true,
+        message: t('pages.config.mailTemplate.messages.enterSubject'),
         trigger: 'blur'
       }
     ]
   })
+
+  const pageLoadingCount = ref(0)
+  const pageLoading = computed(() => pageLoadingCount.value > 0)
 
   const {
     columns,
@@ -529,12 +484,12 @@
     data,
     loading,
     pagination,
-    getData,
+    getData: getTableData,
     replaceSearchParams,
-    resetSearchParams,
+    resetSearchParams: resetTableSearchParams,
     handleSizeChange,
     handleCurrentChange,
-    refreshData
+    refreshData: refreshTableData
   } = useTable({
     core: {
       apiFn: fetchMailTemplatePage,
@@ -573,18 +528,11 @@
             )
         },
         {
-          prop: 'availableLanguages',
-          label: 'pages.config.mailTemplate.columns.languages',
-          minWidth: 100,
-          align: 'center',
-          formatter: (row: MailTemplate) => renderLanguageTags(row.availableLanguages)
-        },
-        {
           prop: 'subject',
           label: 'pages.config.mailTemplate.columns.subject',
           minWidth: 200,
           showOverflowTooltip: true,
-          formatter: (row: MailTemplate) => row.subjectZh || row.subjectEn || row.subject || '-'
+          formatter: (row: MailTemplate) => row.subject || '-'
         },
         {
           prop: 'enabled',
@@ -593,7 +541,7 @@
           formatter: (row: MailTemplate) =>
             h(ElSwitch, {
               modelValue: row.enabled === 1,
-              disabled: !canAccess('system:mail-template:update'),
+              disabled: pageLoading.value || !canAccess('system:mail-template:update'),
               'onUpdate:modelValue': (val: string | number | boolean) =>
                 handleEnabledChange(row, !!val)
             })
@@ -618,9 +566,9 @@
         {
           prop: 'operation',
           label: 'pages.config.mailTemplate.columns.operation',
-          width: 168,
+          width: 136,
           fixed: 'right',
-          align: 'left',
+          align: 'center',
           formatter: (row: MailTemplate) => renderOperationButtons(row)
         }
       ]
@@ -630,13 +578,25 @@
   const EMPTY_HTML =
     '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /></head><body><div style="max-width:600px;margin:0 auto;padding:20px;"></div></body></html>'
 
+  async function withPageLoading<T>(runner: () => Promise<T>) {
+    pageLoadingCount.value += 1
+    try {
+      return await runner()
+    } finally {
+      pageLoadingCount.value = Math.max(0, pageLoadingCount.value - 1)
+    }
+  }
+
+  async function refreshData() {
+    await withPageLoading(() => refreshTableData())
+  }
+
   function createDefaultForm(): MailTemplateFormModel {
     return {
       name: '',
       sendType: '',
       templateType: 'CUSTOM',
-      subjectZh: '',
-      subjectEn: '',
+      subject: 'Velox Web Pro',
       enabled: true,
       remark: ''
     }
@@ -663,7 +623,7 @@
 
     return h(
       'div',
-      { class: 'mail-template-operation-buttons flex items-center' },
+      { class: 'mail-template-operation-buttons flex items-center justify-center' },
       [
         canAccess('system:mail-template:update')
           ? h(VeloxButtonTable, { type: 'edit', onClick: () => openEditDialog(row) })
@@ -696,21 +656,18 @@
 
   function fillForm(detail?: MailTemplate) {
     Object.assign(formModel, createDefaultForm())
-    formContentZh.value = EMPTY_HTML
-    formContentEn.value = ''
+    formContent.value = EMPTY_HTML
     if (!detail) return
 
     Object.assign(formModel, {
       name: detail.name || '',
       sendType: detail.sendType || detail.type || '',
       templateType: detail.templateType || 'CUSTOM',
-      subjectZh: detail.subjectZh || '',
-      subjectEn: detail.subjectEn || '',
+      subject: detail.subject || '',
       enabled: detail.enabled === 1,
       remark: detail.remark || ''
     })
-    formContentZh.value = detail.contentZh || ''
-    formContentEn.value = detail.contentEn || ''
+    formContent.value = detail.content || ''
   }
 
   async function openCreateDialog() {
@@ -730,11 +687,13 @@
     const templateId = resolveTemplateId(row)
     if (!templateId) return
 
-    const detail = await fetchMailTemplateGet(templateId)
-    dialogMode.value = 'edit'
-    currentEditId.value = templateId
-    fillForm(detail)
-    dialogVisible.value = true
+    await withPageLoading(async () => {
+      const detail = await fetchMailTemplateGet(templateId)
+      dialogMode.value = 'edit'
+      currentEditId.value = templateId
+      fillForm(detail)
+      dialogVisible.value = true
+    })
   }
 
   // 复制：拉取完整内容预填新增弹窗，但清空名称、强制停用，由名称唯一约束促使改名。
@@ -742,14 +701,16 @@
     const templateId = resolveTemplateId(row)
     if (!templateId) return
 
-    const detail = await fetchMailTemplateGet(templateId)
-    dialogMode.value = 'create'
-    currentEditId.value = ''
-    fillForm(detail)
-    formModel.name = ''
-    formModel.templateType = 'CUSTOM'
-    formModel.enabled = false
-    dialogVisible.value = true
+    await withPageLoading(async () => {
+      const detail = await fetchMailTemplateGet(templateId)
+      dialogMode.value = 'create'
+      currentEditId.value = ''
+      fillForm(detail)
+      formModel.name = ''
+      formModel.templateType = 'CUSTOM'
+      formModel.enabled = false
+      dialogVisible.value = true
+    })
   }
 
   function handleDialogClose() {
@@ -768,10 +729,8 @@
       name: formModel.name.trim(),
       sendType: formModel.sendType,
       templateType: formModel.templateType,
-      subjectZh: formModel.subjectZh.trim() || undefined,
-      contentZh: formContentZh.value || (formModel.subjectZh.trim() ? EMPTY_HTML : undefined),
-      subjectEn: formModel.subjectEn.trim() || undefined,
-      contentEn: formContentEn.value || (formModel.subjectEn.trim() ? EMPTY_HTML : undefined),
+      subject: formModel.subject.trim(),
+      content: formContent.value || EMPTY_HTML,
       enabled: formModel.enabled ? 1 : 0,
       remark: formModel.remark.trim() || undefined
     }
@@ -800,7 +759,7 @@
   }
 
   function persistEditorSession(templateId: string) {
-    window.localStorage.setItem(
+    window.sessionStorage.setItem(
       EDITOR_SESSION_KEY,
       JSON.stringify({
         templateId,
@@ -811,7 +770,7 @@
 
   function readEditorSession() {
     try {
-      const raw = window.localStorage.getItem(EDITOR_SESSION_KEY)
+      const raw = window.sessionStorage.getItem(EDITOR_SESSION_KEY)
       if (!raw) return ''
       const session = JSON.parse(raw) as { templateId?: string }
       return session.templateId || ''
@@ -821,16 +780,24 @@
   }
 
   function clearEditorSession() {
-    window.localStorage.removeItem(EDITOR_SESSION_KEY)
+    window.sessionStorage.removeItem(EDITOR_SESSION_KEY)
   }
 
-  async function openEditorById(templateId: string, syncQuery = true) {
-    const detail = await fetchMailTemplateGet(templateId)
-    editingTemplate.value = detail as MailTemplate & { content: string }
-    transitionDirection.value = 'slide-left'
-    activeTab.value = 'editor'
-    persistEditorSession(templateId)
-    if (syncQuery) syncEditorQuery(templateId)
+  async function openEditorById(templateId: string, syncQuery = true, showLoading = true) {
+    const openEditor = async () => {
+      const detail = await fetchMailTemplateGet(templateId)
+      editingTemplate.value = detail as MailTemplate & { content: string }
+      transitionDirection.value = 'slide-left'
+      activeTab.value = 'editor'
+      persistEditorSession(templateId)
+      if (syncQuery) syncEditorQuery(templateId)
+    }
+
+    if (showLoading) {
+      await withPageLoading(openEditor)
+    } else {
+      await openEditor()
+    }
   }
 
   async function restoreEditorState() {
@@ -838,7 +805,7 @@
     if (!templateId) return
 
     try {
-      await openEditorById(templateId, false)
+      await openEditorById(templateId, false, false)
     } catch {
       editingTemplate.value = null
       activeTab.value = 'list'
@@ -867,7 +834,7 @@
         ElMessage.success(t('pages.config.mailTemplate.messages.updateSuccess'))
       }
       handleDialogClose()
-      refreshData()
+      await refreshData()
     } finally {
       submitLoading.value = false
     }
@@ -902,13 +869,33 @@
     }
   }
 
-  function onEditorBack() {
+  async function confirmExitEditor() {
+    if (!mailEditorRef.value?.hasUnsavedChanges()) return true
+    try {
+      await ElMessageBox.confirm(
+        t('pages.config.mailTemplate.messages.confirmExitEditor'),
+        t('pages.config.mailTemplate.messages.exitEditorTitle'),
+        {
+          confirmButtonText: t('common.confirm'),
+          cancelButtonText: t('common.cancel'),
+          type: 'warning'
+        }
+      )
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function onEditorBack() {
+    if (!(await confirmExitEditor())) return
+    mailEditorRef.value?.clearEditorState()
     transitionDirection.value = 'slide-right'
     activeTab.value = 'list'
     editingTemplate.value = null
     clearEditorQuery()
     clearEditorSession()
-    refreshData()
+    void refreshData()
   }
 
   function onEditorSaved() {
@@ -919,24 +906,18 @@
     const templateId = resolveTemplateId(row)
     if (!templateId) return
 
-    const detail = await fetchMailTemplateGet(templateId)
-    const language = detail.subjectZh || detail.contentZh ? 'zh' : 'en'
-    Object.assign(previewPayload, {
-      sendType: detail.sendType || detail.type,
-      language,
-      subject:
-        language === 'en'
-          ? detail.subjectEn || detail.subjectZh || ''
-          : detail.subjectZh || detail.subjectEn || '',
-      content:
-        language === 'en'
-          ? detail.contentEn || detail.contentZh || ''
-          : detail.contentZh || detail.contentEn || ''
+    await withPageLoading(async () => {
+      const detail = await fetchMailTemplateGet(templateId)
+      Object.assign(previewPayload, {
+        sendType: detail.sendType || detail.type,
+        subject: detail.subject || '',
+        content: detail.content || ''
+      })
+      previewVisible.value = true
     })
-    previewVisible.value = true
   }
 
-  function handleSearch(params: MailTemplateSearchForm) {
+  async function handleSearch(params: MailTemplateSearchForm) {
     replaceSearchParams({
       name: params.name,
       sendType: params.sendType,
@@ -949,10 +930,10 @@
       updateTimeEnd: params.updateTimeRange?.[1],
       page: 1
     })
-    getData()
+    await withPageLoading(() => getTableData())
   }
 
-  function handleReset() {
+  async function handleReset() {
     searchForm.value = {
       name: undefined,
       sendType: undefined,
@@ -962,23 +943,24 @@
       createTimeRange: undefined,
       updateTimeRange: undefined
     }
-    resetSearchParams()
-    getData()
+    await withPageLoading(() => resetTableSearchParams())
   }
 
   async function handleEnabledChange(row: MailTemplate, val: boolean) {
     const templateId = resolveTemplateId(row)
     if (!templateId) return
 
-    await fetchMailTemplateUpdateEnabled(templateId, val ? 1 : 0)
-    row.enabled = val ? 1 : 0
-    ElMessage.success(
-      val
-        ? t('pages.config.mailTemplate.messages.enabledSuccess')
-        : t('pages.config.mailTemplate.messages.disabledSuccess')
-    )
-    // 启用互斥由后端保证（同一发件类型仅一条启用），刷新以同步同组其它行状态。
-    if (val) refreshData()
+    await withPageLoading(async () => {
+      await fetchMailTemplateUpdateEnabled(templateId, val ? 1 : 0)
+      row.enabled = val ? 1 : 0
+      ElMessage.success(
+        val
+          ? t('pages.config.mailTemplate.messages.enabledSuccess')
+          : t('pages.config.mailTemplate.messages.disabledSuccess')
+      )
+      // 启用互斥由后端保证（同一发件类型仅一条启用），刷新以同步同组其它行状态。
+      if (val) await refreshTableData()
+    })
   }
 
   async function handleDelete(row: MailTemplate) {
@@ -995,9 +977,11 @@
       }
     )
 
-    await fetchMailTemplateDelete(templateId)
-    ElMessage.success(t('pages.config.mailTemplate.messages.deleteSuccess'))
-    refreshData()
+    await withPageLoading(async () => {
+      await fetchMailTemplateDelete(templateId)
+      ElMessage.success(t('pages.config.mailTemplate.messages.deleteSuccess'))
+      await refreshTableData()
+    })
   }
 
   function handleSelectionChange(selection: MailTemplate[]) {
@@ -1022,19 +1006,29 @@
         type: 'warning'
       }
     )
-    await fetchMailTemplateDeleteBatch(selectedRows.value.map((row) => row.id))
-    ElMessage.success(t('common.batchDeleteSuccess'))
-    veloxTableRef.value?.elTableRef?.clearSelection()
-    selectedRows.value = []
-    refreshData()
+    await withPageLoading(async () => {
+      await fetchMailTemplateDeleteBatch(selectedRows.value.map((row) => row.id))
+      ElMessage.success(t('common.batchDeleteSuccess'))
+      veloxTableRef.value?.elTableRef?.clearSelection()
+      selectedRows.value = []
+      await refreshTableData()
+    })
   }
 
-  async function loadMetadata() {
-    metadata.value = await fetchMailTemplateMetadata()
+  async function loadMetadata(showLoading = true) {
+    const load = async () => {
+      metadata.value = await fetchMailTemplateMetadata()
+    }
+
+    if (showLoading) {
+      await withPageLoading(load)
+    } else {
+      await load()
+    }
   }
 
   onMounted(() => {
-    void loadMetadata()
+    void loadMetadata(false)
     void restoreEditorState()
   })
 </script>
@@ -1137,12 +1131,5 @@
     :deep(> *:last-child) {
       margin-right: 0;
     }
-  }
-
-  .mail-template-language-tags {
-    display: inline-flex;
-    gap: 4px;
-    align-items: center;
-    justify-content: center;
   }
 </style>

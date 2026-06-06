@@ -14,7 +14,6 @@ import com.velox.module.system.mail.domain.model.MailTemplate;
 import com.velox.module.system.mail.persistence.MailTemplateMapper;
 import com.velox.module.system.mail.service.MailTemplateService;
 import com.velox.module.system.mail.template.MailTemplateKind;
-import com.velox.module.system.mail.template.MailTemplateLanguage;
 import com.velox.module.system.mail.template.MailTemplateType;
 import com.velox.module.system.mail.vo.MailTemplatePageReqVO;
 import com.velox.module.system.mail.vo.MailTemplateRespVO;
@@ -53,7 +52,7 @@ public class MailTemplateServiceImpl implements MailTemplateService {
         validateSendType(createReqVO.getSendType());
         validateNameUnique(createReqVO.getName(), null);
 
-        BilingualContent content = normalizeContent(createReqVO, null);
+        TemplateContent content = normalizeContent(createReqVO, null);
         String templateType = StrUtil.blankToDefault(createReqVO.getTemplateType(), TEMPLATE_TYPE_CUSTOM);
         validateTemplateType(templateType);
 
@@ -68,10 +67,8 @@ public class MailTemplateServiceImpl implements MailTemplateService {
         template.setName(createReqVO.getName());
         template.setSendType(createReqVO.getSendType());
         template.setTemplateType(templateType);
-        template.setSubjectZh(content.subjectZh());
-        template.setContentZh(content.contentZh());
-        template.setSubjectEn(content.subjectEn());
-        template.setContentEn(content.contentEn());
+        template.setSubject(content.subject());
+        template.setContent(content.content());
         template.setEnabled(enabled);
         template.setSort(createReqVO.getSort() != null ? createReqVO.getSort() : 1);
         template.setRemark(createReqVO.getRemark());
@@ -88,7 +85,7 @@ public class MailTemplateServiceImpl implements MailTemplateService {
 
         // 发件类型、模板类型不可变：系统内置模板保持内置，自定义模板保持自定义。
         String sendType = existing.getSendType();
-        BilingualContent content = normalizeContent(updateReqVO, existing);
+        TemplateContent content = normalizeContent(updateReqVO, existing);
         Integer enabled = updateReqVO.getEnabled() != null ? updateReqVO.getEnabled() : existing.getEnabled();
         if (enabled != null && enabled == 1) {
             disableSiblings(sendType, decodedId);
@@ -97,10 +94,8 @@ public class MailTemplateServiceImpl implements MailTemplateService {
         mailTemplateMapper.update(null, new LambdaUpdateWrapper<MailTemplate>()
                 .eq(MailTemplate::getId, decodedId)
                 .set(MailTemplate::getName, updateReqVO.getName())
-                .set(MailTemplate::getSubjectZh, content.subjectZh())
-                .set(MailTemplate::getContentZh, content.contentZh())
-                .set(MailTemplate::getSubjectEn, content.subjectEn())
-                .set(MailTemplate::getContentEn, content.contentEn())
+                .set(MailTemplate::getSubject, content.subject())
+                .set(MailTemplate::getContent, content.content())
                 .set(MailTemplate::getEnabled, enabled)
                 .set(MailTemplate::getSort, updateReqVO.getSort() != null ? updateReqVO.getSort() : existing.getSort())
                 .set(MailTemplate::getRemark, updateReqVO.getRemark())
@@ -198,10 +193,6 @@ public class MailTemplateServiceImpl implements MailTemplateService {
         MailTemplateType.fromCode(sendType);
     }
 
-    private void validateLanguage(String language) {
-        MailTemplateLanguage.fromCode(language);
-    }
-
     private void validateTemplateType(String templateType) {
         MailTemplateKind.fromCode(templateType);
     }
@@ -219,29 +210,13 @@ public class MailTemplateServiceImpl implements MailTemplateService {
         }
     }
 
-    private BilingualContent normalizeContent(MailTemplateSaveReqVO req, MailTemplate existing) {
-        String subjectZh = trimToNull(req.getSubjectZh(), existing == null ? null : existing.getSubjectZh());
-        String contentZh = trimToNull(req.getContentZh(), existing == null ? null : existing.getContentZh());
-        String subjectEn = trimToNull(req.getSubjectEn(), existing == null ? null : existing.getSubjectEn());
-        String contentEn = trimToNull(req.getContentEn(), existing == null ? null : existing.getContentEn());
-
-        if (StrUtil.isNotBlank(req.getLanguage())) {
-            validateLanguage(req.getLanguage());
-            if ("en".equals(req.getLanguage())) {
-                subjectEn = trimToNull(req.getSubject(), subjectEn);
-                contentEn = trimToNull(req.getContent(), contentEn);
-            } else {
-                subjectZh = trimToNull(req.getSubject(), subjectZh);
-                contentZh = trimToNull(req.getContent(), contentZh);
-            }
-        }
-
-        boolean hasZh = StrUtil.isNotBlank(subjectZh) && StrUtil.isNotBlank(contentZh);
-        boolean hasEn = StrUtil.isNotBlank(subjectEn) && StrUtil.isNotBlank(contentEn);
-        if (!hasZh && !hasEn) {
+    private TemplateContent normalizeContent(MailTemplateSaveReqVO req, MailTemplate existing) {
+        String subject = trimToNull(req.getSubject(), existing == null ? null : existing.getSubject());
+        String content = trimToNull(req.getContent(), existing == null ? null : existing.getContent());
+        if (StrUtil.isBlank(subject) || StrUtil.isBlank(content)) {
             throw new ApiException(BusinessErrorCode.MAIL_TEMPLATE_CONTENT_EMPTY);
         }
-        return new BilingualContent(subjectZh, contentZh, subjectEn, contentEn);
+        return new TemplateContent(subject, content);
     }
 
     private String trimToNull(String value, String fallback) {
@@ -250,21 +225,14 @@ public class MailTemplateServiceImpl implements MailTemplateService {
 
     private MailTemplateRespVO toRespVO(MailTemplate template, boolean includeContent) {
         MailTemplateRespVO respVO = new MailTemplateRespVO();
-        String language = defaultLanguage(template);
         respVO.setId(template.getId());
         respVO.setName(template.getName());
         respVO.setSendType(template.getSendType());
         respVO.setType(template.getSendType());
         respVO.setTemplateType(template.getTemplateType());
-        respVO.setLanguage(language);
-        respVO.setAvailableLanguages(availableLanguages(template));
-        respVO.setSubject(resolveSubject(template, language));
-        respVO.setSubjectZh(template.getSubjectZh());
-        respVO.setSubjectEn(template.getSubjectEn());
+        respVO.setSubject(template.getSubject());
         if (includeContent) {
-            respVO.setContent(resolveContent(template, language));
-            respVO.setContentZh(template.getContentZh());
-            respVO.setContentEn(template.getContentEn());
+            respVO.setContent(template.getContent());
         }
         respVO.setEnabled(template.getEnabled());
         respVO.setSort(template.getSort());
@@ -274,39 +242,6 @@ public class MailTemplateServiceImpl implements MailTemplateService {
         return respVO;
     }
 
-    private String defaultLanguage(MailTemplate template) {
-        if (StrUtil.isNotBlank(template.getSubjectZh()) || StrUtil.isNotBlank(template.getContentZh())) {
-            return "zh";
-        }
-        return "en";
-    }
-
-    private String availableLanguages(MailTemplate template) {
-        boolean zh = StrUtil.isNotBlank(template.getSubjectZh()) || StrUtil.isNotBlank(template.getContentZh());
-        boolean en = StrUtil.isNotBlank(template.getSubjectEn()) || StrUtil.isNotBlank(template.getContentEn());
-        if (zh && en) {
-            return "zh,en";
-        }
-        if (en) {
-            return "en";
-        }
-        return "zh";
-    }
-
-    private String resolveSubject(MailTemplate template, String language) {
-        if ("en".equals(language)) {
-            return StrUtil.blankToDefault(template.getSubjectEn(), template.getSubjectZh());
-        }
-        return StrUtil.blankToDefault(template.getSubjectZh(), template.getSubjectEn());
-    }
-
-    private String resolveContent(MailTemplate template, String language) {
-        if ("en".equals(language)) {
-            return StrUtil.blankToDefault(template.getContentEn(), template.getContentZh());
-        }
-        return StrUtil.blankToDefault(template.getContentZh(), template.getContentEn());
-    }
-
-    private record BilingualContent(String subjectZh, String contentZh, String subjectEn, String contentEn) {
+    private record TemplateContent(String subject, String content) {
     }
 }

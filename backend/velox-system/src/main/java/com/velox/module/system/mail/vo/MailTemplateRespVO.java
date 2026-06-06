@@ -21,30 +21,12 @@ public class MailTemplateRespVO {
     @Schema(description = "openapi.system.mail_template.field.template_type")
     private String templateType;
 
-    @Schema(description = "openapi.system.mail_template.field.language")
-    private String language;
-
-    @Schema(description = "openapi.system.mail_template.field.available_languages")
-    private String availableLanguages;
-
     @Schema(description = "openapi.system.mail_template.field.subject")
     private String subject;
 
     /** 列表查询不返回，仅详情返回完整 HTML */
     @Schema(description = "openapi.system.mail_template.field.content")
     private String content;
-
-    @Schema(description = "openapi.system.mail_template.field.subject_zh")
-    private String subjectZh;
-
-    @Schema(description = "openapi.system.mail_template.field.content_zh")
-    private String contentZh;
-
-    @Schema(description = "openapi.system.mail_template.field.subject_en")
-    private String subjectEn;
-
-    @Schema(description = "openapi.system.mail_template.field.content_en")
-    private String contentEn;
 
     @Schema(description = "openapi.common.enabled")
     private Integer enabled;
@@ -101,22 +83,6 @@ public class MailTemplateRespVO {
         this.templateType = templateType;
     }
 
-    public String getLanguage() {
-        return language;
-    }
-
-    public void setLanguage(String language) {
-        this.language = language;
-    }
-
-    public String getAvailableLanguages() {
-        return availableLanguages;
-    }
-
-    public void setAvailableLanguages(String availableLanguages) {
-        this.availableLanguages = availableLanguages;
-    }
-
     public String getSubject() {
         return subject;
     }
@@ -131,38 +97,6 @@ public class MailTemplateRespVO {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public String getSubjectZh() {
-        return subjectZh;
-    }
-
-    public void setSubjectZh(String subjectZh) {
-        this.subjectZh = subjectZh;
-    }
-
-    public String getContentZh() {
-        return contentZh;
-    }
-
-    public void setContentZh(String contentZh) {
-        this.contentZh = contentZh;
-    }
-
-    public String getSubjectEn() {
-        return subjectEn;
-    }
-
-    public void setSubjectEn(String subjectEn) {
-        this.subjectEn = subjectEn;
-    }
-
-    public String getContentEn() {
-        return contentEn;
-    }
-
-    public void setContentEn(String contentEn) {
-        this.contentEn = contentEn;
     }
 
     public Integer getEnabled() {

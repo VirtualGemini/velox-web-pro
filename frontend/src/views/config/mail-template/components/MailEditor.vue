@@ -1,7 +1,11 @@
 <template>
-  <div class="mail-editor">
+  <div
+    v-loading="saving"
+    class="mail-editor"
+    :element-loading-text="t('pages.config.mailTemplate.editor.saving')"
+  >
     <!-- ══ 顶部工具栏 ══ -->
-    <header class="mail-editor__toolbar">
+    <header ref="toolbarRef" class="mail-editor__toolbar">
       <div class="mail-editor__toolbar-group mail-editor__toolbar-left">
         <ElButton text :icon="ArrowLeft" class="mail-editor__back" @click="$emit('back')">
           {{ t('pages.config.mailTemplate.editor.backToList') }}
@@ -12,33 +16,42 @@
 
       <div class="mail-editor__toolbar-group mail-editor__toolbar-center">
         <!-- 桌面/平板/手机预览切换 -->
-        <div class="mail-editor__segment">
+        <div class="mail-editor__segment" :style="deviceSegmentStyle">
           <button
+            v-if="isViewportVisible('desktop')"
             type="button"
             class="mail-editor__segment-btn"
             :class="{ 'is-active': viewport === 'desktop' }"
-            @click="viewport = 'desktop'"
+            :title="t('pages.config.mailTemplate.editor.desktop')"
+            :aria-label="t('pages.config.mailTemplate.editor.desktop')"
+            :aria-pressed="viewport === 'desktop'"
+            @click="setViewport('desktop')"
           >
             <ElIcon><Monitor /></ElIcon>
-            {{ t('pages.config.mailTemplate.editor.desktop') }}
           </button>
           <button
+            v-if="isViewportVisible('tablet')"
             type="button"
             class="mail-editor__segment-btn"
             :class="{ 'is-active': viewport === 'tablet' }"
-            @click="viewport = 'tablet'"
+            :title="t('pages.config.mailTemplate.editor.tablet')"
+            :aria-label="t('pages.config.mailTemplate.editor.tablet')"
+            :aria-pressed="viewport === 'tablet'"
+            @click="setViewport('tablet')"
           >
-            <ElIcon><Notebook /></ElIcon>
-            {{ t('pages.config.mailTemplate.editor.tablet') }}
+            <ElIcon><Cellphone /></ElIcon>
           </button>
           <button
+            v-if="isViewportVisible('mobile')"
             type="button"
             class="mail-editor__segment-btn"
             :class="{ 'is-active': viewport === 'mobile' }"
-            @click="viewport = 'mobile'"
+            :title="t('pages.config.mailTemplate.editor.mobile')"
+            :aria-label="t('pages.config.mailTemplate.editor.mobile')"
+            :aria-pressed="viewport === 'mobile'"
+            @click="setViewport('mobile')"
           >
-            <ElIcon><Cellphone /></ElIcon>
-            {{ t('pages.config.mailTemplate.editor.mobile') }}
+            <ElIcon><PhonePreviewIcon /></ElIcon>
           </button>
         </div>
       </div>
@@ -46,31 +59,34 @@
       <div class="mail-editor__toolbar-group mail-editor__toolbar-right">
         <span class="mail-editor__divider-v" />
 
-        <ElTooltip
-          :content="t('pages.config.mailTemplate.editor.switchLanguage')"
-          placement="bottom"
-        >
-          <button type="button" class="mail-editor__lang-toggle" @click="toggleLanguage">
-            <ElIcon><Switch /></ElIcon>
-            <span>{{ activeLanguage }}</span>
-          </button>
-        </ElTooltip>
-        <ElButton :icon="View" @click="openPreview" :disabled="blocks.length === 0">
-          {{ t('pages.config.mailTemplate.editor.preview') }}
-        </ElButton>
-        <ElButton type="primary" :icon="Check" :loading="saving" @click="handleSave">
-          {{
-            saving
-              ? t('pages.config.mailTemplate.editor.saving')
-              : t('pages.config.mailTemplate.editor.save')
-          }}
-        </ElButton>
+        <div class="mail-editor__actions">
+          <ElButton
+            class="mail-editor__action-btn"
+            :icon="View"
+            :disabled="blocks.length === 0 || saving"
+            @click="openPreview"
+          >
+            {{ t('pages.config.mailTemplate.editor.preview') }}
+          </ElButton>
+          <ElButton
+            class="mail-editor__action-btn"
+            type="primary"
+            :icon="Check"
+            :disabled="saving"
+            @click="handleSave"
+          >
+            {{ t('pages.config.mailTemplate.editor.save') }}
+          </ElButton>
+        </div>
       </div>
     </header>
 
-    <div class="mail-editor__workspace">
+    <div ref="workspaceRef" class="mail-editor__workspace">
       <!-- ══ 左栏：组件调色板 + 图层 ══ -->
-      <aside class="mail-editor__sidebar mail-editor__sidebar--left">
+      <aside
+        class="mail-editor__sidebar mail-editor__sidebar--left"
+        :style="{ width: `${leftSidebarWidth}px` }"
+      >
         <div class="mail-editor__left-tabs">
           <button
             type="button"
@@ -153,205 +169,227 @@
           </div>
         </section>
       </aside>
+      <div
+        class="mail-editor__resize-handle mail-editor__resize-handle--left"
+        @pointerdown="startSidebarResize('left', $event)"
+      />
 
       <!-- ══ 中栏：画布 ══ -->
-      <main class="mail-editor__canvas" @click="selectBlock(null)">
-        <div
-          class="mail-editor__paper"
-          :class="`is-${viewport}`"
-          @dragover.prevent="onCanvasDragOver"
-          @drop.prevent="onCanvasDrop"
-        >
-          <!-- 邮件头部信息条 -->
-          <div class="mail-editor__mail-head">
-            <div class="mail-editor__mail-subject">{{ renderedSubject || '—' }}</div>
-            <div class="mail-editor__mail-from">
-              {{ previewVars.appName }} &lt;{{ props.metadata.previewSample.fromAddress }}&gt;
-            </div>
-          </div>
-
-          <div class="mail-editor__mail-body">
-            <!-- 空状态 -->
-            <div v-if="blocks.length === 0" class="mail-editor__empty">
-              <ElIcon class="mail-editor__empty-icon"><Plus /></ElIcon>
-              <p>{{ t('pages.config.mailTemplate.editor.emptyState') }}</p>
+      <main ref="canvasRef" class="mail-editor__canvas" @click="selectBlock(null)">
+        <div class="mail-editor__paper-stage" :style="paperStageStyle">
+          <div
+            ref="paperRef"
+            class="mail-editor__paper"
+            :class="`is-${viewport}`"
+            :style="paperStyle"
+            @dragover.prevent="onCanvasDragOver"
+            @drop.prevent="onCanvasDrop"
+          >
+            <!-- 邮件头部信息条 -->
+            <div class="mail-editor__mail-head">
+              <div class="mail-editor__mail-subject">{{ renderedSubject || '—' }}</div>
+              <div class="mail-editor__mail-from">
+                {{ previewVars.appName }} &lt;{{ props.metadata.previewSample.fromAddress }}&gt;
+              </div>
             </div>
 
-            <!-- 渲染所有区块 -->
-            <div
-              v-for="(block, index) in blocks"
-              v-else
-              :key="block.id"
-              class="mail-editor__node"
-              :class="{ 'is-selected': selectedId === block.id }"
-              @click.stop="selectBlock(block.id)"
-            >
-              <!-- 选中态浮动工具条 -->
-              <div v-if="selectedId === block.id" class="mail-editor__node-tools" @click.stop>
-                <span class="mail-editor__node-badge">{{ blockLabel(block) }}</span>
-                <div class="mail-editor__node-actions">
-                  <ElIcon :class="{ 'is-disabled': index === 0 }" @click="moveBlock(block.id, -1)">
-                    <Top />
-                  </ElIcon>
-                  <ElIcon
-                    :class="{ 'is-disabled': index === blocks.length - 1 }"
-                    @click="moveBlock(block.id, 1)"
-                  >
-                    <Bottom />
-                  </ElIcon>
-                  <ElIcon @click="duplicateBlock(block.id)"><CopyDocument /></ElIcon>
-                  <ElIcon class="mail-editor__node-danger" @click="removeBlock(block.id)">
-                    <Delete />
-                  </ElIcon>
-                </div>
+            <div class="mail-editor__mail-body">
+              <!-- 空状态 -->
+              <div v-if="blocks.length === 0" class="mail-editor__empty">
+                <ElIcon class="mail-editor__empty-icon"><Plus /></ElIcon>
+                <p>{{ t('pages.config.mailTemplate.editor.emptyState') }}</p>
               </div>
 
-              <!--
+              <!-- 渲染所有区块 -->
+              <div
+                v-for="(block, index) in blocks"
+                v-else
+                :key="block.id"
+                class="mail-editor__node"
+                :class="{ 'is-selected': selectedId === block.id }"
+                @click.stop="selectBlock(block.id)"
+              >
+                <!-- 选中态浮动工具条 -->
+                <div v-if="selectedId === block.id" class="mail-editor__node-tools" @click.stop>
+                  <span class="mail-editor__node-badge">{{ blockLabel(block) }}</span>
+                  <div class="mail-editor__node-actions">
+                    <ElIcon
+                      :class="{ 'is-disabled': index === 0 }"
+                      @click="moveBlock(block.id, -1)"
+                    >
+                      <Top />
+                    </ElIcon>
+                    <ElIcon
+                      :class="{ 'is-disabled': index === blocks.length - 1 }"
+                      @click="moveBlock(block.id, 1)"
+                    >
+                      <Bottom />
+                    </ElIcon>
+                    <ElIcon @click="duplicateBlock(block.id)"><CopyDocument /></ElIcon>
+                    <ElIcon class="mail-editor__node-danger" @click="removeBlock(block.id)">
+                      <Delete />
+                    </ElIcon>
+                  </div>
+                </div>
+
+                <!--
                 区块内容用 @vue-email/components 渲染。
                 只渲染叶子组件，不套 Html/Body/Container 外壳。
               -->
 
-              <!-- heading -->
-              <component
-                :is="EmailHeading"
-                v-if="block.type === 'heading'"
-                :as="(block.props.level as 'h1' | 'h2' | 'h3') || 'h2'"
-                :style="headingStyle(block)"
-                >{{ substituteVars(block.props.content) }}</component
-              >
-
-              <!-- text -->
-              <component
-                :is="EmailText"
-                v-else-if="block.type === 'text'"
-                :style="textStyle(block)"
-                >{{ substituteVars(block.props.content) }}</component
-              >
-
-              <!-- button -->
-              <div v-else-if="block.type === 'button'" :style="alignWrapStyle(block)">
+                <!-- heading -->
                 <component
-                  :is="EmailButton"
-                  :href="block.props.href || '#'"
-                  :style="buttonStyle(block)"
+                  :is="EmailHeading"
+                  v-if="block.type === 'heading'"
+                  :as="(block.props.level as 'h1' | 'h2' | 'h3') || 'h2'"
+                  :style="headingStyle(block)"
                   >{{ substituteVars(block.props.content) }}</component
                 >
-              </div>
 
-              <!-- link -->
-              <component
-                :is="EmailLink"
-                v-else-if="block.type === 'link'"
-                :href="block.props.href || '#'"
-                :style="linkStyle(block)"
-                >{{ substituteVars(block.props.content || block.props.href || '') }}</component
-              >
-
-              <!-- image -->
-              <div v-else-if="block.type === 'image'" :style="alignWrapStyle(block)">
+                <!-- text -->
                 <component
-                  :is="EmailImg"
-                  :src="block.props.src || PLACEHOLDER_IMG"
-                  :alt="block.props.alt"
-                  :width="block.props.width || undefined"
-                  :style="{ display: 'inline-block', maxWidth: '100%' }"
-                />
-              </div>
+                  :is="EmailText"
+                  v-else-if="block.type === 'text'"
+                  :style="textStyle(block)"
+                  >{{ substituteVars(block.props.content) }}</component
+                >
 
-              <!-- markdown（用与序列化一致的 renderMarkdown，保证预览==产物） -->
-              <component
-                :is="EmailMarkdown"
-                v-else-if="block.type === 'markdown'"
-                :source="substituteVars(block.props.content)"
-                :markdown-custom-styles="markdownStyles"
-                :markdown-container-styles="markdownContainerStyle"
-              />
-
-              <!-- inline code -->
-              <component
-                :is="EmailCodeInline"
-                v-else-if="block.type === 'inlineCode'"
-                :style="inlineCodeStyle(block)"
-                >{{ substituteVars(block.props.content) }}</component
-              >
-
-              <!-- container -->
-              <component
-                :is="EmailContainer"
-                v-else-if="block.type === 'container'"
-                :style="containerStyle(block)"
-              >
-                <div :style="containerInnerStyle(block)">
-                  {{ substituteVars(block.props.content) }}
+                <!-- button -->
+                <div v-else-if="block.type === 'button'" :style="alignWrapStyle(block)">
+                  <component
+                    :is="EmailButton"
+                    :href="block.props.href || '#'"
+                    :style="buttonStyle(block)"
+                    >{{ substituteVars(block.props.content) }}</component
+                  >
                 </div>
-              </component>
 
-              <!-- section -->
-              <component :is="EmailSection" v-else-if="block.type === 'section'">
-                <div :style="sectionStyle(block)">
-                  {{
-                    substituteVars(block.props.content) ||
-                    t('pages.config.mailTemplate.editor.blockTypes.section')
-                  }}
-                </div>
-              </component>
-
-              <!-- columns（Row + 两个 Column） -->
-              <component :is="EmailRow" v-else-if="block.type === 'columns'">
-                <component :is="EmailColumn">
-                  <div :style="columnCellStyle(block)">{{ substituteVars(block.props.col1) }}</div>
-                </component>
-                <component :is="EmailColumn">
-                  <div :style="columnCellStyle(block)">{{ substituteVars(block.props.col2) }}</div>
-                </component>
-              </component>
-
-              <!-- divider -->
-              <component
-                :is="EmailHr"
-                v-else-if="block.type === 'divider'"
-                :style="{ borderTopColor: block.props.color || '#e5e7eb', margin: '20px 0' }"
-              />
-
-              <!-- spacer -->
-              <div
-                v-else-if="block.type === 'spacer'"
-                :style="{
-                  height: block.props.height || '24px',
-                  lineHeight: block.props.height || '24px',
-                  fontSize: '1px'
-                }"
-                >&nbsp;</div
-              >
-
-              <!-- code block -->
-              <Suspense v-else-if="block.type === 'code'">
+                <!-- link -->
                 <component
-                  :is="EmailCodeBlock"
-                  :code="block.props.content || ''"
-                  :lang="codeLanguage(block)"
-                  theme="github-dark"
-                  :show-line-numbers="false"
-                />
-                <template #fallback>
-                  <pre
-                    class="mail-editor__code"
-                    :style="codeStyle(block)"
-                  ><code>{{ block.props.content }}</code></pre>
-                </template>
-              </Suspense>
+                  :is="EmailLink"
+                  v-else-if="block.type === 'link'"
+                  :href="block.props.href || '#'"
+                  :style="linkStyle(block)"
+                  >{{ substituteVars(block.props.content || block.props.href || '') }}</component
+                >
 
-              <!-- preview（preheader） -->
-              <component :is="EmailPreview" v-else-if="block.type === 'preview'">{{
-                block.props.content
-              }}</component>
+                <!-- image -->
+                <div v-else-if="block.type === 'image'" :style="alignWrapStyle(block)">
+                  <component
+                    :is="EmailImg"
+                    :src="block.props.src || PLACEHOLDER_IMG"
+                    :alt="block.props.alt"
+                    :width="block.props.width || undefined"
+                    :style="{ display: 'inline-block', maxWidth: '100%' }"
+                  />
+                </div>
+
+                <!-- markdown（用与序列化一致的 renderMarkdown，保证预览==产物） -->
+                <component
+                  :is="EmailMarkdown"
+                  v-else-if="block.type === 'markdown'"
+                  :source="substituteVars(block.props.content)"
+                  :markdown-custom-styles="markdownStyles"
+                  :markdown-container-styles="markdownContainerStyle"
+                />
+
+                <!-- inline code -->
+                <component
+                  :is="EmailCodeInline"
+                  v-else-if="block.type === 'inlineCode'"
+                  :style="inlineCodeStyle(block)"
+                  >{{ substituteVars(block.props.content) }}</component
+                >
+
+                <!-- container -->
+                <component
+                  :is="EmailContainer"
+                  v-else-if="block.type === 'container'"
+                  :style="containerStyle(block)"
+                >
+                  <div :style="containerInnerStyle(block)">
+                    {{ substituteVars(block.props.content) }}
+                  </div>
+                </component>
+
+                <!-- section -->
+                <component :is="EmailSection" v-else-if="block.type === 'section'">
+                  <div :style="sectionStyle(block)">
+                    {{
+                      substituteVars(block.props.content) ||
+                      t('pages.config.mailTemplate.editor.blockTypes.section')
+                    }}
+                  </div>
+                </component>
+
+                <!-- columns（Row + 两个 Column） -->
+                <component :is="EmailRow" v-else-if="block.type === 'columns'">
+                  <component :is="EmailColumn">
+                    <div :style="columnCellStyle(block)">{{
+                      substituteVars(block.props.col1)
+                    }}</div>
+                  </component>
+                  <component :is="EmailColumn">
+                    <div :style="columnCellStyle(block)">{{
+                      substituteVars(block.props.col2)
+                    }}</div>
+                  </component>
+                </component>
+
+                <!-- divider -->
+                <component
+                  :is="EmailHr"
+                  v-else-if="block.type === 'divider'"
+                  :style="{ borderTopColor: block.props.color || '#e5e7eb', margin: '20px 0' }"
+                />
+
+                <!-- spacer -->
+                <div
+                  v-else-if="block.type === 'spacer'"
+                  :style="{
+                    height: block.props.height || '24px',
+                    lineHeight: block.props.height || '24px',
+                    fontSize: '1px'
+                  }"
+                  >&nbsp;</div
+                >
+
+                <!-- code block -->
+                <Suspense v-else-if="block.type === 'code'">
+                  <component
+                    :is="EmailCodeBlock"
+                    :code="block.props.content || ''"
+                    :lang="codeLanguage(block)"
+                    theme="github-dark"
+                    :show-line-numbers="false"
+                  />
+                  <template #fallback>
+                    <pre
+                      class="mail-editor__code"
+                      :style="codeStyle(block)"
+                    ><code>{{ block.props.content }}</code></pre>
+                  </template>
+                </Suspense>
+
+                <!-- preview（preheader） -->
+                <component :is="EmailPreview" v-else-if="block.type === 'preview'">{{
+                  block.props.content
+                }}</component>
+              </div>
             </div>
           </div>
         </div>
       </main>
+      <div
+        class="mail-editor__resize-handle mail-editor__resize-handle--right"
+        @pointerdown="startSidebarResize('right', $event)"
+      />
 
       <!-- ══ 右栏：属性 / 源码 ══ -->
-      <aside class="mail-editor__sidebar mail-editor__sidebar--right">
+      <aside
+        class="mail-editor__sidebar mail-editor__sidebar--right"
+        :style="{ width: `${rightSidebarWidth}px` }"
+      >
         <div class="mail-editor__tabs">
           <button
             type="button"
@@ -416,8 +454,10 @@
 
               <!-- 内容文本（通用，block 类型决定 placeholder 和样式） -->
               <div v-if="hasProp('content')" class="mail-editor__field">
-                <div class="mail-editor__field-head">
-                  <label>{{ t('pages.config.mailTemplate.editor.properties.content') }}</label>
+                <div
+                  v-if="selectedBlock.type === 'code' || selectedBlock.type === 'markdown'"
+                  class="mail-editor__field-head mail-editor__field-head--badge-only"
+                >
                   <span v-if="selectedBlock.type === 'code'" class="mail-editor__field-badge"
                     >code</span
                   >
@@ -430,7 +470,9 @@
                 <ElInput
                   :model-value="selectedBlock.props.content"
                   type="textarea"
-                  :rows="selectedBlock.type === 'code' || selectedBlock.type === 'markdown' ? 8 : 4"
+                  :rows="
+                    selectedBlock.type === 'code' || selectedBlock.type === 'markdown' ? 10 : 6
+                  "
                   resize="vertical"
                   :class="{
                     'mail-editor__input-mono': selectedBlock.type === 'code'
@@ -628,11 +670,29 @@
         </div>
 
         <!-- 源码面板 -->
-        <div v-show="rightTab === 'source'" class="mail-editor__panel-scroll">
-          <div class="mail-editor__source-tip">
-            {{ t('pages.config.mailTemplate.editor.sourceReadonly') }}
+        <div v-show="rightTab === 'source'" class="mail-editor__source-panel">
+          <div class="mail-editor__source-actions">
+            <ElButton
+              type="primary"
+              size="small"
+              :disabled="!sourceDirty"
+              @click="applySourceDraft()"
+            >
+              {{ t('pages.config.mailTemplate.editor.sourceApply') }}
+            </ElButton>
+            <ElButton size="small" :disabled="!sourceDirty" @click="resetSourceDraft">
+              {{ t('pages.config.mailTemplate.editor.sourceReset') }}
+            </ElButton>
           </div>
-          <pre class="mail-editor__source"><code>{{ sourceHtml }}</code></pre>
+          <textarea
+            :value="sourceDraft"
+            class="mail-editor__source-textarea"
+            spellcheck="false"
+            @input="handleSourceTextareaInput"
+          />
+          <div v-if="sourceError" class="mail-editor__source-error">
+            {{ sourceError }}
+          </div>
         </div>
       </aside>
     </div>
@@ -642,7 +702,6 @@
       v-model:visible="previewVisible"
       :metadata="props.metadata"
       :type="sendType"
-      :language="activeLanguage"
       :subject="currentSubject"
       :content="sourceHtml"
     />
@@ -650,7 +709,16 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, h, defineComponent, markRaw, watch } from 'vue'
+  import {
+    ref,
+    computed,
+    h,
+    defineComponent,
+    markRaw,
+    watch,
+    onMounted,
+    onBeforeUnmount
+  } from 'vue'
   import type { CSSProperties } from 'vue'
   import { useI18n } from 'vue-i18n'
   import { ElMessage, ElColorPicker, ElIcon } from 'element-plus'
@@ -659,7 +727,6 @@
     Check,
     View,
     Monitor,
-    Notebook,
     Cellphone,
     EditPen,
     Document,
@@ -679,7 +746,6 @@
     Operation,
     Cpu,
     Memo,
-    Switch,
     Box,
     Tickets
   } from '@element-plus/icons-vue'
@@ -700,7 +766,7 @@
     CodeBlock as EmailCodeBlock,
     CodeInline as EmailCodeInline
   } from '@vue-email/components'
-  import type { MailTemplate, MailTemplateLanguage, MailTemplateMetadata } from '@/api/mailTemplate'
+  import type { MailTemplate, MailTemplateMetadata } from '@/api/mailTemplate'
   import { fetchMailTemplateUpdate } from '@/api/mailTemplate'
   import {
     type EmailBlock,
@@ -729,7 +795,21 @@
   const { t } = useI18n()
 
   const PLACEHOLDER_IMG = 'https://placehold.co/600x200/eef2ff/6366f1?text=Image'
-  const DRAFT_PREFIX = 'velox:mail-template:draft:'
+  const EDITOR_STATE_PREFIX = 'velox:mail-template:editor-state:'
+  type MailViewport = 'desktop' | 'tablet' | 'mobile'
+
+  const DEFAULT_LEFT_SIDEBAR_WIDTH = 248
+  const DEFAULT_RIGHT_SIDEBAR_WIDTH = 360
+  const SIDEBAR_MIN_WIDTH = 200
+  const LEFT_SIDEBAR_MAX_WIDTH = 360
+  const RIGHT_SIDEBAR_MAX_WIDTH = 480
+  const RESIZE_HANDLE_TOTAL_WIDTH = 12
+  const CANVAS_GUTTER_WIDTH = 48
+  const PAPER_WIDTHS: Record<MailViewport, number> = {
+    desktop: 640,
+    tablet: 520,
+    mobile: 380
+  }
 
   // ── 图标映射 ──
   const ICON_MAP: Record<string, unknown> = {
@@ -786,142 +866,165 @@
   }
 
   // ── 状态 ──
-  const activeLanguage = ref<MailTemplateLanguage>(props.template.language === 'en' ? 'en' : 'zh')
-  const blocksByLanguage = ref<Record<MailTemplateLanguage, EmailBlock[]>>({
-    zh: [],
-    en: []
-  })
-  const subjects = ref<Record<MailTemplateLanguage, string>>({
-    zh: props.template.subjectZh || '',
-    en: props.template.subjectEn || ''
-  })
+  const blocks = ref<EmailBlock[]>([])
+  const subject = ref(props.template.subject || '')
   const selectedId = ref<string | null>(null)
   const saving = ref(false)
   const previewVisible = ref(false)
-  const viewport = ref<'desktop' | 'tablet' | 'mobile'>('desktop')
+  const viewport = ref<MailViewport>('desktop')
   const leftTab = ref<'components' | 'layers'>('components')
   const rightTab = ref<'props' | 'source'>('props')
+  const sourceDraft = ref('')
+  const sourceDirty = ref(false)
+  const sourceError = ref('')
+  const workspaceRef = ref<HTMLElement | null>(null)
+  const toolbarRef = ref<HTMLElement | null>(null)
+  const canvasRef = ref<HTMLElement | null>(null)
+  const paperRef = ref<HTMLElement | null>(null)
+  const workspaceWidth = ref(0)
+  const canvasAvailableWidth = ref(0)
+  const deviceSegmentOffset = ref(0)
+  const leftSidebarWidth = ref(DEFAULT_LEFT_SIDEBAR_WIDTH)
+  const rightSidebarWidth = ref(DEFAULT_RIGHT_SIDEBAR_WIDTH)
+  const initialSnapshot = ref('')
+  let workspaceResizeObserver: ResizeObserver | null = null
+  let layoutMeasureFrame = 0
 
   function initBlocks() {
-    subjects.value = {
-      zh: resolveInitialSubject('zh'),
-      en: resolveInitialSubject('en')
-    }
-    blocksByLanguage.value = {
-      zh: parseHtmlToBlocks(resolveInitialContent('zh')),
-      en: parseHtmlToBlocks(resolveInitialContent('en'))
-    }
-    restoreDraft()
+    subject.value = props.template.subject || ''
+    blocks.value = parseHtmlToBlocks(props.template.content || '')
+    initialSnapshot.value = buildEditorSnapshot(
+      subject.value,
+      blocks.value,
+      serializeBlocksToHtml(blocks.value),
+      false
+    )
+    restoreEditorState()
   }
   initBlocks()
 
-  function draftKey() {
-    return props.template.id ? `${DRAFT_PREFIX}${props.template.id}` : ''
+  function editorStateKey() {
+    return props.template.id ? `${EDITOR_STATE_PREFIX}${props.template.id}` : ''
   }
 
-  function resolveInitialSubject(language: MailTemplateLanguage) {
-    if (language === 'en') {
-      return props.template.subjectEn || props.template.subjectZh || props.template.subject || ''
-    }
-    return props.template.subjectZh || props.template.subjectEn || props.template.subject || ''
-  }
-
-  function resolveInitialContent(language: MailTemplateLanguage) {
-    if (language === 'en') {
-      return props.template.contentEn || props.template.contentZh || props.template.content || ''
-    }
-    return props.template.contentZh || props.template.contentEn || props.template.content || ''
-  }
-
-  function restoreDraft() {
-    const key = draftKey()
+  function restoreEditorState() {
+    const key = editorStateKey()
     if (!key) return
     try {
-      const raw = window.localStorage.getItem(key)
+      const raw = window.sessionStorage.getItem(key)
       if (!raw) return
-      const draft = JSON.parse(raw) as {
-        activeLanguage?: MailTemplateLanguage
-        viewport?: 'desktop' | 'tablet' | 'mobile'
-        subjects?: Record<MailTemplateLanguage, string>
-        blocksByLanguage?: Record<MailTemplateLanguage, EmailBlock[]>
-      }
-      if (draft.activeLanguage === 'zh' || draft.activeLanguage === 'en') {
-        activeLanguage.value = draft.activeLanguage
+      const state = JSON.parse(raw) as {
+        viewport?: MailViewport
+        subject?: string
+        blocks?: EmailBlock[]
+        sourceDraft?: string
+        sourceDirty?: boolean
+        leftSidebarWidth?: number
+        rightSidebarWidth?: number
       }
       if (
-        draft.viewport === 'desktop' ||
-        draft.viewport === 'tablet' ||
-        draft.viewport === 'mobile'
+        state.viewport === 'desktop' ||
+        state.viewport === 'tablet' ||
+        state.viewport === 'mobile'
       ) {
-        viewport.value = draft.viewport
+        viewport.value = state.viewport
       }
-      if (draft.subjects) {
-        subjects.value = {
-          zh: draft.subjects.zh || subjects.value.zh,
-          en: draft.subjects.en || subjects.value.en
-        }
+      if (typeof state.subject === 'string') {
+        subject.value = state.subject
       }
-      if (draft.blocksByLanguage) {
-        blocksByLanguage.value = {
-          zh: Array.isArray(draft.blocksByLanguage.zh)
-            ? draft.blocksByLanguage.zh
-            : blocksByLanguage.value.zh,
-          en: Array.isArray(draft.blocksByLanguage.en)
-            ? draft.blocksByLanguage.en
-            : blocksByLanguage.value.en
-        }
+      if (Array.isArray(state.blocks)) {
+        blocks.value = state.blocks
       }
+      if (typeof state.sourceDraft === 'string') {
+        sourceDraft.value = state.sourceDraft
+      }
+      sourceDirty.value = state.sourceDirty === true
+      if (typeof state.leftSidebarWidth === 'number') {
+        leftSidebarWidth.value = state.leftSidebarWidth
+      }
+      if (typeof state.rightSidebarWidth === 'number') {
+        rightSidebarWidth.value = state.rightSidebarWidth
+      }
+      normalizeViewportForWidth(true)
+      clampSidebarWidths()
     } catch {
-      // Invalid local drafts are ignored; the server copy remains authoritative.
+      // Invalid session state is ignored; the server copy remains authoritative.
     }
   }
 
-  function persistDraft() {
-    const key = draftKey()
+  function persistEditorState() {
+    const key = editorStateKey()
     if (!key) return
-    window.localStorage.setItem(
+    window.sessionStorage.setItem(
       key,
       JSON.stringify({
-        activeLanguage: activeLanguage.value,
         viewport: viewport.value,
-        subjects: subjects.value,
-        blocksByLanguage: blocksByLanguage.value,
+        subject: subject.value,
+        blocks: blocks.value,
+        sourceDraft: sourceDraft.value,
+        sourceDirty: sourceDirty.value,
+        leftSidebarWidth: leftSidebarWidth.value,
+        rightSidebarWidth: rightSidebarWidth.value,
         updatedAt: Date.now()
       })
     )
   }
 
+  function clearEditorState() {
+    const key = editorStateKey()
+    if (key) window.sessionStorage.removeItem(key)
+  }
+
   watch(
-    [activeLanguage, viewport, subjects, blocksByLanguage],
+    [viewport, subject, blocks, sourceDraft, sourceDirty, leftSidebarWidth, rightSidebarWidth],
     () => {
-      persistDraft()
+      persistEditorState()
     },
     { deep: true }
   )
 
   // ── 计算属性 ──
   const sendType = computed(() => props.template.sendType || props.template.type)
-  const blocks = computed<EmailBlock[]>({
-    get: () => blocksByLanguage.value[activeLanguage.value],
-    set: (value) => {
-      blocksByLanguage.value[activeLanguage.value] = value
-    }
-  })
-
   const selectedBlock = computed(() =>
     selectedId.value ? blocks.value.find((b) => b.id === selectedId.value) || null : null
   )
 
-  const previewVars = computed(() =>
-    buildPreviewVariables(props.metadata, sendType.value, activeLanguage.value)
-  )
+  const previewVars = computed(() => buildPreviewVariables(props.metadata, sendType.value))
 
   const renderedSubject = computed(() =>
     replaceVariables(currentSubject.value, previewVars.value, false)
   )
 
   const sourceHtml = computed(() => serializeBlocksToHtml(blocks.value))
-  const currentSubject = computed(() => subjects.value[activeLanguage.value] || '')
+  const currentSubject = computed(() => subject.value || '')
+  const currentPaperWidth = computed(() => effectivePaperWidthForViewport(viewport.value))
+  const deviceSegmentStyle = computed<CSSProperties>(() => ({
+    transform: `translateX(${deviceSegmentOffset.value}px)`
+  }))
+  const paperStageStyle = computed<CSSProperties>(() => ({
+    minWidth: `${currentPaperWidth.value}px`
+  }))
+  const paperStyle = computed<CSSProperties>(() => ({
+    width: `${currentPaperWidth.value}px`
+  }))
+  const hasUnsavedChanges = computed(
+    () =>
+      buildEditorSnapshot(
+        currentSubject.value,
+        blocks.value,
+        sourceDirty.value ? sourceDraft.value : sourceHtml.value,
+        sourceDirty.value
+      ) !== initialSnapshot.value
+  )
+  watch(
+    sourceHtml,
+    (value) => {
+      if (!sourceDirty.value) {
+        sourceDraft.value = value
+      }
+    },
+    { immediate: true }
+  )
 
   /** 根据 block 类型返回对应的 placeholder key */
   const contentPlaceholder = computed(() => {
@@ -986,6 +1089,62 @@
     if (block) block.props[prop] = value
   }
 
+  function handleSourceDraftInput(value: string) {
+    sourceDraft.value = value
+    sourceDirty.value = true
+    sourceError.value = ''
+  }
+
+  function handleSourceTextareaInput(event: Event) {
+    handleSourceDraftInput((event.target as HTMLTextAreaElement).value)
+  }
+
+  function applySourceDraft(showMessage = true): boolean {
+    try {
+      const parsed = parseHtmlToBlocks(sourceDraft.value)
+      blocks.value = parsed
+      selectedId.value = null
+      sourceDirty.value = false
+      sourceError.value = ''
+      sourceDraft.value = serializeBlocksToHtml(parsed)
+      if (showMessage) {
+        ElMessage.success(t('pages.config.mailTemplate.editor.sourceApplySuccess'))
+      }
+      return true
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : t('pages.config.mailTemplate.editor.sourceApplyError')
+      sourceError.value = message
+      if (showMessage) ElMessage.error(message)
+      return false
+    }
+  }
+
+  function resetSourceDraft() {
+    sourceDraft.value = sourceHtml.value
+    sourceDirty.value = false
+    sourceError.value = ''
+  }
+
+  function buildEditorSnapshot(
+    snapshotSubject: string,
+    snapshotBlocks: EmailBlock[],
+    snapshotSource: string,
+    snapshotSourceDirty: boolean
+  ) {
+    return JSON.stringify({
+      subject: snapshotSubject,
+      blocks: snapshotBlocks.map((block) => ({
+        type: block.type,
+        props: block.props
+      })),
+      source: snapshotSource,
+      sourceDirty: snapshotSourceDirty
+    })
+  }
+
   function hasProp(prop: string): boolean {
     const block = selectedBlock.value
     if (!block) return false
@@ -1018,12 +1177,6 @@
     const block = selectedBlock.value
     if (!block) return
     block.props.content = (block.props.content || '') + `{{${name}}}`
-  }
-
-  function toggleLanguage() {
-    activeLanguage.value = activeLanguage.value === 'zh' ? 'en' : 'zh'
-    selectedId.value = null
-    rightTab.value = 'props'
   }
 
   // ── 拖拽（调色板 → 画布） ──
@@ -1068,7 +1221,8 @@
       color: block.props.color || '#374151',
       fontSize: block.props.fontSize || '14px',
       lineHeight: '24px',
-      margin: '16px 0'
+      margin: '16px 0',
+      whiteSpace: 'pre-line'
     }
   }
 
@@ -1117,7 +1271,8 @@
       borderRadius: '8px',
       fontSize: '14px',
       lineHeight: '24px',
-      color: '#374151'
+      color: '#374151',
+      whiteSpace: 'pre-line'
     }
   }
 
@@ -1134,7 +1289,8 @@
       padding: block.props.padding || '20px',
       fontSize: '14px',
       lineHeight: '24px',
-      color: '#374151'
+      color: '#374151',
+      whiteSpace: 'pre-line'
     }
   }
 
@@ -1158,7 +1314,8 @@
       textAlign: block.props.textAlign || 'left',
       fontSize: '14px',
       lineHeight: '24px',
-      color: '#374151'
+      color: '#374151',
+      whiteSpace: 'pre-line'
     }
   }
 
@@ -1181,25 +1338,188 @@
     return (block.props.lang || 'javascript') as CodeBlockProps['lang']
   }
 
+  function currentWorkspaceWidth() {
+    return workspaceWidth.value || workspaceRef.value?.clientWidth || window.innerWidth
+  }
+
+  function currentCanvasAvailableWidth() {
+    return canvasAvailableWidth.value || readCanvasAvailableWidth()
+  }
+
+  function readCanvasAvailableWidth(fallbackWorkspaceWidth = currentWorkspaceWidth()) {
+    if (!canvasRef.value) {
+      return Math.max(
+        0,
+        fallbackWorkspaceWidth -
+          leftSidebarWidth.value -
+          rightSidebarWidth.value -
+          RESIZE_HANDLE_TOTAL_WIDTH -
+          CANVAS_GUTTER_WIDTH
+      )
+    }
+
+    const style = window.getComputedStyle(canvasRef.value)
+    const paddingLeft = Number.parseFloat(style.paddingLeft) || 0
+    const paddingRight = Number.parseFloat(style.paddingRight) || 0
+    return Math.max(0, canvasRef.value.clientWidth - paddingLeft - paddingRight)
+  }
+
+  function paperWidthForViewport(mode: MailViewport) {
+    return PAPER_WIDTHS[mode]
+  }
+
+  function effectivePaperWidthForViewport(mode: MailViewport) {
+    const paperWidth = paperWidthForViewport(mode)
+    if (mode !== 'mobile') return paperWidth
+
+    const availableWidth = currentCanvasAvailableWidth()
+    return availableWidth > 0 ? Math.min(paperWidth, availableWidth) : paperWidth
+  }
+
+  function requiredCanvasWidth(mode: MailViewport = viewport.value) {
+    return effectivePaperWidthForViewport(mode) + CANVAS_GUTTER_WIDTH
+  }
+
+  function viewportForWidth(width = currentCanvasAvailableWidth()): MailViewport {
+    if (width >= PAPER_WIDTHS.desktop) return 'desktop'
+    if (width >= PAPER_WIDTHS.tablet) return 'tablet'
+    return 'mobile'
+  }
+
+  function isViewportVisible(mode: MailViewport) {
+    const current = viewportForWidth()
+    if (current === 'desktop') return true
+    if (current === 'tablet') return mode === 'tablet' || mode === 'mobile'
+    return mode === 'mobile'
+  }
+
+  function setViewport(mode: MailViewport) {
+    if (!isViewportVisible(mode)) return
+    viewport.value = mode
+  }
+
+  function normalizeViewportForWidth(forceDefault = false) {
+    if (forceDefault || !isViewportVisible(viewport.value)) {
+      viewport.value = viewportForWidth()
+    }
+  }
+
+  function maxSidebarWidth(side: 'left' | 'right', otherWidth?: number) {
+    const availableWidth = currentWorkspaceWidth()
+    const oppositeWidth =
+      otherWidth ?? (side === 'left' ? rightSidebarWidth.value : leftSidebarWidth.value)
+    const availableSidebarWidth =
+      availableWidth - oppositeWidth - RESIZE_HANDLE_TOTAL_WIDTH - requiredCanvasWidth()
+    const configuredMax = side === 'left' ? LEFT_SIDEBAR_MAX_WIDTH : RIGHT_SIDEBAR_MAX_WIDTH
+    return Math.max(SIDEBAR_MIN_WIDTH, Math.min(configuredMax, availableSidebarWidth))
+  }
+
+  function clamp(value: number, min: number, max: number) {
+    return Math.min(Math.max(value, min), max)
+  }
+
+  function clampSidebarWidths() {
+    normalizeViewportForWidth()
+    leftSidebarWidth.value = clamp(
+      leftSidebarWidth.value,
+      SIDEBAR_MIN_WIDTH,
+      maxSidebarWidth('left')
+    )
+    rightSidebarWidth.value = clamp(
+      rightSidebarWidth.value,
+      SIDEBAR_MIN_WIDTH,
+      maxSidebarWidth('right')
+    )
+  }
+
+  function startSidebarResize(side: 'left' | 'right', event: PointerEvent) {
+    event.preventDefault()
+    const startX = event.clientX
+    const startWidth = side === 'left' ? leftSidebarWidth.value : rightSidebarWidth.value
+    const otherWidth = side === 'left' ? rightSidebarWidth.value : leftSidebarWidth.value
+
+    const onMove = (moveEvent: PointerEvent) => {
+      const delta = moveEvent.clientX - startX
+      const nextWidth = side === 'left' ? startWidth + delta : startWidth - delta
+      if (side === 'left') {
+        leftSidebarWidth.value = clamp(
+          nextWidth,
+          SIDEBAR_MIN_WIDTH,
+          maxSidebarWidth('left', otherWidth)
+        )
+      } else {
+        rightSidebarWidth.value = clamp(
+          nextWidth,
+          SIDEBAR_MIN_WIDTH,
+          maxSidebarWidth('right', otherWidth)
+        )
+      }
+    }
+
+    const stop = () => {
+      document.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerup', stop)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    document.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerup', stop)
+  }
+
+  function updateWorkspaceWidth() {
+    const nextWorkspaceWidth = workspaceRef.value?.clientWidth || window.innerWidth
+    workspaceWidth.value = nextWorkspaceWidth
+    canvasAvailableWidth.value = readCanvasAvailableWidth(nextWorkspaceWidth)
+    scheduleLayoutMeasurement()
+  }
+
+  function updateDeviceSegmentOffset() {
+    if (!toolbarRef.value || !paperRef.value) {
+      deviceSegmentOffset.value = 0
+      return
+    }
+
+    const toolbarRect = toolbarRef.value.getBoundingClientRect()
+    const paperRect = paperRef.value.getBoundingClientRect()
+    const toolbarCenter = toolbarRect.left + toolbarRect.width / 2
+    const paperCenter = paperRect.left + paperRect.width / 2
+    deviceSegmentOffset.value = Math.round(paperCenter - toolbarCenter)
+  }
+
+  function scheduleLayoutMeasurement() {
+    if (layoutMeasureFrame) {
+      window.cancelAnimationFrame(layoutMeasureFrame)
+    }
+    layoutMeasureFrame = window.requestAnimationFrame(() => {
+      layoutMeasureFrame = 0
+      updateDeviceSegmentOffset()
+    })
+  }
+
   // ── 保存 ──
   async function handleSave() {
+    if (sourceDirty.value && !applySourceDraft(false)) return
     saving.value = true
     try {
       await fetchMailTemplateUpdate({
         id: props.template.id,
         name: props.template.name,
         sendType: sendType.value,
-        language: activeLanguage.value,
         subject: currentSubject.value,
         content: sourceHtml.value,
-        subjectZh: subjects.value.zh,
-        contentZh: serializeBlocksToHtml(blocksByLanguage.value.zh),
-        subjectEn: subjects.value.en,
-        contentEn: serializeBlocksToHtml(blocksByLanguage.value.en),
         enabled: props.template.enabled,
         remark: props.template.remark
       })
-      persistDraft()
+      initialSnapshot.value = buildEditorSnapshot(
+        currentSubject.value,
+        blocks.value,
+        sourceHtml.value,
+        false
+      )
+      clearEditorState()
       ElMessage.success(t('pages.config.mailTemplate.editor.saveSuccess'))
       emit('saved')
     } finally {
@@ -1208,10 +1528,94 @@
   }
 
   function openPreview() {
+    if (sourceDirty.value && !applySourceDraft(false)) return
     previewVisible.value = true
   }
 
+  watch(viewport, () => {
+    clampSidebarWidths()
+    scheduleLayoutMeasurement()
+  })
+
+  watch(workspaceWidth, () => {
+    clampSidebarWidths()
+    scheduleLayoutMeasurement()
+  })
+
+  watch(canvasAvailableWidth, (width, oldWidth) => {
+    normalizeViewportForWidth(viewportForWidth(width) !== viewportForWidth(oldWidth))
+    clampSidebarWidths()
+    scheduleLayoutMeasurement()
+  })
+
+  onMounted(() => {
+    updateWorkspaceWidth()
+    if (typeof ResizeObserver !== 'undefined') {
+      workspaceResizeObserver = new ResizeObserver(updateWorkspaceWidth)
+      if (workspaceRef.value) {
+        workspaceResizeObserver.observe(workspaceRef.value)
+      }
+      if (canvasRef.value) {
+        workspaceResizeObserver.observe(canvasRef.value)
+      }
+      if (toolbarRef.value) {
+        workspaceResizeObserver.observe(toolbarRef.value)
+      }
+      if (paperRef.value) {
+        workspaceResizeObserver.observe(paperRef.value)
+      }
+    }
+    window.addEventListener('resize', updateWorkspaceWidth)
+    normalizeViewportForWidth(true)
+    clampSidebarWidths()
+  })
+
+  onBeforeUnmount(() => {
+    workspaceResizeObserver?.disconnect()
+    if (layoutMeasureFrame) {
+      window.cancelAnimationFrame(layoutMeasureFrame)
+    }
+    window.removeEventListener('resize', updateWorkspaceWidth)
+    document.body.style.cursor = ''
+    document.body.style.userSelect = ''
+  })
+
+  defineExpose({
+    hasUnsavedChanges: () => hasUnsavedChanges.value,
+    clearEditorState
+  })
+
   // ── 对齐图标（内联 SVG 渲染函数） ──
+  const PhonePreviewIcon = defineDeviceIcon('PhonePreviewIcon', [
+    {
+      d: 'M8 3.5h8a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2z'
+    },
+    { d: 'M9.5 6.5h5' },
+    { d: 'M12 17.5h.01' }
+  ])
+
+  function defineDeviceIcon(name: string, paths: { d: string }[]) {
+    return defineComponent({
+      name,
+      render() {
+        return h(
+          'svg',
+          {
+            viewBox: '0 0 24 24',
+            width: '1em',
+            height: '1em',
+            fill: 'none',
+            stroke: 'currentColor',
+            'stroke-width': 1.8,
+            'stroke-linecap': 'round',
+            'stroke-linejoin': 'round'
+          },
+          paths.map((path) => h('path', path))
+        )
+      }
+    })
+  }
+
   function defineAlignIcon(align: 'left' | 'center' | 'right') {
     const rows =
       align === 'left'
@@ -1255,9 +1659,9 @@
     // ══ 工具栏 ══
     &__toolbar {
       display: grid;
+      flex-shrink: 0;
       grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
       gap: 12px;
-      flex-shrink: 0;
       align-items: center;
       height: 52px;
       padding: 0 14px;
@@ -1267,9 +1671,9 @@
 
     &__toolbar-group {
       display: flex;
+      gap: 10px;
       align-items: center;
       min-width: 0;
-      gap: 10px;
     }
 
     &__toolbar-left {
@@ -1282,6 +1686,21 @@
 
     &__toolbar-right {
       justify-content: flex-end;
+    }
+
+    &__actions {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+
+      :deep(.el-button + .el-button) {
+        margin-left: 0;
+      }
+    }
+
+    &__action-btn {
+      min-width: 92px;
+      height: 32px;
     }
 
     &__back {
@@ -1304,64 +1723,39 @@
       white-space: nowrap;
     }
 
-    // 桌面/手机切换段
+    // 设备预览切换
     &__segment {
       display: flex;
-      padding: 3px;
-      background: var(--el-fill-color);
-      border-radius: 8px;
+      gap: 4px;
+      align-items: center;
+      transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     &__segment-btn {
       display: flex;
       align-items: center;
-      gap: 4px;
-      padding: 5px 12px;
-      font-size: 13px;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      font-size: 16px;
       color: var(--el-text-color-regular);
       cursor: pointer;
       background: transparent;
       border: none;
-      border-radius: 6px;
+      border-radius: 5px;
       transition:
         color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-        background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-        box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1);
-
-      &.is-active {
-        color: var(--el-color-primary);
-        background: var(--el-bg-color);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-      }
-    }
-
-    &__lang-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      height: 32px;
-      padding: 0 10px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--el-text-color-regular);
-      text-transform: uppercase;
-      cursor: pointer;
-      background: var(--el-bg-color);
-      border: 1px solid $border;
-      border-radius: 6px;
-      transition:
-        color 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-        background-color 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-        border-color 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-        box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-        transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+        background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 
       &:hover {
         color: var(--el-color-primary);
-        background: var(--el-color-primary-light-9);
-        border-color: var(--el-color-primary-light-5);
-        box-shadow: 0 4px 14px rgba(64, 158, 255, 0.14);
-        transform: translateY(-1px);
+        background: var(--el-fill-color-lighter);
+      }
+
+      &.is-active {
+        color: var(--el-color-primary);
+        background: transparent;
       }
     }
 
@@ -1372,10 +1766,41 @@
       min-height: 0;
     }
 
+    &__resize-handle {
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+      width: 6px;
+      cursor: col-resize;
+      background: transparent;
+      transition: background-color 0.16s ease;
+
+      &::before {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 2px;
+        width: 1px;
+        content: '';
+        background: transparent;
+        transition: background-color 0.16s ease;
+      }
+
+      &:hover {
+        background: var(--el-fill-color-lighter);
+
+        &::before {
+          background: var(--el-color-primary-light-5);
+        }
+      }
+    }
+
     &__sidebar {
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
+      min-height: 0;
+      overflow: hidden;
       background: var(--el-bg-color);
 
       &--left {
@@ -1384,7 +1809,7 @@
       }
 
       &--right {
-        width: 300px;
+        width: 340px;
         border-left: 1px solid $border;
       }
     }
@@ -1453,8 +1878,8 @@
       font-size: 12px;
       font-weight: 600;
       color: var(--el-text-color-secondary);
-      letter-spacing: 0.4px;
       text-transform: uppercase;
+      letter-spacing: 0.4px;
     }
 
     // 组件调色板
@@ -1468,26 +1893,26 @@
     &__palette-item {
       display: flex;
       flex-direction: column;
-      align-items: center;
       gap: 6px;
+      align-items: center;
       padding: 12px 6px;
       cursor: grab;
       background: var(--el-bg-color);
       border: 1px solid $border;
       border-radius: 8px;
-      will-change: transform, box-shadow;
       transition:
         color 0.26s cubic-bezier(0.22, 1, 0.36, 1),
         background-color 0.26s cubic-bezier(0.22, 1, 0.36, 1),
         border-color 0.26s cubic-bezier(0.22, 1, 0.36, 1),
         box-shadow 0.26s cubic-bezier(0.22, 1, 0.36, 1),
         transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform, box-shadow;
 
       &:hover {
         color: var(--el-color-primary);
         background: var(--el-fill-color-light);
         border-color: var(--el-color-primary-light-5);
-        box-shadow: 0 8px 20px rgba(31, 41, 55, 0.08);
+        box-shadow: 0 8px 20px rgb(31 41 55 / 8%);
         transform: translateY(-2px);
       }
 
@@ -1535,8 +1960,8 @@
 
     &__layer {
       display: flex;
-      align-items: center;
       gap: 8px;
+      align-items: center;
       padding: 7px 8px;
       font-size: 13px;
       color: var(--el-text-color-regular);
@@ -1600,30 +2025,43 @@
       flex: 1;
       min-width: 0;
       padding: 24px;
-      overflow-y: auto;
+      overflow: auto;
       background: var(--el-fill-color);
       background-image: radial-gradient(var(--el-border-color) 1px, transparent 0);
       background-size: 18px 18px;
+
+      &::-webkit-scrollbar {
+        height: 8px !important;
+      }
+    }
+
+    &__paper-stage {
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      width: 100%;
     }
 
     &__paper {
-      margin: 0 auto;
+      box-sizing: border-box;
+      width: 640px;
+      margin: 0;
       overflow: hidden;
       background: #fff;
       border-radius: 10px;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
-      transition: max-width 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+      box-shadow: 0 4px 24px rgb(0 0 0 / 10%);
+      transition: width 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 
       &.is-desktop {
-        max-width: 640px;
+        width: 640px;
       }
 
       &.is-tablet {
-        max-width: 520px;
+        width: 520px;
       }
 
       &.is-mobile {
-        max-width: 380px;
+        width: 380px;
       }
     }
 
@@ -1652,9 +2090,9 @@
     &__empty {
       display: flex;
       flex-direction: column;
+      gap: 10px;
       align-items: center;
       justify-content: center;
-      gap: 10px;
       min-height: 220px;
       color: #9ca3af;
       text-align: center;
@@ -1679,8 +2117,8 @@
       }
 
       &.is-selected {
-        border-style: solid;
         border-color: var(--el-color-primary);
+        border-style: solid;
       }
 
       // 中和 @vue-email 组件外层 table 的默认间距
@@ -1695,8 +2133,8 @@
       right: 8px;
       z-index: 5;
       display: flex;
-      align-items: center;
       gap: 8px;
+      align-items: center;
     }
 
     &__node-badge {
@@ -1706,7 +2144,7 @@
       color: #fff;
       background: var(--el-color-primary);
       border-radius: 4px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 1px 3px rgb(0 0 0 / 15%);
     }
 
     &__node-actions {
@@ -1716,7 +2154,7 @@
       background: var(--el-bg-color);
       border: 1px solid $border;
       border-radius: 6px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 
       .el-icon {
         padding: 3px;
@@ -1786,9 +2224,9 @@
     &__placeholder {
       display: flex;
       flex-direction: column;
+      gap: 10px;
       align-items: center;
       justify-content: center;
-      gap: 10px;
       padding: 48px 24px;
       color: var(--el-text-color-placeholder);
       text-align: center;
@@ -1810,8 +2248,8 @@
       font-size: 12px;
       font-weight: 600;
       color: var(--el-text-color-secondary);
-      letter-spacing: 0.4px;
       text-transform: uppercase;
+      letter-spacing: 0.4px;
     }
 
     &__field {
@@ -1839,6 +2277,11 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+
+      &--badge-only {
+        justify-content: flex-end;
+        margin-bottom: 5px;
+      }
     }
 
     &__field-badge {
@@ -1847,9 +2290,9 @@
       font-size: 10px;
       font-weight: 600;
       color: var(--el-color-primary);
+      text-transform: uppercase;
       background: var(--el-color-primary-light-9);
       border-radius: 3px;
-      text-transform: uppercase;
     }
 
     &__input-mono {
@@ -1910,41 +2353,75 @@
       &.is-active {
         color: var(--el-color-primary);
         background: var(--el-bg-color);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
       }
     }
 
     // 源码
-    &__source-tip {
-      padding: 12px 14px;
-      font-size: 12px;
-      color: var(--el-text-color-secondary);
-      background: var(--el-fill-color-lighter);
+    &__source-panel {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
     }
 
-    &__source {
-      padding: 14px;
-      margin: 0;
-      overflow-x: auto;
+    &__source-actions {
+      display: flex;
+      flex-shrink: 0;
+      gap: 8px;
+      padding: 10px 14px;
+      border-bottom: 1px solid $border;
+    }
+
+    &__source-textarea {
+      display: block;
+      flex: 1;
+      width: calc(100% - 28px);
+      min-height: 48px;
+      padding: 10px 12px;
+      margin: 12px 14px 8px;
+      overflow: auto;
       font-family: 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
       font-size: 12px;
       line-height: 1.7;
-      color: var(--el-text-color-regular);
+      color: var(--el-text-color-primary);
+      word-break: break-word;
       white-space: pre-wrap;
-      word-break: break-all;
+      resize: none;
+      background: var(--el-bg-color);
+      border: 1px solid var(--el-border-color);
+      border-radius: 6px;
+      outline: none;
+      transition:
+        border-color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+
+      &:focus {
+        border-color: var(--el-color-primary);
+        box-shadow: 0 0 0 1px var(--el-color-primary-light-7);
+      }
+    }
+
+    &__source-error {
+      flex-shrink: 0;
+      padding: 0 14px 12px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--el-color-danger);
     }
 
     // 代码块（画布内，与序列化的 <pre> 一致）
     &__code {
-      margin: 16px 0;
       padding: 16px;
+      margin: 16px 0;
       overflow-x: auto;
       font-family: SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 13px;
       line-height: 1.6;
       color: #e2e8f0;
-      white-space: pre-wrap;
       word-break: break-word;
+      white-space: pre-wrap;
       background: #0f172a;
       border-radius: 8px;
     }
@@ -1963,18 +2440,6 @@
       }
     }
 
-    // 内容字段标记（md / code 徽标）
-    &__field-badge {
-      padding: 1px 6px;
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--el-color-info);
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      background: var(--el-fill-color);
-      border-radius: 4px;
-    }
-
     &__input-mono :deep(.el-textarea__inner) {
       font-family: 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
       font-size: 12.5px;
@@ -1982,16 +2447,6 @@
     }
 
     // ══ 响应式 ══
-    @media (width <= 1100px) {
-      &__sidebar--left {
-        width: 200px;
-      }
-
-      &__sidebar--right {
-        width: 260px;
-      }
-    }
-
     @media (width <= 860px) {
       height: auto;
 
@@ -2024,9 +2479,13 @@
 
       &__sidebar--left,
       &__sidebar--right {
-        width: 100%;
+        width: 100% !important;
         border: none;
         border-bottom: 1px solid $border;
+      }
+
+      &__resize-handle {
+        display: none;
       }
 
       &__palette {
@@ -2035,6 +2494,16 @@
 
       &__canvas {
         min-height: 360px;
+        overflow: auto;
+      }
+
+      &__source-panel {
+        flex: none;
+        height: clamp(360px, 64vh, 560px);
+      }
+
+      &__source-textarea {
+        min-height: 0;
       }
     }
   }
