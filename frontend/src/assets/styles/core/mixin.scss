@@ -1,3 +1,4 @@
+@use 'sass:list';
 @use 'sass:math';
 
 // sass 混合宏（函数）
@@ -168,7 +169,7 @@
 
   @for $i from 1 through $n {
     $alpha: $from - ($from - $to) * math.div($i - 1, $n - 1);
-    $shadows: append(
+    $shadows: list.append(
       $shadows,
       (-$i * 0.1px) 0 ($i * 0.2px) (-$i * 0.05px) rgba(0, 0, 0, $alpha),
       comma
