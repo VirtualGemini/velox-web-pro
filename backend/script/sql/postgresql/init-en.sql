@@ -61,11 +61,11 @@ CREATE INDEX idx_sys_file_config_storage ON sys_file_config (storage);
 CREATE INDEX idx_sys_file_config_master ON sys_file_config (master);
 
 INSERT INTO sys_file_config (id, name, storage, remark, master, config, enabled, create_time, update_time, create_by, update_by, deleted) VALUES
-  ('1900000000000000090','Database Storage',1,'Database-stored files',false,'{"domain": "http://127.0.0.1:3006"}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000040','Local Storage',10,'Local disk storage',true,'{"domain": "http://127.0.0.1:3006", "basePath": "/tmp/uploads"}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000090','Database Storage',1,'Database-stored files',false,'{"domain": "http://127.0.0.1:3000"}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000040','Local Storage',10,'Local disk storage',true,'{"domain": "http://127.0.0.1:3000", "basePath": "/tmp/uploads"}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000041','S3 Cloud Storage',20,'S3/OSS cloud storage (currently tested only with Alibaba Cloud; in theory all S3-compatible providers are supported. If you encounter issues, please submit an issue to help us improve and optimize.)',false,'{"bucket": "bucket", "endpoint": "oss-cn-beijing.aliyuncs.com", "accessKey": "Your Access Key", "accessSecret": "Your Access Secret", "enablePublicAccess": true, "enablePathStyleAccess": false}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000011','FTP Storage',11,'FTP file storage example',false,'{"host": "127.0.0.1", "port": 21, "username": "ftp-user", "password": "ftp-password", "mode": "Passive", "basePath": "/uploads", "domain": "http://127.0.0.1:3006"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000072','SFTP Storage',12,'SFTP file storage example',false,'{"host": "127.0.0.1", "port": 22, "username": "sftp-user", "password": "sftp-password", "basePath": "/uploads", "domain": "http://127.0.0.1:3006"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+  ('1900000000000000011','FTP Storage',11,'FTP file storage example',false,'{"host": "127.0.0.1", "port": 21, "username": "ftp-user", "password": "ftp-password", "mode": "Passive", "basePath": "/uploads", "domain": "http://127.0.0.1:3000"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000072','SFTP Storage',12,'SFTP file storage example',false,'{"host": "127.0.0.1", "port": 22, "username": "sftp-user", "password": "sftp-password", "basePath": "/uploads", "domain": "http://127.0.0.1:3000"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 
 CREATE TABLE sys_mail_group (
   id bigint PRIMARY KEY,

@@ -87,7 +87,7 @@ pnpm dev
 
 默认本地地址：
 
-- 前端：`http://localhost:3006`
+- 前端：`http://localhost:3000`
 - 后端：`http://localhost:8080`
 
 前端本地开发通过 Vite Proxy 将 `/api` 请求转发到后端服务。常用环境变量：

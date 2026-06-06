@@ -87,7 +87,7 @@ pnpm dev
 
 Default local addresses:
 
-- Frontend: `http://localhost:3006`
+- Frontend: `http://localhost:3000`
 - Backend: `http://localhost:8080`
 
 The frontend uses the Vite proxy to forward `/api` requests to the backend during local development. Common environment variables:

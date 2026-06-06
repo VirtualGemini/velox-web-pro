@@ -111,11 +111,11 @@ CREATE TABLE `sys_file_config` (
 
 /*!40000 ALTER TABLE `sys_file_config` DISABLE KEYS */;
 INSERT INTO `sys_file_config` VALUES
-  ('1900000000000000090','Database Storage',1,'Database-stored files',0,'{\"domain\": \"http://127.0.0.1:3006\"}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000040','Local Storage',10,'Local disk storage',1,'{\"domain\": \"http://127.0.0.1:3006\", \"basePath\": \"/tmp/uploads\"}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000090','Database Storage',1,'Database-stored files',0,'{\"domain\": \"http://127.0.0.1:3000\"}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000040','Local Storage',10,'Local disk storage',1,'{\"domain\": \"http://127.0.0.1:3000\", \"basePath\": \"/tmp/uploads\"}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000041','S3 Cloud Storage',20,'S3/OSS cloud storage (currently tested only with Alibaba Cloud; in theory all S3-compatible providers are supported. If you encounter issues, please submit an issue to help us improve and optimize.)',0,'{\"bucket\": \"bucket\", \"endpoint\": \"oss-cn-beijing.aliyuncs.com\", \"accessKey\": \"Your Access Key\", \"accessSecret\": \"Your Access Secret\", \"enablePublicAccess\": true, \"enablePathStyleAccess\": false}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000011','FTP Storage',11,'FTP file storage example',0,'{\"host\": \"127.0.0.1\", \"port\": 21, \"username\": \"ftp-user\", \"password\": \"ftp-password\", \"mode\": \"Passive\", \"basePath\": \"/uploads\", \"domain\": \"http://127.0.0.1:3006\"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000072','SFTP Storage',12,'SFTP file storage example',0,'{\"host\": \"127.0.0.1\", \"port\": 22, \"username\": \"sftp-user\", \"password\": \"sftp-password\", \"basePath\": \"/uploads\", \"domain\": \"http://127.0.0.1:3006\"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+  ('1900000000000000011','FTP Storage',11,'FTP file storage example',0,'{\"host\": \"127.0.0.1\", \"port\": 21, \"username\": \"ftp-user\", \"password\": \"ftp-password\", \"mode\": \"Passive\", \"basePath\": \"/uploads\", \"domain\": \"http://127.0.0.1:3000\"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000072','SFTP Storage',12,'SFTP file storage example',0,'{\"host\": \"127.0.0.1\", \"port\": 22, \"username\": \"sftp-user\", \"password\": \"sftp-password\", \"basePath\": \"/uploads\", \"domain\": \"http://127.0.0.1:3000\"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 /*!40000 ALTER TABLE `sys_file_config` ENABLE KEYS */;
 
 --

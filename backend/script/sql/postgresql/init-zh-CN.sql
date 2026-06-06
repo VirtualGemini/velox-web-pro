@@ -61,11 +61,11 @@ CREATE INDEX idx_sys_file_config_storage ON sys_file_config (storage);
 CREATE INDEX idx_sys_file_config_master ON sys_file_config (master);
 
 INSERT INTO sys_file_config (id, name, storage, remark, master, config, enabled, create_time, update_time, create_by, update_by, deleted) VALUES
-  ('1900000000000000090','数据库存储',1,'数据库存储文件',false,'{"domain": "http://127.0.0.1:3006"}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000040','本地存储',10,'本地磁盘存储',true,'{"domain": "http://127.0.0.1:3006", "basePath": "/tmp/uploads"}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000090','数据库存储',1,'数据库存储文件',false,'{"domain": "http://127.0.0.1:3000"}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000040','本地存储',10,'本地磁盘存储',true,'{"domain": "http://127.0.0.1:3000", "basePath": "/tmp/uploads"}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000041','S3云存储',20,'S3/OSS云存储(当前仅测试阿里云，理论上 S3 类型都支持，若遇到问题请提出您宝贵的 issue，这将有利于我们完善和优化)',false,'{"bucket": "bucket", "endpoint": "oss-cn-beijing.aliyuncs.com", "accessKey": "Your Access Key", "accessSecret": "Your Access Secret", "enablePublicAccess": true, "enablePathStyleAccess": false}',1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000011','FTP存储',11,'FTP 文件存储示例',false,'{"host": "127.0.0.1", "port": 21, "username": "ftp-user", "password": "ftp-password", "mode": "Passive", "basePath": "/uploads", "domain": "http://127.0.0.1:3006"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000000072','SFTP存储',12,'SFTP 文件存储示例',false,'{"host": "127.0.0.1", "port": 22, "username": "sftp-user", "password": "sftp-password", "basePath": "/uploads", "domain": "http://127.0.0.1:3006"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+  ('1900000000000000011','FTP存储',11,'FTP 文件存储示例',false,'{"host": "127.0.0.1", "port": 21, "username": "ftp-user", "password": "ftp-password", "mode": "Passive", "basePath": "/uploads", "domain": "http://127.0.0.1:3000"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000000072','SFTP存储',12,'SFTP 文件存储示例',false,'{"host": "127.0.0.1", "port": 22, "username": "sftp-user", "password": "sftp-password", "basePath": "/uploads", "domain": "http://127.0.0.1:3000"}',0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 
 CREATE TABLE sys_mail_group (
   id bigint PRIMARY KEY,
