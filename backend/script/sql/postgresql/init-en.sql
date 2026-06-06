@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS sys_file_content CASCADE;
 DROP TABLE IF EXISTS sys_file CASCADE;
 DROP TABLE IF EXISTS sys_file_config CASCADE;
 DROP TABLE IF EXISTS sys_mail_account CASCADE;
+DROP TABLE IF EXISTS sys_mail_template CASCADE;
 DROP TABLE IF EXISTS sys_mail_group CASCADE;
 DROP TABLE IF EXISTS sys_mail_channel CASCADE;
 DROP TABLE IF EXISTS sys_id_sequence CASCADE;
@@ -38,7 +39,8 @@ INSERT INTO sys_id_sequence (business_type, current_value) VALUES
   ('sys_file_content',0),
   ('sys_mail_group',0),
   ('sys_mail_channel',0),
-  ('sys_mail_account',0);
+  ('sys_mail_account',0),
+  ('sys_mail_template',0);
 
 CREATE TABLE sys_file_config (
   id bigint PRIMARY KEY,
@@ -135,6 +137,42 @@ CREATE INDEX idx_sys_mail_account_group_id ON sys_mail_account (group_id);
 CREATE INDEX idx_sys_mail_account_channel_id ON sys_mail_account (channel_id);
 CREATE INDEX idx_sys_mail_account_enabled ON sys_mail_account (enabled);
 CREATE INDEX idx_sys_mail_account_health_status ON sys_mail_account (health_status);
+
+CREATE TABLE sys_mail_template (
+  id bigint PRIMARY KEY,
+  name varchar(100) NOT NULL,
+  send_type varchar(64) NOT NULL,
+  template_type varchar(16) NOT NULL DEFAULT 'CUSTOM',
+  subject_zh varchar(255),
+  content_zh text,
+  subject_en varchar(255),
+  content_en text,
+  enabled smallint DEFAULT 1,
+  sort integer DEFAULT 1,
+  remark varchar(500),
+  create_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  update_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  create_by bigint,
+  update_by bigint,
+  deleted smallint DEFAULT 0
+);
+
+CREATE UNIQUE INDEX uk_sys_mail_template_name_active ON sys_mail_template (name) WHERE deleted = 0 AND name IS NOT NULL;
+CREATE INDEX idx_sys_mail_template_send_type ON sys_mail_template (send_type);
+CREATE INDEX idx_sys_mail_template_template_type ON sys_mail_template (template_type);
+CREATE INDEX idx_sys_mail_template_send_type_enabled ON sys_mail_template (send_type, enabled);
+CREATE INDEX idx_sys_mail_template_enabled ON sys_mail_template (enabled);
+
+INSERT INTO sys_mail_template
+  (id, name, send_type, template_type, subject_zh, content_zh, subject_en, content_en, enabled, sort, remark, create_time, update_time, create_by, update_by, deleted)
+VALUES
+  ('1900000000000003110','密码重置验证码','AUTH_RESET_PASSWORD_CODE','SYSTEM','密码重置验证码','<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;line-height:1.6;"><p style="margin:0 0 12px;">您好，{{username}}：</p><p style="margin:0 0 12px;">您正在执行忘记密码操作。</p><p style="margin:0 0 12px;">本次密码重置验证码为：<strong>{{code}}</strong></p><p style="margin:0 0 12px;">验证码 {{validityMinutes}} 分钟内有效，请勿泄露给他人。</p><p style="margin:0 0 12px;">如果这不是您的操作，请忽略本邮件。</p></div>','Password reset code','<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;line-height:1.6;"><p style="margin:0 0 12px;">Hello {{username}},</p><p style="margin:0 0 12px;">You are resetting your password.</p><p style="margin:0 0 12px;">Your password reset code is: <strong>{{code}}</strong></p><p style="margin:0 0 12px;">The code is valid for {{validityMinutes}} minutes. Please do not share it with anyone.</p><p style="margin:0 0 12px;">If this was not you, please ignore this email.</p></div>',1,1,'系统内置模板','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003111','登录验证码','AUTH_LOGIN_CODE','SYSTEM','登录验证码','<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;line-height:1.6;"><p style="margin:0 0 12px;">您好，{{username}}：</p><p style="margin:0 0 12px;">您正在通过邮箱验证码登录。</p><p style="margin:0 0 12px;">本次登录验证码为：<strong>{{code}}</strong></p><p style="margin:0 0 12px;">验证码 {{validityMinutes}} 分钟内有效，请勿泄露给他人。</p><p style="margin:0 0 12px;">如果这不是您的操作，请尽快修改密码。</p></div>','Login verification code','<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;line-height:1.6;"><p style="margin:0 0 12px;">Hello {{username}},</p><p style="margin:0 0 12px;">You are signing in with an email verification code.</p><p style="margin:0 0 12px;">Your login code is: <strong>{{code}}</strong></p><p style="margin:0 0 12px;">The code is valid for {{validityMinutes}} minutes. Please do not share it with anyone.</p><p style="margin:0 0 12px;">If this was not you, please change your password as soon as possible.</p></div>',1,2,'系统内置模板','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003112','登录二次验证码','AUTH_LOGIN_MFA_CODE','SYSTEM','登录二次验证码','<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;line-height:1.6;"><p style="margin:0 0 12px;">您好，{{username}}：</p><p style="margin:0 0 12px;">您正在通过邮箱二次验证完成登录。</p><p style="margin:0 0 12px;">本次验证码为：<strong>{{code}}</strong></p><p style="margin:0 0 12px;">验证码 {{validityMinutes}} 分钟内有效，请勿泄露给他人。</p><p style="margin:0 0 12px;">如果这不是您的操作，请尽快修改密码。</p></div>','Login two-factor code','<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;line-height:1.6;"><p style="margin:0 0 12px;">Hello {{username}},</p><p style="margin:0 0 12px;">You are completing two-factor verification to sign in.</p><p style="margin:0 0 12px;">Your verification code is: <strong>{{code}}</strong></p><p style="margin:0 0 12px;">The code is valid for {{validityMinutes}} minutes. Please do not share it with anyone.</p><p style="margin:0 0 12px;">If this was not you, please change your password as soon as possible.</p></div>',1,3,'系统内置模板','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003113','邮箱解绑验证码','ACCOUNT_EMAIL_UNBIND_CODE','SYSTEM','邮箱解绑验证码','<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;line-height:1.6;"><p style="margin:0 0 12px;">您好，{{username}}：</p><p style="margin:0 0 12px;">您正在执行邮箱解绑操作。</p><p style="margin:0 0 12px;">本次验证码为：<strong>{{code}}</strong></p><p style="margin:0 0 12px;">验证码 {{validityMinutes}} 分钟内有效，请勿泄露给他人。</p><p style="margin:0 0 12px;">如果这不是您的操作，请忽略本邮件并尽快修改密码。</p></div>','Email unbinding code','<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;line-height:1.6;"><p style="margin:0 0 12px;">Hello {{username}},</p><p style="margin:0 0 12px;">You are unbinding your email address.</p><p style="margin:0 0 12px;">Your verification code is: <strong>{{code}}</strong></p><p style="margin:0 0 12px;">The code is valid for {{validityMinutes}} minutes. Please do not share it with anyone.</p><p style="margin:0 0 12px;">If this was not you, please ignore this email and change your password as soon as possible.</p></div>',1,4,'系统内置模板','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003114','邮箱换绑身份验证','ACCOUNT_EMAIL_REBIND_PROOF_CODE','SYSTEM','邮箱换绑身份验证','<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;line-height:1.6;"><p style="margin:0 0 12px;">您好，{{username}}：</p><p style="margin:0 0 12px;">您正在验证当前身份，以继续执行邮箱换绑。</p><p style="margin:0 0 12px;">本次验证码为：<strong>{{code}}</strong></p><p style="margin:0 0 12px;">验证码 {{validityMinutes}} 分钟内有效，请勿泄露给他人。</p><p style="margin:0 0 12px;">如果这不是您的操作，请忽略本邮件并尽快修改密码。</p></div>','Email change identity verification','<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;line-height:1.6;"><p style="margin:0 0 12px;">Hello {{username}},</p><p style="margin:0 0 12px;">You are verifying your current identity to change your email address.</p><p style="margin:0 0 12px;">Your verification code is: <strong>{{code}}</strong></p><p style="margin:0 0 12px;">The code is valid for {{validityMinutes}} minutes. Please do not share it with anyone.</p><p style="margin:0 0 12px;">If this was not you, please ignore this email and change your password as soon as possible.</p></div>',1,5,'系统内置模板','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003115','邮箱换绑验证码','ACCOUNT_EMAIL_REBIND_CODE','SYSTEM','邮箱换绑验证码','<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;line-height:1.6;"><p style="margin:0 0 12px;">您好，{{username}}：</p><p style="margin:0 0 12px;">您正在执行邮箱换绑操作。</p><p style="margin:0 0 12px;">本次换绑验证码为：<strong>{{code}}</strong></p><p style="margin:0 0 12px;">验证码 {{validityMinutes}} 分钟内有效，请勿泄露给他人。</p><p style="margin:0 0 12px;">如果这不是您的操作，请忽略本邮件并修改密码。</p></div>','Email change code','<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;line-height:1.6;"><p style="margin:0 0 12px;">Hello {{username}},</p><p style="margin:0 0 12px;">You are changing your email address.</p><p style="margin:0 0 12px;">Your email change code is: <strong>{{code}}</strong></p><p style="margin:0 0 12px;">The code is valid for {{validityMinutes}} minutes. Please do not share it with anyone.</p><p style="margin:0 0 12px;">If this was not you, please ignore this email and change your password.</p></div>',1,6,'系统内置模板','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003116','二次验证码','ACCOUNT_MFA_CODE','SYSTEM','二次验证码','<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;line-height:1.6;"><p style="margin:0 0 12px;">您好，{{username}}：</p><p style="margin:0 0 12px;">您正在使用邮箱二次验证码。</p><p style="margin:0 0 12px;">本次验证码为：<strong>{{code}}</strong></p><p style="margin:0 0 12px;">验证码 {{validityMinutes}} 分钟内有效，请勿泄露给他人。</p><p style="margin:0 0 12px;">如果这不是您的操作，请尽快修改密码。</p></div>','Two-factor code','<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;line-height:1.6;"><p style="margin:0 0 12px;">Hello {{username}},</p><p style="margin:0 0 12px;">You are using an email two-factor verification code.</p><p style="margin:0 0 12px;">Your verification code is: <strong>{{code}}</strong></p><p style="margin:0 0 12px;">The code is valid for {{validityMinutes}} minutes. Please do not share it with anyone.</p><p style="margin:0 0 12px;">If this was not you, please change your password as soon as possible.</p></div>',1,7,'系统内置模板','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 
 CREATE TABLE sys_file (
   id bigint PRIMARY KEY,
@@ -414,6 +452,12 @@ INSERT INTO sys_menu (id, parent_id, menu_type, name, title, path, component, re
   ('1900000000000003005','1900000000000003001','button','MailAccountDelete','Delete',NULL,NULL,NULL,NULL,'system:mail-account:delete',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000003006','1900000000000003001','button','MailAccountGroup','Group',NULL,NULL,NULL,NULL,'system:mail-account:group',1,5,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000003007','1900000000000003001','button','MailAccountChannel','Sending Channel',NULL,NULL,NULL,NULL,'system:mail-account:channel',1,6,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- Config > EmailTemplate
+  ('1900000000000003101','1900000000000000029','menu','EmailTemplate','Email Template','mail-template','/config/mail-template',NULL,'',NULL,1,3,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003102','1900000000000003101','button','EmailTemplateQuery','Query',NULL,NULL,NULL,NULL,'system:mail-template:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003103','1900000000000003101','button','EmailTemplateCreate','Create',NULL,NULL,NULL,NULL,'system:mail-template:create',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003104','1900000000000003101','button','EmailTemplateUpdate','Edit',NULL,NULL,NULL,NULL,'system:mail-template:update',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000003105','1900000000000003101','button','EmailTemplateDelete','Delete',NULL,NULL,NULL,NULL,'system:mail-template:delete',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- Settings
   ('1900000000000002001',NULL,'menu','Settings','Settings','/settings','/index/index',NULL,'ri:settings-4-line',NULL,1,90,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- Settings > AccessControl

@@ -1,4 +1,4 @@
-# 开发环境配置
+# 本地环境配置
 spring:
   data:
     redis:
@@ -13,11 +13,11 @@ spring:
 
 springdoc:
   api-docs:
-    # 本地环境默认关闭 OpenAPI 文档
-    enabled: false
+    # 本地环境默认开启 OpenAPI 文档
+    enabled: true
   swagger-ui:
-    # 本地环境默认关闭 Swagger UI
-    enabled: false
+    # 本地环境默认开启 Swagger UI，便于接口调试
+    enabled: true
 
 logging:
   level:
@@ -30,7 +30,7 @@ logging:
 velox:
   datasource:
     # 当前激活数据库类型，默认推荐 PostgreSQL；可选 mysql / postgresql
-    type: ${DB_TYPE:postgresql}
+    type: ${DB_TYPE:mysql}
     # 并存的多套数据库连接配置
     configs:
       mysql:
@@ -45,9 +45,7 @@ velox:
         url: ${POSTGRESQL_DB_URL:jdbc:postgresql://localhost:5432/velox}
         username: ${POSTGRESQL_DB_USERNAME:postgres}
         password: ${POSTGRESQL_DB_PASSWORD:postgres}
-  security:
-    # 本地环境默认不公开 Swagger
-    swagger-public-enabled: false
+  web:
     cors:
       # 本地前端联调允许的来源
       allowed-origin-patterns:
@@ -71,26 +69,56 @@ velox:
         - "http://172.29.*:*"
         - "http://172.30.*:*"
         - "http://172.31.*:*"
-    verification:
+        - "https://*.trycloudflare.com"
+        - "https://*.ngrok-free.dev"
+  security:
+    # 本地环境允许未登录访问 Swagger UI 与 OpenAPI 文档
+    swagger-public-enabled: true
+  system:
+    auth:
       # 验证码 HMAC 摘要密钥；本地可使用默认值，生产环境必须覆盖
-      secret: ${VERIFICATION_SECRET:velox-local-verification-secret}
-      # 邮件重置验证码有效期（秒）
-      reset-code-ttl-seconds: 600
-      # 邮件重置验证码重复发送间隔（秒）
-      reset-code-resend-interval-seconds: 60
+      verification:
+        secret: ${VERIFICATION_SECRET:velox-local-verification-secret}
+        # 邮件重置验证码有效期（秒）
+        reset-code-ttl-seconds: 600
+        # 邮件重置验证码重复发送间隔（秒）
+        reset-code-resend-interval-seconds: 60
+  redis:
+    # 本地环境默认开启 Redis；关闭后验证码和在线状态改为内存实现
+    enabled: true
+    cache:
+      # 本地环境默认关闭 Spring Cache 层，避免引入未使用的缓存复杂度
+      enabled: false
+      # 若误用缓存能力，默认快速失败便于及时发现
+      disabled-strategy: FAIL_FAST
+  id:
+    snowflake:
+      # true 使用 Snowflake BIGINT；false 使用数据库序列 BIGINT
+      enabled: true
+      # true：前后端使用 Base62 编解码（与生产一致）；false：直传原始雪花 ID 便于排查
+      base62: true
+    database:
+      # 本地启动时自动对齐数据库 ID 对象与业务表 BIGINT 主键，便于反复验证迁移
+      init-mode: update
+    # 本地默认单节点发号；多实例联调时请通过环境变量覆盖
+    worker-id: ${VELOX_ID_WORKER_ID:1}
+    # 本地默认单机房编号；跨环境并行调试时请保持唯一规划
+    datacenter-id: ${VELOX_ID_DATACENTER_ID:1}
+  file:
+    # 是否启用文件能力；本地环境显式开启，避免依赖默认值
+    enabled: true
   email:
-    # 生产环境通过环境变量控制启停
-    enabled: false
-    # SMTP 用户名，通常与发件邮箱相同
-    username: ${MAIL_USERNAME:no-reply-cp@qq.com}
-    # 发件邮箱授权码或 SMTP 密码
-    password: ${MAIL_PASSWORD:aqsqxbwebdhldegd}
-    # 默认发件人地址
-    from: ${MAIL_FROM:no-reply-cp@qq.com}
-    # 默认发件人名称
+    # false 时注入 disabled/noop 实现；true 时启用邮件能力
+    # 发件邮箱（host/username/password/from/ssl 等）已改为数据库热配置：配置管理 - 邮箱管理（sys_mail_account 发件池），
+    # 由 PooledMailChannel 在发送时按账号动态挑选并覆盖发件人，业务调用点零改动。
+    # 下方 username/password 仅为占位，用于满足 starter 在 enabled=true 时的非空校验，实际发送不再使用本处凭据。
+    enabled: true
+    # 占位用户名（真实发件账号来自数据库发件池）
+    username: ${MAIL_USERNAME:pool@velox.local}
+    # 占位密码（真实授权码来自数据库发件池）
+    password: ${MAIL_PASSWORD:pool-placeholder}
+    # 默认发件人名称（账号未单独配置发件人名称时的兜底）
     from-name: Velox
-    # 是否启用 SSL；未显式配置 host/port 时会按邮箱域名自动推断
-    ssl: true
     async:
       # 是否开启异步发送
       enabled: true

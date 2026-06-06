@@ -35,6 +35,10 @@ import com.velox.module.system.domain.model.AccountRole;
 import com.velox.module.system.domain.model.AccountSecurity;
 import com.velox.module.system.domain.model.AccountSession;
 import com.velox.module.system.id.generator.SystemEntityIdGenerator;
+import com.velox.module.system.mail.service.MailTemplateRenderService;
+import com.velox.module.system.mail.template.MailTemplateType;
+import com.velox.module.system.mail.template.RecipientLanguageResolver;
+import com.velox.module.system.mail.template.RenderedEmail;
 import com.velox.module.system.persistence.ProfileMapper;
 import com.velox.module.system.persistence.RoleMapper;
 import com.velox.module.system.persistence.AccountMapper;
@@ -53,6 +57,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -78,6 +83,8 @@ public class LoginServiceImpl implements LoginService {
     private final SecuritySessionService securitySessionService;
     private final TotpService totpService;
     private final AccessControlService accessControlService;
+    private final MailTemplateRenderService mailTemplateRenderService;
+    private final RecipientLanguageResolver recipientLanguageResolver;
 
     public LoginServiceImpl(AccountMapper userMapper,
                             ProfileMapper profileMapper,
@@ -93,7 +100,9 @@ public class LoginServiceImpl implements LoginService {
                             ActiveUserStatusService activeUserStatusService,
                             SecuritySessionService securitySessionService,
                             TotpService totpService,
-                            AccessControlService accessControlService) {
+                            AccessControlService accessControlService,
+                            MailTemplateRenderService mailTemplateRenderService,
+                            RecipientLanguageResolver recipientLanguageResolver) {
         this.userMapper = userMapper;
         this.profileMapper = profileMapper;
         this.roleMapper = roleMapper;
@@ -109,6 +118,8 @@ public class LoginServiceImpl implements LoginService {
         this.securitySessionService = securitySessionService;
         this.totpService = totpService;
         this.accessControlService = accessControlService;
+        this.mailTemplateRenderService = mailTemplateRenderService;
+        this.recipientLanguageResolver = recipientLanguageResolver;
     }
 
     @Override
@@ -266,9 +277,14 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.RESET_CODE_SEND_TOO_FREQUENT);
         }
         try {
+            RenderedEmail mail = mailTemplateRenderService.render(
+                    MailTemplateType.AUTH_RESET_PASSWORD_CODE,
+                    recipientLanguageResolver.resolve(user.getId()),
+                    Map.of("username", user.getUsername(), "code", code,
+                            "validityMinutes", "10", "appName", "Velox"));
             SendResponse response = emailBuilder.to(email)
-                    .subject("密码重置验证码")
-                    .text(buildResetPasswordMailContent(user.getUsername(), code))
+                    .subject(mail.subject())
+                    .html(mail.html())
                     .sendSync();
             if (!response.success()) {
                 verificationCodeStore.invalidateResetCode(email);
@@ -354,9 +370,14 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.LOGIN_CODE_SEND_TOO_FREQUENT);
         }
         try {
+            RenderedEmail mail = mailTemplateRenderService.render(
+                    MailTemplateType.AUTH_LOGIN_CODE,
+                    recipientLanguageResolver.resolve(user.getId()),
+                    Map.of("username", user.getUsername(), "code", code,
+                            "validityMinutes", "10", "appName", "Velox"));
             SendResponse response = emailBuilder.to(email)
-                    .subject("登录验证码")
-                    .text(buildLoginCodeMailContent(user.getUsername(), code))
+                    .subject(mail.subject())
+                    .html(mail.html())
                     .sendSync();
             if (!response.success()) {
                 verificationCodeStore.invalidateLoginCode(email);
@@ -460,9 +481,14 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.MFA_CODE_SEND_TOO_FREQUENT);
         }
         try {
+            RenderedEmail mail = mailTemplateRenderService.render(
+                    MailTemplateType.AUTH_LOGIN_MFA_CODE,
+                    recipientLanguageResolver.resolve(user.getId()),
+                    Map.of("username", user.getUsername(), "code", code,
+                            "validityMinutes", "5", "appName", "Velox"));
             SendResponse response = emailBuilder.to(email)
-                    .subject("登录二次验证码")
-                    .text(buildMfaCodeContent(user.getUsername(), code))
+                    .subject(mail.subject())
+                    .html(mail.html())
                     .sendSync();
             if (!response.success()) {
                 verificationCodeStore.invalidateMfaCode(userId);
@@ -804,30 +830,6 @@ public class LoginServiceImpl implements LoginService {
             return null;
         }
         return email.trim().toLowerCase();
-    }
-
-    private String buildResetPasswordMailContent(String username, String code) {
-        return "您好，" + username + "：\n\n"
-                + "您正在执行忘记密码操作。\n"
-                + "本次密码重置验证码为：" + code + "\n"
-                + "验证码 10 分钟内有效，请勿泄露给他人。\n\n"
-                + "如果这不是您的操作，请忽略本邮件。";
-    }
-
-    private String buildLoginCodeMailContent(String username, String code) {
-        return "您好，" + username + "：\n\n"
-                + "您正在通过邮箱验证码登录。\n"
-                + "本次登录验证码为：" + code + "\n"
-                + "验证码 10 分钟内有效，请勿泄露给他人。\n\n"
-                + "如果这不是您的操作，请尽快修改密码。";
-    }
-
-    private String buildMfaCodeContent(String username, String code) {
-        return "您好，" + username + "：\n\n"
-                + "您正在通过邮箱二次验证完成登录。\n"
-                + "本次验证码为：" + code + "\n"
-                + "验证码 5 分钟内有效，请勿泄露给他人。\n\n"
-                + "如果这不是您的操作，请尽快修改密码。";
     }
 
     private EmailBuilder requireEmailBuilder() {

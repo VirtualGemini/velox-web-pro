@@ -16,6 +16,10 @@ import com.velox.module.system.auth.store.VerificationCodeStore;
 import com.velox.module.system.domain.model.Account;
 import com.velox.module.system.domain.model.AccountSecurity;
 import com.velox.module.system.id.generator.SystemEntityIdGenerator;
+import com.velox.module.system.mail.service.MailTemplateRenderService;
+import com.velox.module.system.mail.template.MailTemplateType;
+import com.velox.module.system.mail.template.RecipientLanguageResolver;
+import com.velox.module.system.mail.template.RenderedEmail;
 import com.velox.module.system.persistence.AccountMapper;
 import com.velox.module.system.persistence.AccountSecurityMapper;
 import com.velox.module.system.account.security.dto.EmailRebindCommand;
@@ -47,6 +51,7 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -77,6 +82,8 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
     private final ObjectProvider<EmailBuilder> emailBuilderProvider;
     private final PasswordCipherService passwordCipherService;
     private final TotpService totpService;
+    private final MailTemplateRenderService mailTemplateRenderService;
+    private final RecipientLanguageResolver recipientLanguageResolver;
 
     public AccountSecurityServiceImpl(
             AccountMapper userMapper,
@@ -88,7 +95,9 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
             VerificationCodeStore verificationCodeStore,
             ObjectProvider<EmailBuilder> emailBuilderProvider,
             PasswordCipherService passwordCipherService,
-            TotpService totpService) {
+            TotpService totpService,
+            MailTemplateRenderService mailTemplateRenderService,
+            RecipientLanguageResolver recipientLanguageResolver) {
         this.userMapper = userMapper;
         this.userSecurityMapper = userSecurityMapper;
         this.securitySessionService = securitySessionService;
@@ -99,6 +108,8 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
         this.emailBuilderProvider = emailBuilderProvider;
         this.passwordCipherService = passwordCipherService;
         this.totpService = totpService;
+        this.mailTemplateRenderService = mailTemplateRenderService;
+        this.recipientLanguageResolver = recipientLanguageResolver;
     }
 
     @Override
@@ -169,9 +180,14 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
             throw new ApiException(BusinessErrorCode.REBIND_CODE_SEND_TOO_FREQUENT);
         }
         try {
+            RenderedEmail mail = mailTemplateRenderService.render(
+                    MailTemplateType.ACCOUNT_EMAIL_UNBIND_CODE,
+                    recipientLanguageResolver.resolve(userId),
+                    Map.of("username", user.getUsername(), "code", code,
+                            "validityMinutes", "10", "appName", "Velox"));
             SendResponse response = emailBuilder.to(currentEmail)
-                    .subject("邮箱解绑验证码")
-                    .text(buildEmailUnbindContent(user.getUsername(), code))
+                    .subject(mail.subject())
+                    .html(mail.html())
                     .sendSync();
             if (!response.success()) {
                 verificationCodeStore.invalidateRebindCode(REBIND_PROOF_SCOPE, currentEmail);
@@ -210,9 +226,14 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
             throw new ApiException(BusinessErrorCode.REBIND_CODE_SEND_TOO_FREQUENT);
         }
         try {
+            RenderedEmail mail = mailTemplateRenderService.render(
+                    MailTemplateType.ACCOUNT_EMAIL_REBIND_PROOF_CODE,
+                    recipientLanguageResolver.resolve(userId),
+                    Map.of("username", user.getUsername(), "code", code,
+                            "validityMinutes", "10", "appName", "Velox"));
             SendResponse response = emailBuilder.to(currentEmail)
-                    .subject("邮箱换绑身份验证")
-                    .text(buildCurrentEmailProofContent(user.getUsername(), code))
+                    .subject(mail.subject())
+                    .html(mail.html())
                     .sendSync();
             if (!response.success()) {
                 verificationCodeStore.invalidateRebindCode(REBIND_PROOF_SCOPE, currentEmail);
@@ -287,9 +308,14 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
             throw new ApiException(BusinessErrorCode.REBIND_CODE_SEND_TOO_FREQUENT);
         }
         try {
+            RenderedEmail mail = mailTemplateRenderService.render(
+                    MailTemplateType.ACCOUNT_EMAIL_REBIND_CODE,
+                    recipientLanguageResolver.resolve(userId),
+                    Map.of("username", user.getUsername(), "code", code,
+                            "validityMinutes", "10", "appName", "Velox"));
             SendResponse response = emailBuilder.to(newEmail)
-                    .subject("邮箱换绑验证码")
-                    .text(buildRebindEmailContent(user.getUsername(), code))
+                    .subject(mail.subject())
+                    .html(mail.html())
                     .sendSync();
             if (!response.success()) {
                 verificationCodeStore.invalidateRebindCode("email", newEmail);
@@ -438,9 +464,14 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
             throw new ApiException(BusinessErrorCode.MFA_CODE_SEND_TOO_FREQUENT);
         }
         try {
+            RenderedEmail mail = mailTemplateRenderService.render(
+                    MailTemplateType.ACCOUNT_MFA_CODE,
+                    recipientLanguageResolver.resolve(userId),
+                    Map.of("username", user.getUsername(), "code", code,
+                            "validityMinutes", "5", "appName", "Velox"));
             SendResponse response = emailBuilder.to(email)
-                    .subject("二次验证码")
-                    .text(buildMfaCodeContent(user.getUsername(), code))
+                    .subject(mail.subject())
+                    .html(mail.html())
                     .sendSync();
             if (!response.success()) {
                 verificationCodeStore.invalidateMfaCode(userId);
@@ -815,37 +846,5 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
             throw new ApiException(BusinessErrorCode.EMAIL_SERVICE_DISABLED);
         }
         return emailBuilder;
-    }
-
-    private String buildRebindEmailContent(String username, String code) {
-        return "您好，" + username + "：\n\n"
-                + "您正在执行邮箱换绑操作。\n"
-                + "本次换绑验证码为：" + code + "\n"
-                + "验证码 10 分钟内有效，请勿泄露给他人。\n\n"
-                + "如果这不是您的操作，请忽略本邮件并修改密码。";
-    }
-
-    private String buildCurrentEmailProofContent(String username, String code) {
-        return "您好，" + username + "：\n\n"
-                + "您正在验证当前身份，以继续执行邮箱换绑。\n"
-                + "本次验证码为：" + code + "\n"
-                + "验证码 10 分钟内有效，请勿泄露给他人。\n\n"
-                + "如果这不是您的操作，请忽略本邮件并尽快修改密码。";
-    }
-
-    private String buildEmailUnbindContent(String username, String code) {
-        return "您好，" + username + "：\n\n"
-                + "您正在执行邮箱解绑操作。\n"
-                + "本次验证码为：" + code + "\n"
-                + "验证码 10 分钟内有效，请勿泄露给他人。\n\n"
-                + "如果这不是您的操作，请忽略本邮件并尽快修改密码。";
-    }
-
-    private String buildMfaCodeContent(String username, String code) {
-        return "您好，" + username + "：\n\n"
-                + "您正在使用邮箱二次验证码。\n"
-                + "本次验证码为：" + code + "\n"
-                + "验证码 5 分钟内有效，请勿泄露给他人。\n\n"
-                + "如果这不是您的操作，请尽快修改密码。";
     }
 }

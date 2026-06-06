@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
         if (exception.getPayload() != null) {
             log.warn("Exception payload: {}", exception.getPayload());
         }
-        return Result.fail(exception.getErrorCode(), exception.getMessage());
+        return Result.fail(exception.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

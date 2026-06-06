@@ -18,6 +18,7 @@ export default async ({ mode }: { mode: string }) => {
   const devToolsPlugins = []
 
   if (isDevelopment) {
+    ensureConfigLocalStorage()
     const { default: vueDevTools } = await import('vite-plugin-vue-devtools')
     devToolsPlugins.push(vueDevTools())
   }
@@ -38,7 +39,8 @@ export default async ({ mode }: { mode: string }) => {
           changeOrigin: true
         }
       },
-      host: true
+      host: true,
+      allowedHosts: true
     },
     // 路径别名
     resolve: {
@@ -159,4 +161,47 @@ export default async ({ mode }: { mode: string }) => {
 
 function resolvePath(paths: string) {
   return path.resolve(__dirname, paths)
+}
+
+type ConfigLocalStorage = {
+  getItem?: (key: string) => string | null
+  setItem?: (key: string, value: string) => void
+  removeItem?: (key: string) => void
+  clear?: () => void
+  key?: (index: number) => string | null
+  length?: number
+}
+
+function ensureConfigLocalStorage() {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+  const current =
+    descriptor && 'value' in descriptor ? (descriptor.value as ConfigLocalStorage) : undefined
+  if (current && typeof current.getItem === 'function') {
+    return
+  }
+
+  const store = new Map<string, string>()
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    value: {
+      get length() {
+        return store.size
+      },
+      getItem(key: string) {
+        return store.has(key) ? store.get(key)! : null
+      },
+      setItem(key: string, value: string) {
+        store.set(key, String(value))
+      },
+      removeItem(key: string) {
+        store.delete(key)
+      },
+      clear() {
+        store.clear()
+      },
+      key(index: number) {
+        return Array.from(store.keys())[index] ?? null
+      }
+    }
+  })
 }

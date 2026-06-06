@@ -54,6 +54,9 @@ velox:
           - table: sys_mail_account
             id-column: id
             business-type: sys_mail_account
+          - table: sys_mail_template
+            id-column: id
+            business-type: sys_mail_template
         # 声明式引用图：只有这里注册的引用列才会跟随身份域一起迁移
         references:
           - table: sys_account
@@ -206,6 +209,14 @@ velox:
               - column: channel_id
                 target-business-type: sys_mail_channel
                 kind: explicit
+              - column: create_by
+                target-business-type: sys_account
+                kind: audit
+              - column: update_by
+                target-business-type: sys_account
+                kind: audit
+          - table: sys_mail_template
+            mappings:
               - column: create_by
                 target-business-type: sys_account
                 kind: audit

@@ -82,7 +82,9 @@
   }
 
   interface MenuFormData {
-    id: number
+    parentId: string
+    id: string
+    menuType: 'menu' | 'button'
     name: string
     path: string
     label: string
@@ -111,6 +113,7 @@
   interface Props {
     visible: boolean
     editData?: AppRouteRecord | any
+    parentData?: AppRouteRecord | null
     type?: 'menu' | 'button'
     lockType?: boolean
   }
@@ -131,9 +134,10 @@
   const formRef = ref()
   const isEdit = ref(false)
 
-  const form = reactive<MenuFormData & { menuType: 'menu' | 'button' }>({
+  const form = reactive<MenuFormData>({
+    parentId: '',
     menuType: 'menu',
-    id: 0,
+    id: '',
     name: '',
     path: '',
     label: '',
@@ -393,6 +397,8 @@
    */
   const resetForm = (): void => {
     formRef.value?.reset()
+    form.parentId = ''
+    form.id = ''
     form.menuType = 'menu'
   }
 
@@ -406,7 +412,8 @@
 
     if (form.menuType === 'menu') {
       const row = props.editData
-      form.id = row.id || 0
+      form.id = row.id || ''
+      form.parentId = row.parentId || ''
       form.name = formatMenuTitle(row.meta?.title || '')
       form.path = row.path || ''
       form.label = row.name || ''
@@ -428,6 +435,8 @@
       form.isFullPage = row.meta?.isFullPage ?? false
     } else {
       const row = props.editData
+      form.id = row.id || ''
+      form.parentId = row.parentId || ''
       form.authName = row.title || ''
       form.authLabel = row.authMark || ''
       form.authIcon = row.icon || ''
@@ -472,6 +481,7 @@
     (newVal) => {
       if (newVal) {
         form.menuType = props.type
+        form.parentId = props.parentData?.id || ''
         nextTick(() => {
           if (props.editData) {
             loadFormData()

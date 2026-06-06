@@ -138,6 +138,15 @@ public enum BusinessErrorCode implements ErrorCode {
     MAIL_ACCOUNT_TEST_FAILED(23005, "测试邮件发送失败: %s"),
     MAIL_NO_AVAILABLE_ACCOUNT(23006, "当前没有可用的发件邮箱"),
     MAIL_SEND_FAILED(23007, "邮件发送失败: %s"),
+
+    // ---- 邮件模板模块 (23100-23199) ----
+    MAIL_TEMPLATE_NOT_FOUND(23100, "邮件模板不存在"),
+    MAIL_TEMPLATE_NAME_DUPLICATE(23101, "邮件模板名称已存在"),
+    MAIL_TEMPLATE_TYPE_INVALID(23102, "邮件模板类型不合法"),
+    MAIL_TEMPLATE_LANGUAGE_INVALID(23103, "邮件模板语言不合法"),
+    MAIL_TEMPLATE_LAST_OF_TYPE(23104, "该类型至少需保留一条模板，无法删除"),
+    MAIL_TEMPLATE_CONTENT_EMPTY(23105, "邮件模板至少需要一种语言的主题和正文"),
+    MAIL_TEMPLATE_SYSTEM_BUILTIN_DELETE_FORBIDDEN(23106, "系统内置模板不可删除"),
     ;
 
     private final int code;
