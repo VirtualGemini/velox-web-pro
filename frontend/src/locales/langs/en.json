@@ -664,7 +664,8 @@
             "isFullPage": "Full Page",
             "authName": "Permission Name",
             "authLabel": "Permission Mark",
-            "authSort": "Permission Order"
+            "authSort": "Permission Order",
+            "menuAuthMark": "Permission Identifier"
           },
           "placeholders": {
             "name": "Please enter menu name",
@@ -677,14 +678,16 @@
             "showTextBadge": "For example: New or Hot",
             "activePath": "For example: /system/account",
             "authName": "For example: Create, Edit, Delete",
-            "authLabel": "For example: add, edit, delete"
+            "authLabel": "For example: add, edit, delete",
+            "menuAuthMark": "For example: system:user:query"
           },
           "tooltips": {
             "path": "Top-level menu: absolute path starting with / (for example /dashboard)\nSecond level and below: relative path (for example console or user)",
             "component": "Top-level parent menu: use /index/index\nSpecific page: use the component path (for example /system/account)\nDirectory menu: leave blank",
             "icon": "Select a supported project icon. The ri: icon code will be filled automatically.",
             "roles": "Used only in frontend permission mode: configure role marks (for example R_SUPER, R_ADMIN)\nBackend permission mode does not require this.",
-            "activePath": "Used for hidden detail pages to highlight the parent menu path.\nFor example, the user detail page highlights the User Management menu."
+            "activePath": "Used for hidden detail pages to highlight the parent menu path.\nFor example, the user detail page highlights the User Management menu.",
+            "menuAuthMark": "Identifier for backend permission checks. Format: module:function:action\nFor example: system:user:query"
           },
           "validation": {
             "nameRequired": "Please enter menu name",
