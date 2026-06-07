@@ -1912,8 +1912,8 @@
         color: var(--el-color-primary);
         background: var(--el-fill-color-light);
         border-color: var(--el-color-primary-light-5);
-        box-shadow: 0 8px 20px rgb(31 41 55 / 8%);
-        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgb(31 41 55 / 6%);
+        transform: translateY(-1px);
       }
 
       &:focus-visible {
