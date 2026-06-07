@@ -785,12 +785,17 @@
     }
   }
 
+  function channelTagType(protocol: string) {
+    const map: Record<string, 'primary' | 'success' | 'warning' | 'info'> = {
+      SMTP: 'primary',
+      SMTPS: 'success'
+    }
+    return map[protocol] || 'info'
+  }
+
   function renderChannel(row: MailAccount) {
-    const showProtocol = !!row.protocol && row.protocol !== row.channelName
-    return h('div', { class: 'flex items-center gap-1' }, [
-      h('span', row.channelName || '-'),
-      showProtocol ? h(ElTag, { size: 'small', type: 'info' }, () => row.protocol) : null
-    ])
+    const protocol = row.protocol || row.channelName
+    return h(ElTag, { size: 'small', type: channelTagType(protocol), effect: 'dark' }, () => protocol || '-')
   }
 
   function renderHealth(row: MailAccount) {

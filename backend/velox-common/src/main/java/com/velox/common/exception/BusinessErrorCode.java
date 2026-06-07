@@ -134,6 +134,7 @@ public enum BusinessErrorCode implements ErrorCode {
     MAIL_GROUP_NOT_FOUND(23001, "发件分组不存在"),
     MAIL_CHANNEL_NOT_FOUND(23002, "发件渠道不存在"),
     MAIL_GROUP_IN_USE(23003, "该分组下存在发件邮箱，无法删除"),
+    MAIL_GROUP_NAME_DUPLICATE(23008, "发件分组名称已存在"),
     MAIL_TEST_EMAIL_INVALID(23004, "目标邮箱格式不正确"),
     MAIL_ACCOUNT_TEST_FAILED(23005, "测试邮件发送失败: %s"),
     MAIL_NO_AVAILABLE_ACCOUNT(23006, "当前没有可用的发件邮箱"),

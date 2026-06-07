@@ -1457,13 +1457,19 @@
           },
           "messages": {
             "enterName": "请输入分组名称",
+            "nameExists": "分组名称已存在，请使用其他名称",
             "createSuccess": "新增成功",
             "updateSuccess": "更新成功",
             "confirmDelete": "确定删除分组'{name}'吗？",
             "deleteTitle": "删除确认",
             "deleteSuccess": "删除成功",
             "activeSuccess": "已生效",
-            "inactiveSuccess": "已停用"
+            "inactiveSuccess": "已停用",
+            "batchDeleteTitle": "批量删除",
+            "batchDeleteConfirm": "确定删除选中的 {count} 个分组吗？",
+            "batchDeleteInUse": "下列分组存在发件邮箱，无法执行删除操作：",
+            "batchDeleteSuccess": "批量删除成功",
+            "iKnow": "我知道了"
           }
         },
         "channel": {

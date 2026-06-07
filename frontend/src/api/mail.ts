@@ -204,6 +204,18 @@ export function fetchMailGroupDelete(id: string) {
   })
 }
 
+export interface MailGroupBatchDeleteResult {
+  inUseNames: string[]
+}
+
+export function fetchMailGroupDeleteBatch(ids: string[]) {
+  return request.del<MailGroupBatchDeleteResult>({
+    url: '/api/mail-group/delete-batch',
+    params: { ids },
+    paramsSerializer: { indexes: null }
+  })
+}
+
 /* -------------------------------- 发件渠道 -------------------------------- */
 
 export function fetchMailChannelList() {

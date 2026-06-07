@@ -25,6 +25,14 @@
   const channels = ref<MailChannel[]>([])
   const checkedIds = ref<string[]>([])
 
+  function channelTagType(protocol: string) {
+    const map: Record<string, 'primary' | 'success' | 'warning' | 'info'> = {
+      SMTP: 'primary',
+      SMTPS: 'success'
+    }
+    return map[protocol] || 'info'
+  }
+
   async function loadChannels() {
     loading.value = true
     try {
@@ -82,8 +90,7 @@
         :value="channel.id"
         class="mail-channel-item"
       >
-        <span class="mail-channel-name">{{ channel.name }}</span>
-        <ElTag size="small" type="info" class="ml-2">{{ channel.protocol }}</ElTag>
+        <ElTag size="small" :type="channelTagType(channel.protocol)" effect="dark">{{ channel.protocol }}</ElTag>
         <span class="mail-channel-count">
           {{ t('pages.config.mailAccount.channel.accountCount', { count: channel.accountCount }) }}
         </span>
@@ -119,10 +126,6 @@
         align-items: center;
         min-width: 0;
       }
-    }
-
-    .mail-channel-name {
-      font-weight: 500;
     }
 
     .mail-channel-count {

@@ -1454,13 +1454,19 @@
           },
           "messages": {
             "enterName": "Please enter a group name",
+            "nameExists": "Group name already exists, please use a different name",
             "createSuccess": "Added successfully",
             "updateSuccess": "Updated successfully",
             "confirmDelete": "Are you sure you want to delete group \"{name}\"?",
             "deleteTitle": "Delete Confirmation",
             "deleteSuccess": "Deleted successfully",
             "activeSuccess": "Activated",
-            "inactiveSuccess": "Deactivated"
+            "inactiveSuccess": "Deactivated",
+            "batchDeleteTitle": "Batch Delete",
+            "batchDeleteConfirm": "Are you sure you want to delete {count} selected groups?",
+            "batchDeleteInUse": "The following groups contain mail accounts and cannot be deleted:",
+            "batchDeleteSuccess": "Batch delete successful",
+            "iKnow": "OK"
           }
         },
         "channel": {

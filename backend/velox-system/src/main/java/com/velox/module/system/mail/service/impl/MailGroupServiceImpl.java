@@ -9,12 +9,14 @@ import com.velox.module.system.mail.domain.model.MailGroup;
 import com.velox.module.system.mail.persistence.MailAccountMapper;
 import com.velox.module.system.mail.persistence.MailGroupMapper;
 import com.velox.module.system.mail.service.MailGroupService;
+import com.velox.module.system.mail.vo.MailGroupBatchDeleteResultVO;
 import com.velox.module.system.mail.vo.MailGroupRespVO;
 import com.velox.module.system.mail.vo.MailGroupSaveReqVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,6 +49,7 @@ public class MailGroupServiceImpl implements MailGroupService {
 
     @Override
     public String createMailGroup(MailGroupSaveReqVO createReqVO) {
+        checkNameUnique(createReqVO.getName(), null);
         MailGroup group = new MailGroup();
         group.setId(entityIdGenerator.nextId(MailGroup.class));
         group.setName(createReqVO.getName());
@@ -61,6 +64,7 @@ public class MailGroupServiceImpl implements MailGroupService {
     public void updateMailGroup(MailGroupSaveReqVO updateReqVO) {
         String decodedId = frontendIdCodecSupport.decodeIdentifier(updateReqVO.getId());
         validateExists(decodedId);
+        checkNameUnique(updateReqVO.getName(), decodedId);
         MailGroup updateObj = new MailGroup();
         updateObj.setId(decodedId);
         updateObj.setName(updateReqVO.getName());
@@ -80,12 +84,45 @@ public class MailGroupServiceImpl implements MailGroupService {
         mailGroupMapper.deleteById(decodedId);
     }
 
+    @Override
+    public MailGroupBatchDeleteResultVO deleteMailGroupList(List<String> ids) {
+        List<String> decodedIds = frontendIdCodecSupport.decodeIdentifiers(ids);
+        MailGroupBatchDeleteResultVO result = new MailGroupBatchDeleteResultVO();
+
+        List<String> inUseNames = new ArrayList<>();
+        for (String decodedId : decodedIds) {
+            MailGroup group = validateExists(decodedId);
+            if (mailAccountMapper.countByGroupId(decodedId) > 0) {
+                inUseNames.add(group.getName());
+            }
+        }
+
+        if (!inUseNames.isEmpty()) {
+            result.setInUseNames(inUseNames);
+            return result;
+        }
+
+        mailGroupMapper.deleteByIds(decodedIds);
+        return result;
+    }
+
     private MailGroup validateExists(String id) {
         MailGroup group = mailGroupMapper.selectById(id);
         if (group == null) {
             throw new ApiException(BusinessErrorCode.MAIL_GROUP_NOT_FOUND);
         }
         return group;
+    }
+
+    private void checkNameUnique(String name, String excludeId) {
+        LambdaQueryWrapper<MailGroup> wrapper = new LambdaQueryWrapper<MailGroup>()
+                .eq(MailGroup::getName, name);
+        if (excludeId != null) {
+            wrapper.ne(MailGroup::getId, excludeId);
+        }
+        if (mailGroupMapper.selectCount(wrapper) > 0) {
+            throw new ApiException(BusinessErrorCode.MAIL_GROUP_NAME_DUPLICATE);
+        }
     }
 
     private MailGroupRespVO toRespVO(MailGroup group) {

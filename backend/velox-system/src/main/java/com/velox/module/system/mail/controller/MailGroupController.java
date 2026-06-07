@@ -4,6 +4,7 @@ import com.velox.common.result.Result;
 import com.velox.framework.security.api.annotation.RequirePermission;
 import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
 import com.velox.module.system.mail.service.MailGroupService;
+import com.velox.module.system.mail.vo.MailGroupBatchDeleteResultVO;
 import com.velox.module.system.mail.vo.MailGroupRespVO;
 import com.velox.module.system.mail.vo.MailGroupSaveReqVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -59,5 +60,12 @@ public class MailGroupController {
     public Result<Boolean> deleteMailGroup(@RequestParam("id") String id) {
         mailGroupService.deleteMailGroup(id);
         return Result.ok(true);
+    }
+
+    @DeleteMapping("/delete-batch")
+    @Operation(summary = "openapi.system.mail_group.delete_batch.summary")
+    @RequirePermission("system:mail-account:group")
+    public Result<MailGroupBatchDeleteResultVO> deleteMailGroupList(@RequestParam("ids") List<String> ids) {
+        return Result.ok(mailGroupService.deleteMailGroupList(ids));
     }
 }
