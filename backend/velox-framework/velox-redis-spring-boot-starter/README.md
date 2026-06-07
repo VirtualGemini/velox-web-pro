@@ -1,5 +1,5 @@
 <h2 align="center" id="top">Velox Redis Spring Boot Starter</h2>
-<p align="center">A standalone, hot-pluggable Redis starter focused on replaceable RedisTemplate wiring, pluggable cache manager strategy, explicit disabled-mode behavior, and Spring Boot auto-configuration.</p>
+<p align="center">A standalone, hot-pluggable Redis starter focused on replaceable RedisTemplate wiring, pluggable cache manager strategy, startup connectivity validation, and Spring Boot auto-configuration.</p>
 <div align="center">English | <a href="./README.zh-CN.md">简体中文</a></div>
 
 <br />
@@ -7,13 +7,13 @@
 ## Overview
 
 `velox-redis-spring-boot-starter` is an independent Redis capability module for Spring Boot applications.
-It is designed to keep standard Spring injection paths stable while allowing developers to replace template creation, cache manager creation, serializers, and disabled-mode behavior.
+It is designed to keep standard Spring injection paths stable while allowing developers to replace template creation, cache manager creation, and serializers. Redis itself is a mandatory dependency: connectivity is validated at startup and the application fails fast if Redis is unreachable.
 
 This starter focuses on five core goals:
 
 - stable `RedisTemplate` and `RedisCacheManager` injection for business modules
 - hot-pluggable SPI for Redis template and cache manager replacement
-- explicit disabled-mode behavior without collapsing bean injection
+- mandatory Redis with startup connectivity validation (fail-fast)
 - serializer customization with a starter-owned default bean
 - full Spring Boot auto-configuration isolation without `system` or `infra` coupling
 
@@ -25,8 +25,8 @@ The module follows the same starter layering style as `email` and `file`:
 - `spi`: supported extension seams such as `RedisTemplateCreator`, `RedisCacheManagerCreator`, and their registrations
 - `core`: default capability managers and TTL-aware cache manager base
 - `support`: built-in template creator and cache manager creator
-- `noop`: disabled-mode connection factory, template manager, cache manager, and cache writer
-- `exception` and `common`: starter-owned errors, messages, provider constants, and disabled strategy enum
+- `noop`: disabled-cache-mode cache manager and cache writer (used when `velox.redis.cache.enabled=false`)
+- `exception` and `common`: starter-owned errors, messages, and cache disabled-strategy enum
 - `autoconfigure`: Spring Boot entry points and configuration switches
 
 ## Built-In Capabilities
@@ -56,7 +56,6 @@ Basic configuration:
 ```yaml
 velox:
   redis:
-    enabled: true
     template-type: default
     cache:
       enabled: true
@@ -64,26 +63,19 @@ velox:
       redis-scan-batch-size: 30
       disabled-strategy: FAIL_FAST
 spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
   cache:
     redis:
       time-to-live: 30m
       key-prefix: velox:
 ```
 
-### Redis Capability Switch
+### Redis Is Required
 
-```yaml
-velox:
-  redis:
-    enabled: false
-```
-
-When disabled:
-
-- `RedisConnectionFactory` still remains injectable through a disabled implementation when no other factory exists
-- `redisTemplate` still remains injectable
-- runtime Redis IO fails explicitly instead of silently disappearing
-- registration metadata remains available for starter governance and introspection
+Redis is a mandatory dependency of this starter. There is no in-memory or disabled fallback for the connection itself: `RedisConnectivityValidator` issues a `PING` during startup and throws `VeloxRedisException` (fail-fast) if Redis cannot be reached. Configure the connection through `spring.data.redis.*`.
 
 ### Cache Capability Switch
 

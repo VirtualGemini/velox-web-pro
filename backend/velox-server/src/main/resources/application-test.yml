@@ -6,6 +6,8 @@ spring:
       host: localhost
       # 测试环境 Redis 端口
       port: 6379
+      # 测试环境 Redis 密码；通过 REDIS_PASSWORD 注入（与 docker-compose 的 requirepass 对齐），未设置时为空
+      password: ${REDIS_PASSWORD:}
       # 测试环境使用独立 Redis 库，避免污染开发数据
       database: 1
 
@@ -48,8 +50,6 @@ velox:
         # 邮件重置验证码重复发送间隔（秒）
         reset-code-resend-interval-seconds: 60
   redis:
-    # 测试环境默认开启 Redis；关闭后验证码和在线状态改为内存实现
-    enabled: true
     cache:
       # 测试环境默认关闭 Spring Cache 层，避免测试结果被缓存干扰
       enabled: false

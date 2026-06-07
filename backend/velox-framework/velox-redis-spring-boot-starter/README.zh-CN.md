@@ -1,5 +1,5 @@
 <h2 align="center" id="top">Velox Redis Spring Boot Starter</h2>
-<p align="center">一个独立、可热插拔的 Redis 能力 starter，聚焦可替换的 RedisTemplate 装配、可插拔缓存管理策略、显式 disabled 行为，以及 Spring Boot 自动装配。</p>
+<p align="center">一个独立、可热插拔的 Redis 能力 starter，聚焦可替换的 RedisTemplate 装配、可插拔缓存管理策略、启动连通性校验，以及 Spring Boot 自动装配。</p>
 <div align="center"><a href="./README.md">English</a> | 简体中文</div>
 
 <br />
@@ -7,13 +7,13 @@
 ## 概览
 
 `velox-redis-spring-boot-starter` 是一个面向 Spring Boot 的独立 Redis 能力模块。
-它的目标是在保持标准 Spring 注入路径稳定的前提下，允许开发者替换模板创建逻辑、缓存管理器创建逻辑、序列化器，以及 disabled 模式行为。
+它的目标是在保持标准 Spring 注入路径稳定的前提下，允许开发者替换模板创建逻辑、缓存管理器创建逻辑与序列化器。Redis 本身为必需依赖：启动时校验连通性，连接不可用即 fail-fast。
 
 该 starter 重点解决五件事：
 
 - 为业务模块提供稳定的 `RedisTemplate` 和 `RedisCacheManager` 注入路径
 - 通过 SPI 提供 Redis template 与 cache manager 的热插拔扩展点
-- 在 disabled 模式下保持 bean 可注入，而不是让注入链路塌陷
+- Redis 为必需依赖，启动时校验连通性（连不上即 fail-fast）
 - 提供 starter 自有的默认 serializer Bean，并允许完全覆盖
 - 通过 Spring Boot 自动装配独立启用，不依赖 `system` 或 `infra`
 
@@ -25,8 +25,8 @@
 - `spi`：官方支持的扩展缝，如 `RedisTemplateCreator`、`RedisCacheManagerCreator` 及其 registration
 - `core`：默认能力管理器与支持 TTL 语义的缓存管理器基类
 - `support`：内建 template creator 与 cache manager creator
-- `noop`：disabled 模式下的 connection factory、template manager、cache manager、cache writer
-- `exception` 与 `common`：模块内统一异常、消息、常量与 disabled 策略枚举
+- `noop`：缓存关闭态（`velox.redis.cache.enabled=false`）下的 cache manager 与 cache writer
+- `exception` 与 `common`：模块内统一异常、消息与缓存 disabled 策略枚举
 - `autoconfigure`：Spring Boot 自动装配入口与配置开关
 
 ## 内建能力
@@ -57,7 +57,6 @@ starter 会继续暴露标准 Spring bean：
 ```yaml
 velox:
   redis:
-    enabled: true
     template-type: default
     cache:
       enabled: true
@@ -65,26 +64,19 @@ velox:
       redis-scan-batch-size: 30
       disabled-strategy: FAIL_FAST
 spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
   cache:
     redis:
       time-to-live: 30m
       key-prefix: velox:
 ```
 
-### Redis 能力开关
+### Redis 为必需依赖
 
-```yaml
-velox:
-  redis:
-    enabled: false
-```
-
-关闭后：
-
-- 当上下文里没有其他 `RedisConnectionFactory` 时，starter 会提供 disabled 版工厂，保持注入路径存在
-- `redisTemplate` 仍然会注册，注入链路不塌陷
-- 运行期 Redis IO 会显式失败，而不是静默消失
-- registration 元数据仍然可用于能力治理与探测
+Redis 是本 starter 的硬依赖，连接层不再提供内存/disabled 兜底：`RedisConnectivityValidator` 会在启动期发送 `PING`，若无法连接则抛出 `VeloxRedisException`（fail-fast）。连接参数通过 `spring.data.redis.*` 配置。
 
 ### Cache 能力开关
 

@@ -64,8 +64,6 @@ velox:
         # 邮件重置验证码重复发送间隔（秒）
         reset-code-resend-interval-seconds: 60
   redis:
-    # 生产环境显式开启 Redis；如关闭则验证码和在线状态退化为单实例内存实现
-    enabled: true
     cache:
       # 生产环境默认关闭 Spring Cache 层；确认存在真实缓存收益后再单独开启
       enabled: false

@@ -2,8 +2,6 @@ package com.velox.framework.redis.common.message;
 
 public final class RedisCommonMessages {
 
-    public static final String REDIS_CAPABILITY_DISABLED =
-            "Velox redis capability is disabled. Please enable velox.redis.enabled=true.";
     public static final String REDIS_CACHE_CAPABILITY_DISABLED =
             "Velox redis cache capability is disabled. Please enable velox.redis.cache.enabled=true.";
     public static final String REDIS_TEMPLATE_TYPE_REQUIRED = "Redis template type must not be blank";
@@ -26,7 +24,6 @@ public final class RedisCommonMessages {
             "Overrode built-in redis cache manager registration for type={} from {} to {}";
     public static final String REDIS_CACHE_MANAGER_REGISTRATION_IGNORED =
             "Ignored built-in redis cache manager registration for type={} because custom registration {} is already active";
-    public static final String REDIS_DISABLED_OPERATION = "Redis capability disabled for operation={}";
     public static final String REDIS_CACHE_DISABLED_OPERATION = "Redis cache capability disabled for operation={}";
 
     private RedisCommonMessages() {

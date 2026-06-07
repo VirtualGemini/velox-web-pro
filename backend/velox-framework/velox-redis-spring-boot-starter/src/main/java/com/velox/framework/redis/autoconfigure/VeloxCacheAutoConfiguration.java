@@ -3,7 +3,6 @@ package com.velox.framework.redis.autoconfigure;
 import com.velox.framework.redis.api.manager.VeloxRedisCacheManager;
 import com.velox.framework.redis.core.DefaultRedisCacheCapabilityManager;
 import com.velox.framework.redis.noop.DisabledRedisCacheCapabilityManager;
-import com.velox.framework.redis.noop.DisabledRedisConnectionFactory;
 import com.velox.framework.redis.properties.VeloxCacheProperties;
 import com.velox.framework.redis.spi.cache.RedisCacheManagerRegistration;
 import com.velox.framework.redis.spi.cache.RedisCacheManagerRegistry;
@@ -54,14 +53,14 @@ public class VeloxCacheAutoConfiguration {
             VeloxCacheProperties veloxCacheProperties,
             ObjectProvider<RedisConnectionFactory> redisConnectionFactoryProvider,
             RedisSerializer<Object> veloxRedisValueSerializer) {
-        RedisConnectionFactory redisConnectionFactory = redisConnectionFactoryProvider.getIfAvailable();
-        if (!veloxCacheProperties.isEnabled() || isDisabledRedisConnectionFactory(redisConnectionFactory)) {
+        if (!veloxCacheProperties.isEnabled()) {
             return new DisabledRedisCacheCapabilityManager(
                     cacheProperties,
                     veloxCacheProperties,
                     veloxRedisValueSerializer
             );
         }
+        RedisConnectionFactory redisConnectionFactory = redisConnectionFactoryProvider.getIfAvailable();
         return new DefaultRedisCacheCapabilityManager(
                 registry,
                 veloxCacheProperties.getCacheManagerType(),
@@ -84,9 +83,5 @@ public class VeloxCacheAutoConfiguration {
     @ConditionalOnMissingBean(value = RedisCacheConfiguration.class, ignored = VeloxRedisCacheManager.class)
     public RedisCacheConfiguration redisCacheConfiguration(VeloxRedisCacheManager veloxRedisCacheManager) {
         return veloxRedisCacheManager.getCacheConfiguration();
-    }
-
-    private boolean isDisabledRedisConnectionFactory(RedisConnectionFactory redisConnectionFactory) {
-        return redisConnectionFactory instanceof DisabledRedisConnectionFactory;
     }
 }

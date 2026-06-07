@@ -2,10 +2,8 @@ package com.velox.framework.redis.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.velox.framework.redis.api.manager.VeloxRedisManager;
-import com.velox.framework.redis.common.prefix.RedisPropertyPrefixes;
 import com.velox.framework.redis.core.DefaultRedisCapabilityManager;
-import com.velox.framework.redis.noop.DisabledRedisCapabilityManager;
-import com.velox.framework.redis.noop.DisabledRedisConnectionFactory;
+import com.velox.framework.redis.core.health.RedisConnectivityValidator;
 import com.velox.framework.redis.properties.VeloxRedisProperties;
 import com.velox.framework.redis.spi.redis.RedisTemplateRegistration;
 import com.velox.framework.redis.spi.redis.RedisTemplateRegistry;
@@ -14,7 +12,6 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -27,17 +24,6 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 @ConditionalOnClass(RedisTemplate.class)
 @EnableConfigurationProperties(VeloxRedisProperties.class)
 public class VeloxRedisAutoConfiguration {
-
-    @Bean
-    @ConditionalOnMissingBean(RedisConnectionFactory.class)
-    @ConditionalOnProperty(
-            prefix = RedisPropertyPrefixes.REDIS,
-            name = RedisPropertyPrefixes.ENABLED,
-            havingValue = RedisPropertyPrefixes.FALSE
-    )
-    public RedisConnectionFactory disabledRedisConnectionFactory() {
-        return new DisabledRedisConnectionFactory();
-    }
 
     @Bean
     @ConditionalOnMissingBean
@@ -62,12 +48,6 @@ public class VeloxRedisAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(value = VeloxRedisManager.class, name = "redisTemplate")
-    @ConditionalOnProperty(
-            prefix = RedisPropertyPrefixes.REDIS,
-            name = RedisPropertyPrefixes.ENABLED,
-            havingValue = RedisPropertyPrefixes.TRUE,
-            matchIfMissing = true
-    )
     public VeloxRedisManager veloxRedisManager(
             RedisTemplateRegistry registry,
             VeloxRedisProperties properties,
@@ -81,22 +61,16 @@ public class VeloxRedisAutoConfiguration {
         );
     }
 
-    @Bean
-    @ConditionalOnMissingBean(value = VeloxRedisManager.class, name = "redisTemplate")
-    @ConditionalOnProperty(
-            prefix = RedisPropertyPrefixes.REDIS,
-            name = RedisPropertyPrefixes.ENABLED,
-            havingValue = RedisPropertyPrefixes.FALSE
-    )
-    public VeloxRedisManager disabledVeloxRedisManager(
-            RedisSerializer<Object> veloxRedisValueSerializer) {
-        return new DisabledRedisCapabilityManager(veloxRedisValueSerializer);
-    }
-
     @Bean(name = "redisTemplate")
     @Primary
     @ConditionalOnMissingBean(name = "redisTemplate")
     public RedisTemplate<String, Object> redisTemplate(VeloxRedisManager veloxRedisManager) {
         return veloxRedisManager.getRedisTemplate();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public RedisConnectivityValidator redisConnectivityValidator(RedisConnectionFactory redisConnectionFactory) {
+        return new RedisConnectivityValidator(redisConnectionFactory);
     }
 }

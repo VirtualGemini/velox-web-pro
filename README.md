@@ -56,7 +56,7 @@ velox-web-pro/
 - Node.js >= 20.19.0
 - pnpm >= 8.8.0
 - MySQL 8 or PostgreSQL 14+
-- Redis 7
+- Redis 7 (required)
 - Docker and Docker Compose, recommended for local dependencies
 
 ## Local Development

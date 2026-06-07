@@ -25,6 +25,11 @@ spring:
   application:
     # 应用名称
     name: velox
+  data:
+    redis:
+      # Redis 为系统硬依赖：设置较短超时，便于启动连通性自检在连接异常时快速失败
+      timeout: 3s
+      connect-timeout: 3s
   messages:
     # 国际化消息资源路径
     basename: i18n/messages
