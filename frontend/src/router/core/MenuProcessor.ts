@@ -14,6 +14,7 @@ import { fetchGetMenuList } from '@/api/system-manage'
 import { asyncRoutes } from '../routes/asyncRoutes'
 import { RoutesAlias } from '../routesAlias'
 import { formatMenuTitle } from '@/utils'
+import { logger } from '@/utils/sys/logger'
 
 export class MenuProcessor {
   /**
@@ -241,7 +242,7 @@ export class MenuProcessor {
     const menuTitle = route.meta?.title || routeName
     const suggestedPath = path.split('/').pop() || path.slice(1)
 
-    console.error(
+    logger.error(
       `[路由配置错误] 菜单 "${formatMenuTitle(menuTitle)}" (name: ${routeName}, path: ${path}) 配置错误\n` +
         `  位置: ${parentName} > ${routeName}\n` +
         `  问题: ${level + 1}级菜单的 path 不能以 / 开头\n` +

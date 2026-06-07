@@ -115,6 +115,7 @@
   import { useUserStore } from '@/store/modules/user'
   import { useI18n } from 'vue-i18n'
   import { HttpError } from '@/utils/http/error'
+  import { logger } from '@/utils/sys/logger'
   import { fetchLogin, fetchGetAccessConfig } from '@/api/auth'
   import type { FormInstance, FormRules } from 'element-plus'
   import { useSettingStore } from '@/store/modules/setting'
@@ -182,8 +183,8 @@
     if (!formRef.value) return
 
     try {
-      // 表单验证
-      const valid = await formRef.value.validate()
+      // 表单验证（失败不抛出，避免校验对象进入下方 catch）
+      const valid = await formRef.value.validate().catch(() => false)
       if (!valid) return
 
       // 拖拽验证
@@ -251,13 +252,9 @@
         successMessage: t('login.success.message')
       })
     } catch (error) {
-      // 处理 HttpError
-      if (error instanceof HttpError) {
-        // console.log(error.code)
-      } else {
-        // 处理非 HttpError
-        // ElMessage.error('登录失败，请稍后重试')
-        console.error('[Login] Unexpected error:', error)
+      // HttpError 已由 HTTP 层统一提示与记录；此处仅兜底记录非预期的代码异常
+      if (!(error instanceof HttpError)) {
+        logger.error('[Login] Unexpected error:', error)
       }
     } finally {
       loading.value = false

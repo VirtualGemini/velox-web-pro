@@ -12,6 +12,7 @@
 </template>
 
 <script setup lang="ts">
+  import { logger } from '@/utils/sys/logger'
   import SectionTitle from './SectionTitle.vue'
   import SettingItem from './SettingItem.vue'
   import { useSettingStore } from '@/store/modules/setting'
@@ -71,7 +72,7 @@
     if (typeof handler === 'function') {
       handler(value)
     } else {
-      console.warn(`Handler "${handlerName}" not found in basicHandlers`)
+      logger.warn(`Handler "${handlerName}" not found in basicHandlers`)
     }
   }
 </script>

@@ -40,6 +40,7 @@
 </template>
 
 <script setup lang="ts">
+  import { logger } from '@/utils/sys/logger'
   import {
     fetchGetGrantableMenus,
     fetchGetRoleMenuPermissions,
@@ -272,7 +273,7 @@
       totalHalfChecked: tree.getHalfCheckedKeys().length
     }
 
-    console.log('=== 选中的权限数据 ===', selectedData)
+    logger.debug('=== 选中的权限数据 ===', selectedData)
     ElMessage.success(`已输出选中数据到控制台，共选中 ${selectedData.totalChecked} 个节点`)
   }
 

@@ -9,6 +9,7 @@
 
 import type { AppRouteRecord } from '@/types/router'
 import { RoutesAlias } from '../routesAlias'
+import { logger } from '@/utils/sys/logger'
 
 export interface ValidationResult {
   valid: boolean
@@ -249,7 +250,7 @@ export class RouteValidator {
     const menuTitle = route.meta?.title || routeName
     const routePath = route.path || '/'
 
-    console.error(
+    logger.error(
       `[路由配置错误] 菜单 "${menuTitle}" (name: ${routeName}, path: ${routePath}) 配置错误\n` +
         `  问题: ${level}级菜单不能使用 ${RoutesAlias.Layout} 作为 component\n` +
         `  说明: 只有一级菜单才能使用 ${RoutesAlias.Layout}，二级及以下菜单应该指向具体的组件路径\n` +

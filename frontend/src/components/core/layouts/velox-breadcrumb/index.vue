@@ -33,6 +33,7 @@
 </template>
 
 <script setup lang="ts">
+  import { logger } from '@/utils/sys/logger'
   import { computed } from 'vue'
   import { useRouter, useRoute } from 'vue-router'
   import type { RouteLocationMatched, RouteRecordRaw } from 'vue-router'
@@ -136,7 +137,7 @@
         await router.push(item.path)
       }
     } catch (error) {
-      console.error('导航失败:', error)
+      logger.error('导航失败:', error)
     }
   }
 </script>

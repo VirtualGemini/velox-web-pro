@@ -18,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+  import { logger } from '@/utils/sys/logger'
   import '@wangeditor/editor/dist/css/style.css'
   import { onBeforeUnmount, onMounted, shallowRef, computed } from 'vue'
   import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
@@ -128,7 +129,7 @@
           ElMessage.success(`图片上传成功 ${EmojiText[200]}`)
         },
         onError(file: File, err: any, res: any) {
-          console.error('图片上传失败:', err, res)
+          logger.error('图片上传失败:', err, res)
           ElMessage.error(`图片上传失败 ${EmojiText[500]}`)
         }
       }
@@ -163,7 +164,7 @@
         insertFn(url, alt, href)
         ElMessage.success(`图片上传成功 ${EmojiText[200]}`)
       } catch (error) {
-        console.error('图片上传失败:', error)
+        logger.error('图片上传失败:', error)
         ElMessage.error(`图片上传失败 ${EmojiText[500]}`)
       }
     }
@@ -175,7 +176,7 @@
 
     // 监听全屏事件
     editor.on('fullScreen', () => {
-      console.log('编辑器进入全屏模式')
+      logger.debug('编辑器进入全屏模式')
     })
 
     // 确保在编辑器创建后应用自定义图标
@@ -220,7 +221,7 @@
         retryCount++
         setTimeout(tryApplyIcons, retryDelay)
       } else {
-        console.warn('工具栏渲染超时，无法应用自定义图标 - 编辑器实例:', editor.id)
+        logger.warn('工具栏渲染超时，无法应用自定义图标 - 编辑器实例:', editor.id)
       }
     }
 

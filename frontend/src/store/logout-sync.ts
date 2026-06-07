@@ -2,6 +2,7 @@ import { useAccountStore } from './modules/user'
 import { StorageConfig } from '@/utils/storage/storage-config'
 import { router } from '@/router'
 import { RoutesAlias } from '@/router/routesAlias'
+import { logger } from '@/utils/sys/logger'
 
 let listenerRegistered = false
 const USER_STORE_KEY = StorageConfig.generateStorageKey('user')
@@ -27,7 +28,7 @@ function handleUserStoreChange(event: StorageEvent) {
     const snapshot = JSON.parse(event.newValue) as Partial<Record<string, unknown>>
     useAccountStore().syncLoginStateFromPersisted(snapshot)
   } catch (error) {
-    console.warn('[AuthSync] Failed to parse persisted user snapshot', error)
+    logger.warn('[AuthSync] Failed to parse persisted user snapshot', error)
   }
 }
 

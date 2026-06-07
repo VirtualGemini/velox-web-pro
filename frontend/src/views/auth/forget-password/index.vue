@@ -88,11 +88,9 @@
 <script setup lang="ts">
   import type { FormInstance, FormRules } from 'element-plus'
   import { useI18n } from 'vue-i18n'
-  import {
-    fetchResetPassword,
-    fetchSendResetPasswordCode,
-    fetchGetAccessConfig
-  } from '@/api/auth'
+  import { fetchResetPassword, fetchSendResetPasswordCode, fetchGetAccessConfig } from '@/api/auth'
+  import { HttpError } from '@/utils/http/error'
+  import { logger } from '@/utils/sys/logger'
 
   defineOptions({ name: 'ForgetPassword' })
 
@@ -158,19 +156,25 @@
       ElMessage.success(t('forgetPassword.codeSent'))
       startCountdown()
     } catch (error) {
-      console.error('发送验证码失败:', error)
+      if (!(error instanceof HttpError)) {
+        logger.error('[ForgetPassword] 发送验证码异常:', error)
+      }
     }
   }
 
   const resetPassword = async () => {
     if (!formRef.value) return
+
+    // 表单校验失败属正常交互，直接返回，不进入下方请求流程
+    const valid = await formRef.value.validate().catch(() => false)
+    if (!valid) return
+
+    if (formData.newPassword !== formData.confirmPassword) {
+      ElMessage.warning(t('forgetPassword.passwordMismatch'))
+      return
+    }
+    loading.value = true
     try {
-      await formRef.value.validate()
-      if (formData.newPassword !== formData.confirmPassword) {
-        ElMessage.warning(t('forgetPassword.passwordMismatch'))
-        return
-      }
-      loading.value = true
       await fetchResetPassword({
         email: formData.email,
         code: formData.code,
@@ -180,7 +184,9 @@
       ElMessage.success(t('forgetPassword.resetSuccess'))
       toLogin()
     } catch (error) {
-      console.error('重置密码失败:', error)
+      if (!(error instanceof HttpError)) {
+        logger.error('[ForgetPassword] 重置密码异常:', error)
+      }
     } finally {
       loading.value = false
     }

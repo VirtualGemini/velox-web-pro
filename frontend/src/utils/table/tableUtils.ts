@@ -41,6 +41,7 @@
 
 import type { ApiResponse } from './tableCache'
 import { tableConfig } from './tableConfig'
+import { logger } from '@/utils/sys/logger'
 
 // 请求参数基础接口，扩展分页参数
 export interface BaseRequestParams extends Api.Common.PaginationParams {
@@ -124,7 +125,7 @@ export const defaultResponseAdapter = <T>(response: unknown): ApiResponse<T> => 
   }
 
   if (typeof response !== 'object') {
-    console.warn(
+    logger.warn(
       '[tableUtils] 无法识别的响应格式，支持的格式包括: 数组、包含' +
         recordFields.join('/') +
         '字段的对象、嵌套data对象。当前格式:',
@@ -157,9 +158,9 @@ export const defaultResponseAdapter = <T>(response: unknown): ApiResponse<T> => 
   }
 
   if (!recordFields.some((field) => field in res) && records.length === 0) {
-    console.warn('[tableUtils] 无法识别的响应格式')
-    console.warn('支持的字段包括: ' + recordFields.join('、'), response)
-    console.warn('扩展字段请到 utils/table/tableConfig 文件配置')
+    logger.warn('[tableUtils] 无法识别的响应格式')
+    logger.warn('支持的字段包括: ' + recordFields.join('、'), response)
+    logger.warn('扩展字段请到 utils/table/tableConfig 文件配置')
   }
 
   const result: ApiResponse<T> = { records, total }
@@ -270,9 +271,9 @@ export const createErrorHandler = (
   onError?: (error: TableError) => void,
   enableLog: boolean = false
 ) => {
-  const logger = {
+  const tableLogger = {
     error: (message: string, ...args: any[]) => {
-      if (enableLog) console.error(`[useTable] ${message}`, ...args)
+      if (enableLog) logger.error(`[useTable] ${message}`, ...args)
     }
   }
 
@@ -290,7 +291,7 @@ export const createErrorHandler = (
       tableError.message = err
     }
 
-    logger.error(`${context}:`, err)
+    tableLogger.error(`${context}:`, err)
     onError?.(tableError)
     return tableError
   }

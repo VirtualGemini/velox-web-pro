@@ -91,6 +91,8 @@
   import { useI18n } from 'vue-i18n'
   import type { FormInstance, FormRules } from 'element-plus'
   import { fetchRegister, fetchGetAccessConfig } from '@/api/auth'
+  import { HttpError } from '@/utils/http/error'
+  import { logger } from '@/utils/sys/logger'
 
   defineOptions({ name: 'Register' })
 
@@ -214,10 +216,12 @@
   const register = async () => {
     if (!formRef.value) return
 
-    try {
-      await formRef.value.validate()
-      loading.value = true
+    // 表单校验失败属正常交互，直接返回，不进入下方请求流程
+    const valid = await formRef.value.validate().catch(() => false)
+    if (!valid) return
 
+    loading.value = true
+    try {
       await fetchRegister({
         username: formData.username,
         password: formData.password,
@@ -227,7 +231,10 @@
       ElMessage.success(t('register.success'))
       toLogin()
     } catch (error) {
-      console.error('注册失败:', error)
+      // HttpError 已由 HTTP 层统一提示与记录；此处仅兜底记录非预期的代码异常
+      if (!(error instanceof HttpError)) {
+        logger.error('[Register] 注册流程异常:', error)
+      }
     } finally {
       loading.value = false
     }

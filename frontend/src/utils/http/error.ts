@@ -24,6 +24,7 @@
 import { AxiosError } from 'axios'
 import { ApiStatus } from './status'
 import { $t } from '@/locales'
+import { logger } from '@/utils/sys/logger'
 
 // 错误响应接口
 export interface ErrorResponse {
@@ -60,6 +61,8 @@ export class HttpError extends Error {
   public readonly timestamp: string
   public readonly url?: string
   public readonly method?: string
+  /** 是否为网络层错误（无响应：断网、跨域、DNS 等），用于日志分级 */
+  public readonly isNetworkError: boolean
 
   constructor(
     message: string,
@@ -68,6 +71,7 @@ export class HttpError extends Error {
       data?: unknown
       url?: string
       method?: string
+      isNetworkError?: boolean
     }
   ) {
     super(message)
@@ -77,6 +81,7 @@ export class HttpError extends Error {
     this.timestamp = new Date().toISOString()
     this.url = options?.url
     this.method = options?.method
+    this.isNetworkError = options?.isNetworkError ?? false
   }
 
   public toLogData(): ErrorLogData {
@@ -121,7 +126,7 @@ const getErrorMessage = (status: number): string => {
 export function handleError(error: AxiosError<ErrorResponse>): never {
   // 处理取消的请求
   if (error.code === 'ERR_CANCELED') {
-    console.warn('Request cancelled:', error.message)
+    logger.warn('[HTTP] Request cancelled:', error.message)
     throw new HttpError($t('httpMsg.requestCancelled'), ApiStatus.error)
   }
 
@@ -133,7 +138,8 @@ export function handleError(error: AxiosError<ErrorResponse>): never {
   if (!error.response) {
     throw new HttpError($t('httpMsg.networkError'), ApiStatus.error, {
       url: requestConfig?.url,
-      method: requestConfig?.method?.toUpperCase()
+      method: requestConfig?.method?.toUpperCase(),
+      isNetworkError: true
     })
   }
 
@@ -149,7 +155,24 @@ export function handleError(error: AxiosError<ErrorResponse>): never {
 }
 
 /**
+ * 是否为服务端 / 网络 / 超时类错误（真故障，需在生产环境也可见、可上报）
+ * @param error 错误对象
+ */
+function isServerLevelError(error: HttpError): boolean {
+  return (
+    error.isNetworkError ||
+    error.code >= ApiStatus.internalServerError ||
+    error.code === ApiStatus.requestTimeout
+  )
+}
+
+/**
  * 显示错误消息
+ *
+ * 错误经此函数提示用户后即视为「已处理」，按性质分级记录：
+ * - 服务端 / 网络 / 超时类是真故障 → logger.error（生产可见、可上报）
+ * - 4xx / 业务校验类属合理范围 → logger.warn（仅 DEV 留痕，生产静默）
+ *
  * @param error 错误对象
  * @param showMessage 是否显示错误消息
  */
@@ -157,8 +180,11 @@ export function showError(error: HttpError, showMessage: boolean = true): void {
   if (showMessage) {
     ElMessage.error(error.message)
   }
-  // 记录错误日志
-  console.error('[HTTP Error]', error.toLogData())
+  if (isServerLevelError(error)) {
+    logger.error('[HTTP]', error.toLogData())
+  } else {
+    logger.warn('[HTTP]', error.toLogData())
+  }
 }
 
 /**

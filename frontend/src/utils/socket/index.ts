@@ -1,3 +1,4 @@
+import { logger } from '@/utils/sys/logger'
 interface WebSocketOptions {
   url?: string
   messageHandler: (event: MessageEvent) => void
@@ -74,13 +75,13 @@ export default class WebSocketClient {
   private connect(resetReconnectAttempts: boolean = false): void {
     // 如果正在连接中，不重复连接
     if (this.isConnecting) {
-      console.log('正在建立WebSocket连接中...')
+      logger.debug('正在建立WebSocket连接中...')
       return
     }
 
     // 如果已连接，不重复连接
     if (this.ws?.readyState === WebSocket.OPEN) {
-      console.warn('WebSocket连接已存在')
+      logger.warn('WebSocket连接已存在')
       this.flushMessageQueue() // 确保队列中的消息被发送
       return
     }
@@ -98,7 +99,7 @@ export default class WebSocketClient {
       // 设置连接超时检测
       this.clearTimer('connectionTimer')
       this.connectionTimer = setTimeout(() => {
-        console.error(`WebSocket连接超时 (${this.connectionTimeout}ms)：${this.url}`)
+        logger.error(`WebSocket连接超时 (${this.connectionTimeout}ms)：${this.url}`)
         this.handleConnectionTimeout()
       }, this.connectionTimeout)
 
@@ -107,7 +108,7 @@ export default class WebSocketClient {
       this.ws.onclose = (event) => this.handleClose(event)
       this.ws.onerror = (event) => this.handleError(event)
     } catch (error) {
-      console.error('WebSocket初始化失败:', error)
+      logger.error('WebSocket初始化失败:', error)
       this.isConnecting = false
       this.reconnect()
     }
@@ -116,7 +117,7 @@ export default class WebSocketClient {
   // 处理连接超时
   private handleConnectionTimeout(): void {
     if (this.ws?.readyState !== WebSocket.OPEN) {
-      console.error('WebSocket连接超时，强制关闭连接')
+      logger.error('WebSocket连接超时，强制关闭连接')
       this.ws?.close(1000, 'Connection timeout')
       this.isConnecting = false
       this.reconnect()
@@ -143,13 +144,13 @@ export default class WebSocketClient {
   send(data: string | ArrayBufferLike | Blob | ArrayBufferView, immediate: boolean = false): void {
     // 如果要求立即发送且未连接，则直接报错
     if (immediate && (!this.ws || this.ws.readyState !== WebSocket.OPEN)) {
-      console.error('WebSocket未连接，无法立即发送消息')
+      logger.error('WebSocket未连接，无法立即发送消息')
       return
     }
 
     // 如果未连接且不要求立即发送，则加入消息队列
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-      console.log('WebSocket未连接，消息已加入队列等待发送')
+      logger.debug('WebSocket未连接，消息已加入队列等待发送')
       this.messageQueue.push(data)
       // 如果未在重连中，则尝试重连
       if (!this.isConnecting && !this.stopReconnect) {
@@ -161,7 +162,7 @@ export default class WebSocketClient {
     try {
       this.ws.send(data)
     } catch (error) {
-      console.error('WebSocket发送消息失败:', error)
+      logger.error('WebSocket发送消息失败:', error)
       // 发送失败时将消息加入队列，等待重连后重试
       this.messageQueue.push(data)
       this.reconnect()
@@ -171,14 +172,14 @@ export default class WebSocketClient {
   // 发送队列中的消息
   private flushMessageQueue(): void {
     if (this.messageQueue.length > 0 && this.ws?.readyState === WebSocket.OPEN) {
-      console.log(`发送队列中的${this.messageQueue.length}条消息`)
+      logger.debug(`发送队列中的${this.messageQueue.length}条消息`)
       while (this.messageQueue.length > 0) {
         const data = this.messageQueue.shift()
         if (data) {
           try {
             this.ws?.send(data)
           } catch (error) {
-            console.error('发送队列消息失败:', error)
+            logger.error('发送队列消息失败:', error)
             // 如果发送失败，将消息放回队列头部
             if (data) this.messageQueue.unshift(data)
             break
@@ -190,7 +191,7 @@ export default class WebSocketClient {
 
   // 处理连接打开
   private handleOpen(event: Event): void {
-    console.log('WebSocket连接成功', event)
+    logger.debug('WebSocket连接成功', event)
     this.clearTimer('connectionTimer') // 清除连接超时定时器
     this.isConnected = true
     this.isConnecting = false
@@ -204,14 +205,14 @@ export default class WebSocketClient {
 
   // 处理收到的消息
   private handleMessage(event: MessageEvent): void {
-    console.log('收到WebSocket消息:', event)
+    logger.debug('收到WebSocket消息:', event)
     this.resetHeartbeat()
     this.messageHandler(event)
   }
 
   // 处理连接关闭
   private handleClose(event: CloseEvent): void {
-    console.log(
+    logger.debug(
       `WebSocket断开: 代码=${event.code}, 原因=${event.reason}, 干净关闭=${event.wasClean}`
     )
 
@@ -230,9 +231,9 @@ export default class WebSocketClient {
 
   // 处理错误 - 增加详细错误信息
   private handleError(event: Event): void {
-    console.error('WebSocket连接错误:')
-    console.error('错误事件:', event)
-    console.error(
+    logger.error('WebSocket连接错误:')
+    logger.error('错误事件:', event)
+    logger.error(
       '当前连接状态:',
       this.ws?.readyState ? this.getReadyStateText(this.ws.readyState) : '未初始化'
     )
@@ -290,11 +291,11 @@ export default class WebSocketClient {
       this.isConnected = this.ws?.readyState === WebSocket.OPEN
 
       if (!this.isConnected) {
-        console.warn('WebSocket心跳检测失败，尝试重连')
+        logger.warn('WebSocket心跳检测失败，尝试重连')
         this.reconnect()
 
         this.timeoutTimer = setTimeout(() => {
-          console.warn('WebSocket重连超时')
+          logger.warn('WebSocket重连超时')
           this.close()
         }, this.reconnectTimeout)
       }
@@ -314,7 +315,7 @@ export default class WebSocketClient {
 
     this.pingTimer = setInterval(() => {
       if (this.ws?.readyState !== WebSocket.OPEN) {
-        console.warn('WebSocket未连接，停止发送ping')
+        logger.warn('WebSocket未连接，停止发送ping')
         this.clearTimer('pingTimer')
         this.reconnect()
         return
@@ -322,9 +323,9 @@ export default class WebSocketClient {
 
       try {
         this.ws.send('ping')
-        console.log('发送ping消息')
+        logger.debug('发送ping消息')
       } catch (error) {
-        console.error('发送ping消息失败:', error)
+        logger.error('发送ping消息失败:', error)
         this.clearTimer('pingTimer')
         this.reconnect()
       }
@@ -339,7 +340,7 @@ export default class WebSocketClient {
 
     // 检查是否超过最大重连次数
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error(`已达到最大重连次数(${this.maxReconnectAttempts})，停止重连`)
+      logger.error(`已达到最大重连次数(${this.maxReconnectAttempts})，停止重连`)
       this.close(true)
       return
     }
@@ -349,13 +350,13 @@ export default class WebSocketClient {
     this.closeCurrentSocketForReconnect()
 
     const delay = this.calculateReconnectDelay()
-    console.log(
+    logger.debug(
       `将在${delay / 1000}秒后尝试重新连接（第${this.reconnectAttempts}/${this.maxReconnectAttempts}次）`
     )
 
     this.clearTimer('reconnectTimer')
     this.reconnectTimer = setTimeout(() => {
-      console.log(`尝试重新连接WebSocket（第${this.reconnectAttempts}次）`)
+      logger.debug(`尝试重新连接WebSocket（第${this.reconnectAttempts}次）`)
       this.connect(false)
     }, delay)
   }

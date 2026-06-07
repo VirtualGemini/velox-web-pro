@@ -94,6 +94,8 @@
   import { DialogType } from '@/types'
   import { useI18n } from 'vue-i18n'
   import { useUserStore } from '@/store/modules/user'
+  import { HttpError } from '@/utils/http/error'
+  import { logger } from '@/utils/sys/logger'
 
   defineOptions({ name: 'Account' })
 
@@ -273,7 +275,9 @@
       currentAccountDetail.value = await fetchGetAccountDetailCard(row.accountId)
       detailVisible.value = true
     } catch (error) {
-      console.error('获取账号详情失败:', error)
+      if (!(error instanceof HttpError)) {
+        logger.error('[Account] 获取账号详情异常:', error)
+      }
     }
   }
 
@@ -282,7 +286,9 @@
       currentAccountDetail.value = await fetchGetAccountDetailCard(row.accountId)
       editVisible.value = true
     } catch (error) {
-      console.error('获取账号详情失败:', error)
+      if (!(error instanceof HttpError)) {
+        logger.error('[Account] 获取账号详情异常:', error)
+      }
     }
   }
 
@@ -340,7 +346,9 @@
       // currentAccountData 在 @closed 事件中清空，避免关闭动画期间表单闪烁
       refreshData()
     } catch (error) {
-      console.error('提交失败:', error)
+      if (!(error instanceof HttpError)) {
+        logger.error('[Account] 提交账号信息异常:', error)
+      }
     }
   }
 

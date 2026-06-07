@@ -4,6 +4,7 @@
 </template>
 
 <script setup lang="ts">
+  import { logger } from '@/utils/sys/logger'
   import Player from 'xgplayer'
   import 'xgplayer/dist/index.min.css'
 
@@ -88,17 +89,17 @@
 
     // 播放事件监听器
     playerInstance.value.on('play', () => {
-      console.log('Video is playing')
+      logger.debug('Video is playing')
     })
 
     // 暂停事件监听器
     playerInstance.value.on('pause', () => {
-      console.log('Video is paused')
+      logger.debug('Video is paused')
     })
 
     // 错误事件监听器
     playerInstance.value.on('error', (error) => {
-      console.error('Error occurred:', error)
+      logger.error('Error occurred:', error)
     })
   })
 

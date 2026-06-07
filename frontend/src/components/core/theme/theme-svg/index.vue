@@ -7,6 +7,7 @@
 </template>
 
 <script setup lang="ts">
+  import { logger } from '@/utils/sys/logger'
   import { ref, computed, watchEffect } from 'vue'
 
   interface Props {
@@ -73,7 +74,7 @@
       const content = await response.text()
       svgContent.value = applyThemeToSvg(content)
     } catch (error) {
-      console.error('Failed to load SVG:', error)
+      logger.error('Failed to load SVG:', error)
       svgContent.value = ''
     }
   }

@@ -54,6 +54,7 @@ import { storeToRefs } from 'pinia'
 import { useSettingStore } from '@/store/modules/setting'
 import { getCssVar } from '@/utils/ui'
 import type { BaseChartProps, ChartThemeConfig, UseChartOptions } from '@/types/component/chart'
+import { logger } from '@/utils/sys/logger'
 
 // 图表主题配置
 export const useChartOps = (): ChartThemeConfig => ({
@@ -406,7 +407,7 @@ export function useChart(options: UseChartOptions = {}) {
                   pendingOptions = null
                   cleanupIntersectionObserver()
                 } catch (error) {
-                  console.error('图表初始化失败:', error)
+                  logger.error('图表初始化失败:', error)
                 }
               }
             })
@@ -527,7 +528,7 @@ export function useChart(options: UseChartOptions = {}) {
         createIntersectionObserver()
       }
     } catch (error) {
-      console.error('图表初始化失败:', error)
+      logger.error('图表初始化失败:', error)
     }
   }
 
@@ -543,7 +544,7 @@ export function useChart(options: UseChartOptions = {}) {
       }
       chart.setOption(options)
     } catch (error) {
-      console.error('图表更新失败:', error)
+      logger.error('图表更新失败:', error)
     }
   }
 
@@ -553,7 +554,7 @@ export function useChart(options: UseChartOptions = {}) {
       try {
         chart.resize()
       } catch (error) {
-        console.error('图表resize失败:', error)
+        logger.error('图表resize失败:', error)
       }
     }
   }
@@ -566,7 +567,7 @@ export function useChart(options: UseChartOptions = {}) {
       try {
         chart.dispose()
       } catch (error) {
-        console.error('图表销毁失败:', error)
+        logger.error('图表销毁失败:', error)
       } finally {
         chart = null
       }

@@ -30,6 +30,7 @@ import { StorageKeyManager } from '@/utils/storage/storage-key-manager'
 // 同步导入语言文件
 import enMessages from './langs/en.json'
 import zhMessages from './langs/zh.json'
+import { logger } from '@/utils/sys/logger'
 
 /**
  * 存储键管理器实例
@@ -70,7 +71,7 @@ const getDefaultLanguage = (): LanguageEnum => {
       }
     }
   } catch (error) {
-    console.warn('[i18n] 从版本化存储获取语言设置失败:', error)
+    logger.warn('[i18n] 从版本化存储获取语言设置失败:', error)
   }
 
   // 尝试从系统存储中获取语言设置
@@ -83,11 +84,11 @@ const getDefaultLanguage = (): LanguageEnum => {
       }
     }
   } catch (error) {
-    console.warn('[i18n] 从系统存储获取语言设置失败:', error)
+    logger.warn('[i18n] 从系统存储获取语言设置失败:', error)
   }
 
   // 返回默认语言
-  console.debug('[i18n] 使用默认语言:', LanguageEnum.ZH)
+  logger.debug('[i18n] 使用默认语言:', LanguageEnum.ZH)
   return LanguageEnum.ZH
 }
 

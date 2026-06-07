@@ -107,6 +107,7 @@
 </template>
 
 <script setup lang="ts">
+  import { logger } from '@/utils/sys/logger'
   import { Lock, Unlock } from '@element-plus/icons-vue'
   import type { FormInstance, FormRules } from 'element-plus'
   import { useI18n } from 'vue-i18n'
@@ -329,7 +330,7 @@
       )
       return inputPassword === decryptedPassword
     } catch (error) {
-      console.error('密码解密失败:', error)
+      logger.error('密码解密失败:', error)
       return false
     }
   }
@@ -359,7 +360,7 @@
         visible.value = false
         formData.password = ''
       } else {
-        console.error('表单验证失败:', fields)
+        logger.error('表单验证失败:', fields)
       }
     })
   }
@@ -379,7 +380,7 @@
             visible.value = false
             showDevToolsWarning.value = false
           } catch (error) {
-            console.error('更新store失败:', error)
+            logger.error('更新store失败:', error)
           }
         } else {
           // 触发抖动动画
@@ -394,7 +395,7 @@
           unlockForm.password = ''
         }
       } else {
-        console.error('表单验证失败:', fields)
+        logger.error('表单验证失败:', fields)
       }
     })
   }

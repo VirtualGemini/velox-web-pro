@@ -52,6 +52,7 @@
 </template>
 
 <script setup lang="ts">
+  import { logger } from '@/utils/sys/logger'
   import type { FormInstance, FormRules } from 'element-plus'
   import { useI18n } from 'vue-i18n'
 
@@ -216,7 +217,7 @@
         enabled: form.enabled
       })
     } catch (error) {
-      console.log('[role-dialog] validation failed:', error)
+      logger.debug('[role-dialog] validation failed:', error)
     }
   }
 </script>

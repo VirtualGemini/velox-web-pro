@@ -30,6 +30,8 @@
  * @author Velox Team
  */
 import type { App } from 'vue'
+import { isHttpError } from '@/utils/http/error'
+import { logger } from './logger'
 
 const IGNORABLE_SCRIPT_ERRORS = [
   'ResizeObserver loop completed with undelivered notifications.',
@@ -69,10 +71,42 @@ function isIgnorableScriptError(message: Event | string, source?: string): boole
 }
 
 /**
+ * 识别 element-plus 表单校验失败对象
+ *
+ * element-plus 的 `validate()` 失败时 reject 出形如
+ * `{ field: [{ message, field }, ...], ... }` 的对象。这类失败属正常交互分支，
+ * 不应计为错误。作为兜底安全网（主修在调用处分离校验）。
+ */
+function isFormValidationError(value: unknown): boolean {
+  if (!value || typeof value !== 'object' || value instanceof Error) {
+    return false
+  }
+  const groups = Object.values(value as Record<string, unknown>)
+  if (groups.length === 0) {
+    return false
+  }
+  return groups.every(
+    (group) =>
+      Array.isArray(group) &&
+      group.length > 0 &&
+      group.every((item) => !!item && typeof item === 'object' && 'message' in item)
+  )
+}
+
+/**
  * Vue 运行时错误处理
  */
 export function vueErrorHandler(err: unknown, instance: any, info: string) {
-  console.error('[VueError]', err, info, instance)
+  // 已被 HTTP 层提示并按级别记录，视为已处理，避免二次红报
+  if (isHttpError(err)) {
+    logger.warn('[VueError] 已处理的请求错误，忽略：', err.message)
+    return
+  }
+  // 表单校验失败属正常交互分支，不计为错误
+  if (isFormValidationError(err)) {
+    return
+  }
+  logger.error('[VueError]', err, info, instance)
   // 这里可以上报到服务端，比如：
   // reportError({ type: 'vue', err, info })
 }
@@ -91,7 +125,7 @@ export function scriptErrorHandler(
     return true
   }
 
-  console.error('[ScriptError]', { message, source, lineno, colno, error })
+  logger.error('[ScriptError]', { message, source, lineno, colno, error })
   // reportError({ type: 'script', message, source, lineno, colno, error })
   return true // 阻止默认控制台报错，可根据需求改
 }
@@ -101,7 +135,19 @@ export function scriptErrorHandler(
  */
 export function registerPromiseErrorHandler() {
   window.addEventListener('unhandledrejection', (event) => {
-    console.error('[PromiseError]', event.reason)
+    const reason = event.reason
+    // 已处理的请求错误：HTTP 层已提示并记录，阻止浏览器默认的 "Uncaught (in promise)" 并忽略
+    if (isHttpError(reason)) {
+      event.preventDefault()
+      logger.warn('[PromiseError] 已处理的请求错误，忽略：', reason.message)
+      return
+    }
+    // 表单校验失败属正常交互分支，不计为错误
+    if (isFormValidationError(reason)) {
+      event.preventDefault()
+      return
+    }
+    logger.error('[PromiseError]', reason)
     // reportError({ type: 'promise', reason: event.reason })
   })
 }
@@ -118,7 +164,7 @@ export function registerResourceErrorHandler() {
         target &&
         (target.tagName === 'IMG' || target.tagName === 'SCRIPT' || target.tagName === 'LINK')
       ) {
-        console.error('[ResourceError]', {
+        logger.error('[ResourceError]', {
           tagName: target.tagName,
           src:
             (target as HTMLImageElement).src ||

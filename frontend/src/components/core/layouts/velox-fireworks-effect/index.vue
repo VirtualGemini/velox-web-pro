@@ -7,6 +7,7 @@
 </template>
 
 <script setup lang="ts">
+  import { logger } from '@/utils/sys/logger'
   import { useEventListener } from '@vueuse/core'
   import { mittBus } from '@/utils/sys'
   import type { Handler } from 'mitt'
@@ -278,7 +279,7 @@
       try {
         await Promise.all(imageUrls.map((url) => this.preloadImage(url)))
       } catch (error) {
-        console.error('Image preloading failed:', error)
+        logger.error('Image preloading failed:', error)
       }
     }
 

@@ -45,6 +45,7 @@
 </template>
 
 <script setup lang="ts">
+  import { logger } from '@/utils/sys/logger'
   import ImgCutter from 'vue-img-cutter'
 
   defineOptions({ name: 'VeloxCutterImg' })
@@ -191,7 +192,7 @@
         })
       } catch (error) {
         emit('error', error)
-        console.error('图片加载失败:', error)
+        logger.error('图片加载失败:', error)
       }
     }
   }
@@ -243,7 +244,7 @@
 
   // 下载图片
   function downloadImg() {
-    console.log('下载图片')
+    logger.debug('下载图片')
     const a = document.createElement('a')
     a.href = temImgPath.value
     a.download = 'image.png'

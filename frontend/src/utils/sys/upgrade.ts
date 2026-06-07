@@ -37,6 +37,7 @@
 import { ElNotification } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
 import { StorageConfig } from '@/utils/storage/storage-config'
+import { logger } from '@/utils/sys/logger'
 
 /**
  * 版本管理器
@@ -144,13 +145,13 @@ class VersionManager {
     // 清理旧的单一存储结构
     if (oldSysKey) {
       localStorage.removeItem(oldSysKey)
-      console.info(`[Upgrade] 已清理旧存储: ${oldSysKey}`)
+      logger.info(`[Upgrade] 已清理旧存储: ${oldSysKey}`)
     }
 
     // 清理旧版本的分离存储
     oldVersionKeys.forEach((key) => {
       localStorage.removeItem(key)
-      console.info(`[Upgrade] 已清理旧存储: ${key}`)
+      logger.info(`[Upgrade] 已清理旧存储: ${key}`)
     })
   }
 
@@ -160,9 +161,9 @@ class VersionManager {
   private performLogout(): void {
     try {
       useUserStore().logOut()
-      console.info('[Upgrade] 已执行升级后登出')
+      logger.info('[Upgrade] 已执行升级后登出')
     } catch (error) {
-      console.error('[Upgrade] 升级后登出失败:', error)
+      logger.error('[Upgrade] 升级后登出失败:', error)
     }
   }
 
@@ -187,9 +188,9 @@ class VersionManager {
         this.performLogout()
       }
 
-      console.info(`[Upgrade] 升级完成: ${storedVersion} → ${StorageConfig.CURRENT_VERSION}`)
+      logger.info(`[Upgrade] 升级完成: ${storedVersion} → ${StorageConfig.CURRENT_VERSION}`)
     } catch (error) {
-      console.error('[Upgrade] 系统升级处理失败:', error)
+      logger.error('[Upgrade] 系统升级处理失败:', error)
     }
   }
 
@@ -199,7 +200,7 @@ class VersionManager {
   async processUpgrade(): Promise<void> {
     // 跳过特定版本
     if (this.shouldSkipUpgrade()) {
-      console.debug('[Upgrade] 跳过版本升级检查')
+      logger.debug('[Upgrade] 跳过版本升级检查')
       return
     }
 
@@ -222,7 +223,7 @@ class VersionManager {
     const legacyStorage = this.findLegacyStorage()
     if (!legacyStorage.oldSysKey && legacyStorage.oldVersionKeys.length === 0) {
       this.setStoredVersion(StorageConfig.CURRENT_VERSION)
-      console.info('[Upgrade] 无旧数据，已更新版本号')
+      logger.info('[Upgrade] 无旧数据，已更新版本号')
       return
     }
 

@@ -8,6 +8,7 @@
  */
 
 import type { AppRouteRecord } from '@/types/router'
+import { logger } from '@/utils/sys/logger'
 
 export class IframeRouteManager {
   private static instance: IframeRouteManager
@@ -71,7 +72,7 @@ export class IframeRouteManager {
         this.iframeRoutes = JSON.parse(data)
       }
     } catch (error) {
-      console.error('[IframeRouteManager] 加载 iframe 路由失败:', error)
+      logger.error('[IframeRouteManager] 加载 iframe 路由失败:', error)
       this.iframeRoutes = []
     }
   }

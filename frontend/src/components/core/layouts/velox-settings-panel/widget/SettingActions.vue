@@ -13,6 +13,7 @@
 </template>
 
 <script setup lang="ts">
+  import { logger } from '@/utils/sys/logger'
   import { nextTick } from 'vue'
   import { useSettingStore } from '@/store/modules/setting'
   import { SETTING_DEFAULT_CONFIG } from '@/config/setting'
@@ -142,7 +143,7 @@
         })
       }
     } catch (error) {
-      console.error('复制配置失败:', error)
+      logger.error('复制配置失败:', error)
       ElMessage.error(t('setting.actions.copyFailed'))
     }
   }
@@ -228,7 +229,7 @@
 
       location.reload()
     } catch (error) {
-      console.error('重置配置失败:', error)
+      logger.error('重置配置失败:', error)
       ElMessage.error(t('setting.actions.resetFailed'))
     }
   }

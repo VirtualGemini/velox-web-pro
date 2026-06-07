@@ -19,6 +19,7 @@
 </template>
 
 <script setup lang="ts">
+  import { logger } from '@/utils/sys/logger'
   import * as XLSX from 'xlsx'
   import FileSaver from 'file-saver'
   import { ref, computed, nextTick } from 'vue'
@@ -357,7 +358,7 @@
         })
       }
 
-      console.error('Excel 导出错误:', exportError)
+      logger.error('Excel 导出错误:', exportError)
     } finally {
       isExporting.value = false
       emit('export-progress', 0)

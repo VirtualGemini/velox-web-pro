@@ -50,6 +50,7 @@ import { useCommon } from '@/hooks/core/useCommon'
 import { useWorktabStore } from '@/store/modules/worktab'
 import { ApiStatus } from '@/utils/http/status'
 import { isHttpError } from '@/utils/http/error'
+import { logger } from '@/utils/sys/logger'
 import { RouteRegistry, MenuProcessor, IframeRouteManager, RoutePermissionValidator } from '../core'
 import { consumeAuthRouteAccess } from '@/views/auth/shared/routeAccess'
 
@@ -114,7 +115,7 @@ export function setupBeforeEachGuard(router: Router): void {
       try {
         await handleRouteGuard(to, from, next, router)
       } catch (error) {
-        console.error('[RouteGuard] 路由守卫处理失败:', error)
+        logger.error('[RouteGuard] 路由守卫处理失败:', error)
         closeLoading()
         next({ name: 'Exception500' })
       }
@@ -360,7 +361,7 @@ async function handleDynamicRoutes(
       closeLoading()
 
       // 输出警告信息
-      console.warn(`[RouteGuard] 用户无权限访问路径: ${to.path}，已跳转到首页`)
+      logger.warn(`[RouteGuard] 用户无权限访问路径: ${to.path}，已跳转到首页`)
 
       // 直接跳转到首页
       next({
@@ -377,15 +378,14 @@ async function handleDynamicRoutes(
       })
     }
   } catch (error) {
-    console.error('[RouteGuard] 动态路由注册失败:', error)
-
     // 关闭 loading
     closeLoading()
 
-    // 401 错误：axios 拦截器已处理退出登录，取消当前导航
+    // 401 错误：axios 拦截器已处理退出登录，属正常未登录流程，取消当前导航，不计为错误
     if (isUnauthorizedError(error)) {
       // 重置状态，允许重新登录后再次初始化
       routeInitInProgress = false
+      logger.warn('[RouteGuard] 路由初始化遇到 401，等待重新登录')
       next(false)
       return
     }
@@ -394,9 +394,11 @@ async function handleDynamicRoutes(
     routeInitFailed = true
     routeInitInProgress = false
 
-    // 输出详细错误信息，便于排查
+    // 真实失败，输出详细错误信息，便于排查
     if (isHttpError(error)) {
-      console.error(`[RouteGuard] 错误码: ${error.code}, 消息: ${error.message}`)
+      logger.error(`[RouteGuard] 动态路由注册失败，错误码: ${error.code}，消息: ${error.message}`)
+    } else {
+      logger.error('[RouteGuard] 动态路由注册失败:', error)
     }
 
     // 跳转到 500 页面，使用 replace 避免产生历史记录

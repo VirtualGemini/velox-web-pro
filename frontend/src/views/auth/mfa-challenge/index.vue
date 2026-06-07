@@ -72,6 +72,7 @@
   import { fetchSendMfaChallengeCode, fetchVerifyMfaChallenge } from '@/api/auth'
   import { useUserStore } from '@/store/modules/user'
   import { HttpError } from '@/utils/http/error'
+  import { logger } from '@/utils/sys/logger'
   import { completeLogin } from '../shared/completeLogin'
 
   defineOptions({ name: 'MfaChallenge' })
@@ -153,7 +154,7 @@
       startCountdown()
     } catch (error) {
       if (!(error instanceof HttpError)) {
-        console.error('[MfaChallenge] send code failed:', error)
+        logger.error('[MfaChallenge] send code failed:', error)
       }
     } finally {
       sendingCode.value = false
@@ -164,7 +165,7 @@
     if (!formRef.value) return
     if (!ensureChallenge()) return
     try {
-      const valid = await formRef.value.validate()
+      const valid = await formRef.value.validate().catch(() => false)
       if (!valid) return
 
       loading.value = true
@@ -188,7 +189,7 @@
       })
     } catch (error) {
       if (!(error instanceof HttpError)) {
-        console.error('[MfaChallenge] verify failed:', error)
+        logger.error('[MfaChallenge] verify failed:', error)
       }
     } finally {
       loading.value = false

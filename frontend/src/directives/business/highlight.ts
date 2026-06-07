@@ -43,6 +43,7 @@
 
 import { App, Directive } from 'vue'
 import hljs from 'highlight.js'
+import { logger } from '@/utils/sys/logger'
 
 export type HighlightDirective = Directive<HTMLElement>
 
@@ -119,7 +120,7 @@ function processBlock(block: HTMLElement) {
     addCopyButton(block)
     markBlockAsProcessed(block)
   } catch (error) {
-    console.warn('处理代码块时出错:', error)
+    logger.warn('处理代码块时出错:', error)
   }
 }
 

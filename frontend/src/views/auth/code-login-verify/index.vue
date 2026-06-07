@@ -79,6 +79,7 @@
   import { fetchSendLoginCode, fetchLoginByCode } from '@/api/auth'
   import { useUserStore } from '@/store/modules/user'
   import { HttpError } from '@/utils/http/error'
+  import { logger } from '@/utils/sys/logger'
   import { completeLogin } from '../shared/completeLogin'
   import { grantAuthRouteAccess } from '../shared/routeAccess'
 
@@ -153,7 +154,7 @@
       startCountdown()
     } catch (error) {
       if (!(error instanceof HttpError)) {
-        console.error('[CodeLoginVerify] send code failed:', error)
+        logger.error('[CodeLoginVerify] send code failed:', error)
       }
     } finally {
       sendingCode.value = false
@@ -163,7 +164,7 @@
   const handleSubmit = async () => {
     if (!formRef.value) return
     try {
-      const valid = await formRef.value.validate()
+      const valid = await formRef.value.validate().catch(() => false)
       if (!valid) return
 
       loading.value = true
@@ -222,7 +223,7 @@
       })
     } catch (error) {
       if (!(error instanceof HttpError)) {
-        console.error('[CodeLoginVerify] login failed:', error)
+        logger.error('[CodeLoginVerify] login failed:', error)
       }
     } finally {
       loading.value = false

@@ -35,6 +35,7 @@
 import { router } from '@/router'
 import { useUserStore } from '@/store/modules/user'
 import { StorageConfig } from '@/utils/storage/storage-config'
+import { logger } from '@/utils/sys/logger'
 
 /**
  * 存储兼容性管理器
@@ -88,7 +89,7 @@ class StorageCompatibilityManager {
       const systemStorage = this.getSystemStorage()
       return systemStorage || {}
     } catch (error) {
-      console.warn('[Storage] 解析旧格式存储数据失败:', error)
+      logger.warn('[Storage] 解析旧格式存储数据失败:', error)
       return {}
     }
   }
@@ -114,9 +115,9 @@ class StorageCompatibilityManager {
         localStorage.clear()
         useUserStore().logOut()
         router.push({ name: 'Login' })
-        console.info('[Storage] 已执行系统登出')
+        logger.info('[Storage] 已执行系统登出')
       } catch (error) {
-        console.error('[Storage] 系统登出失败:', error)
+        logger.error('[Storage] 系统登出失败:', error)
       }
     }, StorageConfig.LOGOUT_DELAY)
   }
@@ -152,7 +153,7 @@ class StorageCompatibilityManager {
       if (Object.keys(legacyData).length === 0) {
         // 只有在需要验证登录状态时才执行登出操作
         if (requireAuth) {
-          console.warn('[Storage] 未发现任何存储数据，需要重新登录')
+          logger.warn('[Storage] 未发现任何存储数据，需要重新登录')
           this.performSystemLogout()
           return false
         }
@@ -161,10 +162,10 @@ class StorageCompatibilityManager {
         return true
       }
 
-      console.debug('[Storage] 发现旧版本存储数据')
+      logger.debug('[Storage] 发现旧版本存储数据')
       return true
     } catch (error) {
-      console.error('[Storage] 存储数据验证失败:', error)
+      logger.error('[Storage] 存储数据验证失败:', error)
       // 只有在需要验证登录状态时才处理错误
       if (requireAuth) {
         this.handleStorageError()
@@ -207,10 +208,10 @@ class StorageCompatibilityManager {
         return true
       }
 
-      console.warn('[Storage] 存储兼容性检查失败')
+      logger.warn('[Storage] 存储兼容性检查失败')
       return false
     } catch (error) {
-      console.error('[Storage] 兼容性检查异常:', error)
+      logger.error('[Storage] 兼容性检查异常:', error)
       return false
     }
   }

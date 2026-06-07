@@ -35,6 +35,7 @@
 </template>
 
 <script setup lang="ts">
+  import { logger } from '@/utils/sys/logger'
   import type { ComputedRef } from 'vue'
 
   interface SettingItemConfig {
@@ -78,7 +79,7 @@
       // 如果是普通数组，直接返回
       return Array.isArray(props.config.options) ? props.config.options : []
     } catch (error) {
-      console.warn('Error processing options for config:', props.config.key, error)
+      logger.warn('Error processing options for config:', props.config.key, error)
       return []
     }
   })
@@ -87,7 +88,7 @@
     try {
       emit('change', value)
     } catch (error) {
-      console.error('Error handling change for config:', props.config.key, error)
+      logger.error('Error handling change for config:', props.config.key, error)
     }
   }
 </script>

@@ -62,6 +62,7 @@
 </template>
 
 <script setup lang="ts">
+  import { logger } from '@/utils/sys/logger'
   import { useFastEnter } from '@/hooks/core/useFastEnter'
   import type { FastEnterApplication, FastEnterQuickLink } from '@/types/config'
 
@@ -82,7 +83,7 @@
     const targetPath = routeName || link
 
     if (!targetPath) {
-      console.warn('导航配置无效：缺少路由名称或链接')
+      logger.warn('导航配置无效：缺少路由名称或链接')
       return
     }
 
