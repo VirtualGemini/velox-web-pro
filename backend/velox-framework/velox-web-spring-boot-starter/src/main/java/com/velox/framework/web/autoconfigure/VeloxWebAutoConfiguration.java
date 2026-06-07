@@ -1,6 +1,7 @@
 package com.velox.framework.web.autoconfigure;
 
 import com.velox.framework.web.support.servlet.RequestLogInterceptor;
+import com.velox.framework.web.support.servlet.SecurityHeadersFilter;
 import com.velox.framework.web.common.path.WebPathConstants;
 import com.velox.framework.web.common.servlet.WebFilterNames;
 import com.velox.framework.web.core.logging.DefaultRequestLogHandler;
@@ -146,5 +147,24 @@ public class VeloxWebAutoConfiguration {
             com.velox.framework.web.RequestLocaleFilter requestLocaleFilter,
             RequestLocaleFilterRegistrationCustomizer registrationCustomizer) {
         return registrationCustomizer.register(requestLocaleFilter);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(SecurityHeadersFilter.class)
+    public SecurityHeadersFilter veloxSecurityHeadersFilter(VeloxWebProperties properties) {
+        return new SecurityHeadersFilter(properties.getWeb().getSecurityHeaders());
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "securityHeadersFilterRegistration")
+    public FilterRegistrationBean<jakarta.servlet.Filter> securityHeadersFilterRegistration(
+            SecurityHeadersFilter securityHeadersFilter) {
+        FilterRegistrationBean<jakarta.servlet.Filter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(securityHeadersFilter);
+        registration.addUrlPatterns(WebPathConstants.ALL_SERVLET_URL_PATTERNS);
+        // 早于 TraceId(1) 执行，确保对所有响应（含早期错误）注入安全头
+        registration.setOrder(0);
+        registration.setName(WebFilterNames.SECURITY_HEADERS_FILTER);
+        return registration;
     }
 }

@@ -174,7 +174,7 @@
         code: formData.code
       })
 
-      const { token, refreshToken, mfaChallenge, mfaType, mfaEmailMasked, mfaTotpDigits } = response
+      const { token, mfaChallenge, mfaType, mfaEmailMasked, mfaTotpDigits } = response
 
       if (mfaChallenge) {
         grantAuthRouteAccess('MfaChallenge')
@@ -193,7 +193,7 @@
 
       if (response.pendingDeletion) {
         if (response.token) {
-          userStore.setToken(response.token, response.refreshToken)
+          userStore.setToken(response.token)
         }
         userStore.setPendingDeletionLogin(response)
         userStore.setAccountInfo({
@@ -215,7 +215,6 @@
       await completeLogin({
         accountStore: userStore,
         token,
-        refreshToken,
         redirect: route.query.redirect as string | undefined,
         router,
         successTitle: t('login.success.title'),

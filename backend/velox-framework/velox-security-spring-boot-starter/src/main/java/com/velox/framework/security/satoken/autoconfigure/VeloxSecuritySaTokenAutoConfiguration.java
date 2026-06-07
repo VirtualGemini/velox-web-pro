@@ -60,7 +60,18 @@ public class VeloxSecuritySaTokenAutoConfiguration {
         if (runtime.getEngine() == SecurityTokenEngine.JWT_MIXIN
                 || runtime.getEngine() == SecurityTokenEngine.JWT_SIMPLE
                 || runtime.getEngine() == SecurityTokenEngine.JWT_STATELESS) {
-            config.setJwtSecretKey(runtime.getJwtSecret());
+            String jwtSecret = runtime.getJwtSecret();
+            // JWT 模式下 fail-fast：禁止使用内置默认密钥或过短密钥，避免令牌可被伪造
+            if (jwtSecret == null
+                    || jwtSecret.isBlank()
+                    || SecurityConstants.DEFAULT_JWT_SECRET.equals(jwtSecret)
+                    || jwtSecret.trim().length() < 32) {
+                throw new SecurityConfigException(
+                        "JWT token mode requires a strong velox.security.token.jwt.secret "
+                                + "(>=32 chars, not the built-in default). "
+                                + "Set VELOX_SECURITY_JWT_SECRET before enabling JWT mode.");
+            }
+            config.setJwtSecretKey(jwtSecret);
         }
         return config;
     }

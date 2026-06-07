@@ -1,6 +1,7 @@
 package com.velox.module.system.auth.service;
 
 import com.velox.module.system.auth.dto.CaptchaDTO;
+import com.velox.module.system.auth.dto.CaptchaTicketDTO;
 import com.velox.module.system.auth.dto.CodeLoginCommand;
 import com.velox.module.system.auth.dto.ForgotPasswordCodeCommand;
 import com.velox.module.system.auth.dto.LoginCodeSendCommand;
@@ -15,6 +16,9 @@ import com.velox.module.system.accesscontrol.vo.AccessControlRespVO;
 public interface LoginService {
 
     CaptchaDTO generateCaptcha();
+
+    /** 滑块完成后签发一次性 captcha 票据（登录时一次性消费）。 */
+    CaptchaTicketDTO issueCaptchaTicket();
 
     /** 登录页等匿名页面读取的访问控制配置（决定展示哪些入口）。 */
     AccessControlRespVO getAccessConfig();

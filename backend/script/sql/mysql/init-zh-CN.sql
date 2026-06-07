@@ -579,6 +579,45 @@ INSERT INTO `sys_access_control` (`id`, `general_register_enabled`, `forgot_pass
   ('1900000000000002010',1,1,'password,email_code','github,linuxdo','github,linuxdo','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 /*!40000 ALTER TABLE `sys_access_control` ENABLE KEYS */;
 
+--
+-- Table structure for table `sys_verification_policy`
+--
+
+DROP TABLE IF EXISTS `sys_verification_policy`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_verification_policy` (
+  `id` bigint NOT NULL COMMENT '主键ID',
+  `scene_key` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '场景键(login/verify_code/captcha/send_code/mfa)',
+  `enabled` tinyint DEFAULT '1' COMMENT '是否启用(0-关闭 1-开启)',
+  `max_attempts` int DEFAULT NULL COMMENT '最大可重试次数',
+  `recovery_seconds` int DEFAULT NULL COMMENT '恢复时间(秒)',
+  `limit_by_account` tinyint DEFAULT '1' COMMENT '按账号/邮箱维度限制(0/1)',
+  `limit_by_ip` tinyint DEFAULT '0' COMMENT '按IP维度限制(0/1)',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_by` bigint DEFAULT NULL COMMENT '创建人',
+  `update_by` bigint DEFAULT NULL COMMENT '更新人',
+  `deleted` tinyint DEFAULT '0' COMMENT '逻辑删除(0-未删除 1-已删除)',
+  `active_scene_key` varchar(32) COLLATE utf8mb4_unicode_ci GENERATED ALWAYS AS ((case when (`deleted` = 0) then `scene_key` else NULL end)) STORED COMMENT '未删除场景键',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_verification_policy_scene` (`active_scene_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='验证策略配置表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_verification_policy`
+--
+
+/*!40000 ALTER TABLE `sys_verification_policy` DISABLE KEYS */;
+INSERT INTO `sys_verification_policy` (`id`, `scene_key`, `enabled`, `max_attempts`, `recovery_seconds`, `limit_by_account`, `limit_by_ip`, `create_time`, `update_time`, `create_by`, `update_by`, `deleted`) VALUES
+  ('1900000000000019001','login',1,5,1800,1,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019002','verify_code',1,5,600,1,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019003','captcha',1,10,60,0,1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019004','send_code',1,1,60,1,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019005','mfa',1,5,300,1,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+/*!40000 ALTER TABLE `sys_verification_policy` ENABLE KEYS */;
+
 -- Table structure for table `sys_menu`
 --
 
@@ -692,7 +731,10 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `menu_type`, `name`, `title`, `path`,
   ('1900000000000002005','1900000000000002002','button','AccessControlThirdPartyRegister','第三方注册管理',NULL,NULL,NULL,NULL,'settings:access-control:third-party-register',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000002006','1900000000000002002','button','AccessControlLoginMethod','普通登录方式管理',NULL,NULL,NULL,NULL,'settings:access-control:login-method',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000002007','1900000000000002002','button','AccessControlThirdPartyLogin','第三方登录方式管理',NULL,NULL,NULL,NULL,'settings:access-control:third-party-login',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000002008','1900000000000002002','button','AccessControlForgotPassword','忘记密码管理',NULL,NULL,NULL,NULL,'settings:access-control:forgot-password',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+  ('1900000000000002008','1900000000000002002','button','AccessControlForgotPassword','忘记密码管理',NULL,NULL,NULL,NULL,'settings:access-control:forgot-password',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019010','1900000000000002001','menu','VerificationSettings','验证设置','verification-settings','/settings/verification-settings',NULL,NULL,NULL,1,2,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019011','1900000000000019010','button','VerificationSettingsQuery','查询',NULL,NULL,NULL,NULL,'settings:verification-settings:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019012','1900000000000019010','button','VerificationSettingsUpdate','编辑',NULL,NULL,NULL,NULL,'settings:verification-settings:update',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 /*!40000 ALTER TABLE `sys_menu` ENABLE KEYS */;
 
 --

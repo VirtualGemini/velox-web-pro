@@ -2,6 +2,7 @@ package com.velox.module.system.auth.controller;
 
 import com.velox.common.result.Result;
 import com.velox.module.system.auth.dto.CaptchaDTO;
+import com.velox.module.system.auth.dto.CaptchaTicketDTO;
 import com.velox.module.system.auth.dto.CodeLoginCommand;
 import com.velox.module.system.auth.dto.ForgotPasswordCodeCommand;
 import com.velox.module.system.auth.dto.LoginCodeSendCommand;
@@ -33,6 +34,12 @@ public class LoginController {
     @GetMapping("/captcha")
     public Result<CaptchaDTO> getCaptcha() {
         return Result.ok(loginService.generateCaptcha());
+    }
+
+    @Operation(summary = "openapi.system.auth.login.captcha_ticket.summary")
+    @PostMapping("/captcha/ticket")
+    public Result<CaptchaTicketDTO> issueCaptchaTicket() {
+        return Result.ok(loginService.issueCaptchaTicket());
     }
 
     @Operation(summary = "openapi.system.auth.login.access_config.summary")

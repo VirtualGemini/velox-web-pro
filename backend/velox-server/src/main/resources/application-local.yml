@@ -7,7 +7,7 @@ spring:
       # 本地 Redis 端口
       port: 6379
       # 本地 Redis 密码；通过 REDIS_PASSWORD 注入（与 docker-compose 的 requirepass 对齐），未设置时为空
-      password: ${REDIS_PASSWORD:}
+      password: 
       # Redis 库编号
       database: 0
 

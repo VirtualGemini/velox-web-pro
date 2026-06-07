@@ -5,6 +5,7 @@ import com.velox.module.system.auth.session.AccountSessionService;
 import com.velox.module.system.auth.status.ActiveUserStatusService;
 import com.velox.module.system.auth.store.RedisVerificationCodeStore;
 import com.velox.module.system.auth.store.VerificationCodeStore;
+import com.velox.module.system.verification.service.VerificationPolicyService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,7 +48,8 @@ public class AuthStoreConfiguration {
     @Bean
     @ConditionalOnMissingBean(VerificationCodeStore.class)
     public VerificationCodeStore redisVerificationCodeStore(StringRedisTemplate stringRedisTemplate,
-                                                            SystemAuthProperties authProperties) {
-        return new RedisVerificationCodeStore(stringRedisTemplate, authProperties);
+                                                            SystemAuthProperties authProperties,
+                                                            VerificationPolicyService policyService) {
+        return new RedisVerificationCodeStore(stringRedisTemplate, authProperties, policyService);
     }
 }

@@ -5,7 +5,6 @@ import type { useAccountStore } from '@/store/modules/user'
 interface CompleteLoginOptions {
   accountStore: ReturnType<typeof useAccountStore>
   token: string
-  refreshToken?: string
   redirect?: string
   router: Router
   successTitle: string
@@ -19,13 +18,12 @@ interface CompleteLoginOptions {
 export async function completeLogin({
   accountStore,
   token,
-  refreshToken,
   redirect,
   router,
   successTitle,
   successMessage
 }: CompleteLoginOptions): Promise<void> {
-  accountStore.setToken(token, refreshToken)
+  accountStore.setToken(token)
 
   try {
     const accountInfo = await accountStore.hydrateAccountInfo({ force: true })

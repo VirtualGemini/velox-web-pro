@@ -1737,6 +1737,48 @@
           "github": "GitHub",
           "linuxdo": "LinuxDo"
         }
+      },
+      "verificationSettings": {
+        "title": "验证设置",
+        "description": "按场景统一管理反爆破策略：失败或请求达到最大次数后，在恢复时间内锁定/拒绝。关闭某场景后该限制完全不生效。",
+        "saveSuccess": "保存成功",
+        "loadFailed": "加载验证设置失败",
+        "invalidValue": "请填写有效的数值",
+        "columns": {
+          "maxAttempts": "最大次数",
+          "recoverySeconds": "恢复时间",
+          "dimensions": "限制维度"
+        },
+        "unit": {
+          "times": "次",
+          "seconds": "秒"
+        },
+        "dimensions": {
+          "account": "账号/邮箱",
+          "ip": "IP"
+        },
+        "scenes": {
+          "login": {
+            "name": "登录失败锁定",
+            "description": "密码或验证码登录连续失败达到上限后，在恢复时间内锁定，登录成功即重置。"
+          },
+          "verify_code": {
+            "name": "验证码错误",
+            "description": "同一邮箱验证码（登录/找回密码/换绑/MFA）错误次数达到上限即作废该码，需重新获取。"
+          },
+          "captcha": {
+            "name": "接口限流",
+            "description": "按客户端 IP 对认证相关接口限流，恢复时间内的请求数超过上限即拒绝（IP 维度生效）。"
+          },
+          "send_code": {
+            "name": "发码频率",
+            "description": "限制验证码发送频率，恢复时间内超过上限即拒绝，与重发间隔形成纵深防御。"
+          },
+          "mfa": {
+            "name": "MFA 验证失败",
+            "description": "二次验证（TOTP/邮箱）连续失败达到上限后，在恢复时间内拒绝，验证成功即重置。"
+          }
+        }
       }
     }
   },

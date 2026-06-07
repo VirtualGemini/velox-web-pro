@@ -1734,6 +1734,48 @@
           "github": "GitHub",
           "linuxdo": "LinuxDo"
         }
+      },
+      "verificationSettings": {
+        "title": "Verification Settings",
+        "description": "Centrally manage anti-brute-force policies per scene: once failures or requests reach the max attempts, lock/reject within the recovery time. Disabling a scene turns its limit off entirely.",
+        "saveSuccess": "Saved successfully",
+        "loadFailed": "Failed to load verification settings",
+        "invalidValue": "Please enter a valid number",
+        "columns": {
+          "maxAttempts": "Max attempts",
+          "recoverySeconds": "Recovery time",
+          "dimensions": "Limit by"
+        },
+        "unit": {
+          "times": "times",
+          "seconds": "sec"
+        },
+        "dimensions": {
+          "account": "Account/Email",
+          "ip": "IP"
+        },
+        "scenes": {
+          "login": {
+            "name": "Login Lockout",
+            "description": "After consecutive password or code login failures reach the limit, lock within the recovery time; reset on successful login."
+          },
+          "verify_code": {
+            "name": "Verification Code Errors",
+            "description": "When wrong attempts on the same email code (login/reset/rebind/MFA) reach the limit, the code is invalidated and must be re-requested."
+          },
+          "captcha": {
+            "name": "Endpoint Rate Limit",
+            "description": "Rate-limits auth endpoints per client IP; requests exceeding the limit within the recovery time are rejected (IP dimension applies)."
+          },
+          "send_code": {
+            "name": "Code Send Frequency",
+            "description": "Limits verification code sending frequency; exceeding the limit within the recovery time is rejected, adding depth to the resend interval."
+          },
+          "mfa": {
+            "name": "MFA Failures",
+            "description": "After consecutive two-step (TOTP/email) failures reach the limit, reject within the recovery time; reset on success."
+          }
+        }
       }
     }
   },

@@ -52,9 +52,74 @@ public class VeloxWebProperties {
     public static class Web {
 
         private final Cors cors = new Cors();
+        private final SecurityHeaders securityHeaders = new SecurityHeaders();
 
         public Cors getCors() {
             return cors;
+        }
+
+        public SecurityHeaders getSecurityHeaders() {
+            return securityHeaders;
+        }
+    }
+
+    public static class SecurityHeaders {
+
+        private boolean enabled = true;
+        private String contentTypeOptions = "nosniff";
+        private String frameOptions = "DENY";
+        private String referrerPolicy = "no-referrer";
+        /** CSP；API 响应默认不下发（SPA 自身负责 CSP，且避免打断 Swagger）。需要时配置后下发。 */
+        private String contentSecurityPolicy = "";
+        /** HSTS，例如 "max-age=31536000"；默认空、仅 https 请求下发。谨慎启用（回滚困难）。 */
+        private String strictTransportSecurity = "";
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getContentTypeOptions() {
+            return contentTypeOptions;
+        }
+
+        public void setContentTypeOptions(String contentTypeOptions) {
+            this.contentTypeOptions = contentTypeOptions;
+        }
+
+        public String getFrameOptions() {
+            return frameOptions;
+        }
+
+        public void setFrameOptions(String frameOptions) {
+            this.frameOptions = frameOptions;
+        }
+
+        public String getReferrerPolicy() {
+            return referrerPolicy;
+        }
+
+        public void setReferrerPolicy(String referrerPolicy) {
+            this.referrerPolicy = referrerPolicy;
+        }
+
+        public String getContentSecurityPolicy() {
+            return contentSecurityPolicy;
+        }
+
+        public void setContentSecurityPolicy(String contentSecurityPolicy) {
+            this.contentSecurityPolicy = contentSecurityPolicy;
+        }
+
+        public String getStrictTransportSecurity() {
+            return strictTransportSecurity;
+        }
+
+        public void setStrictTransportSecurity(String strictTransportSecurity) {
+            this.strictTransportSecurity = strictTransportSecurity;
         }
     }
 

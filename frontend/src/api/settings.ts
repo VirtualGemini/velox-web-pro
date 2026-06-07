@@ -55,3 +55,31 @@ export function fetchUpdateThirdPartyRegister(values: string[]) {
     data: { values }
   })
 }
+
+/** 验证策略（按场景一行） */
+export interface VerificationPolicyConfig {
+  sceneKey: string
+  enabled: boolean
+  maxAttempts: number
+  recoverySeconds: number
+  limitByAccount: boolean
+  limitByIp: boolean
+}
+
+/** 单场景可更新字段 */
+export type VerificationSceneUpdate = Omit<VerificationPolicyConfig, 'sceneKey'>
+
+/** 获取验证设置（所有场景策略） */
+export function fetchGetVerificationSettings() {
+  return request.get<VerificationPolicyConfig[]>({
+    url: '/api/settings/verification-settings'
+  })
+}
+
+/** 更新某场景的验证设置 */
+export function fetchUpdateVerificationScene(sceneKey: string, data: VerificationSceneUpdate) {
+  return request.put<boolean>({
+    url: `/api/settings/verification-settings/${sceneKey}`,
+    data
+  })
+}

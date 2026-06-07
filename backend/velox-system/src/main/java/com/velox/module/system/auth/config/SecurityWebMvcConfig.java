@@ -6,9 +6,14 @@ import com.velox.framework.web.properties.VeloxProperties;
 import com.velox.framework.web.api.path.ApiPathPrefixes;
 import com.velox.module.system.auth.interceptor.ActiveUserHeartbeatInterceptor;
 import com.velox.module.system.auth.properties.SystemAuthProperties;
+import com.velox.module.system.auth.ratelimit.AuthRateLimitInterceptor;
+import com.velox.module.system.auth.ratelimit.ClientIpResolver;
+import com.velox.module.system.auth.ratelimit.RedisRateLimiter;
+import com.velox.module.system.verification.service.VerificationPolicyService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.NonNull;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -26,17 +31,23 @@ public class SecurityWebMvcConfig implements WebMvcConfigurer {
     private final SystemAuthProperties systemAuthProperties;
     private final ActiveUserHeartbeatInterceptor activeUserHeartbeatInterceptor;
     private final SecurityAuthorizationService securityAuthorizationService;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final VerificationPolicyService verificationPolicyService;
 
     public SecurityWebMvcConfig(SecurityProperties securityProperties,
                                 VeloxProperties veloxProperties,
                                 SystemAuthProperties systemAuthProperties,
                                 ActiveUserHeartbeatInterceptor activeUserHeartbeatInterceptor,
-                                SecurityAuthorizationService securityAuthorizationService) {
+                                SecurityAuthorizationService securityAuthorizationService,
+                                StringRedisTemplate stringRedisTemplate,
+                                VerificationPolicyService verificationPolicyService) {
         this.securityProperties = securityProperties;
         this.veloxProperties = veloxProperties;
         this.systemAuthProperties = systemAuthProperties;
         this.activeUserHeartbeatInterceptor = activeUserHeartbeatInterceptor;
         this.securityAuthorizationService = securityAuthorizationService;
+        this.stringRedisTemplate = stringRedisTemplate;
+        this.verificationPolicyService = verificationPolicyService;
     }
 
     @Override
@@ -49,6 +60,22 @@ public class SecurityWebMvcConfig implements WebMvcConfigurer {
         if (securityProperties.isSwaggerPublicEnabled()) {
             interceptor.getSwaggerPublicExcludePatterns().forEach(excludes::add);
         }
+
+        // 认证端点 IP 限流：必须在登录态校验之前执行
+        String apiPrefix = ApiPathPrefixes.normalize(veloxProperties.getApiPrefix());
+        SystemAuthProperties.RateLimit rateLimit = systemAuthProperties.getRateLimit();
+        AuthRateLimitInterceptor rateLimitInterceptor = new AuthRateLimitInterceptor(
+                rateLimit,
+                new RedisRateLimiter(stringRedisTemplate),
+                new ClientIpResolver(rateLimit.getTrustedProxy()),
+                verificationPolicyService,
+                apiPrefix);
+        List<String> authPatterns = new ArrayList<>();
+        authPatterns.add("/auth/**");
+        if (!apiPrefix.isEmpty()) {
+            authPatterns.add(apiPrefix + "/auth/**");
+        }
+        registry.addInterceptor(rateLimitInterceptor).addPathPatterns(authPatterns.toArray(new String[0]));
 
         registry.addInterceptor(new LoginCheckInterceptor(securityAuthorizationService))
                 .addPathPatterns("/**")

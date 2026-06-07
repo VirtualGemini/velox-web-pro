@@ -2,6 +2,7 @@
 DROP TABLE IF EXISTS sys_role_menu_permission CASCADE;
 DROP TABLE IF EXISTS sys_menu CASCADE;
 DROP TABLE IF EXISTS sys_access_control CASCADE;
+DROP TABLE IF EXISTS sys_verification_policy CASCADE;
 DROP TABLE IF EXISTS sys_account_security CASCADE;
 DROP TABLE IF EXISTS sys_account_session CASCADE;
 DROP TABLE IF EXISTS sys_account_role CASCADE;
@@ -365,6 +366,30 @@ CREATE TABLE sys_access_control (
 INSERT INTO sys_access_control (id, general_register_enabled, forgot_password_enabled, login_methods, third_party_login_channels, third_party_register_channels, create_time, update_time, create_by, update_by, deleted) VALUES
   ('1900000000000002010',1,1,'password,email_code','github,linuxdo','github,linuxdo','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 
+CREATE TABLE sys_verification_policy (
+  id bigint PRIMARY KEY,
+  scene_key varchar(32) NOT NULL,
+  enabled smallint DEFAULT 1,
+  max_attempts integer,
+  recovery_seconds integer,
+  limit_by_account smallint DEFAULT 1,
+  limit_by_ip smallint DEFAULT 0,
+  create_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  update_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  create_by bigint,
+  update_by bigint,
+  deleted smallint DEFAULT 0
+);
+
+CREATE UNIQUE INDEX uk_verification_policy_scene ON sys_verification_policy (scene_key) WHERE deleted = 0;
+
+INSERT INTO sys_verification_policy (id, scene_key, enabled, max_attempts, recovery_seconds, limit_by_account, limit_by_ip, create_time, update_time, create_by, update_by, deleted) VALUES
+  ('1900000000000019001','login',1,5,1800,1,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019002','verify_code',1,5,600,1,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019003','captcha',1,10,60,0,1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019004','send_code',1,1,60,1,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019005','mfa',1,5,300,1,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+
 CREATE TABLE sys_menu (
   id bigint PRIMARY KEY,
   parent_id bigint,
@@ -465,7 +490,11 @@ INSERT INTO sys_menu (id, parent_id, menu_type, name, title, path, component, re
   ('1900000000000002005','1900000000000002002','button','AccessControlThirdPartyRegister','第三方注册管理',NULL,NULL,NULL,NULL,'settings:access-control:third-party-register',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000002006','1900000000000002002','button','AccessControlLoginMethod','普通登录方式管理',NULL,NULL,NULL,NULL,'settings:access-control:login-method',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000002007','1900000000000002002','button','AccessControlThirdPartyLogin','第三方登录方式管理',NULL,NULL,NULL,NULL,'settings:access-control:third-party-login',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000002008','1900000000000002002','button','AccessControlForgotPassword','忘记密码管理',NULL,NULL,NULL,NULL,'settings:access-control:forgot-password',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+  ('1900000000000002008','1900000000000002002','button','AccessControlForgotPassword','忘记密码管理',NULL,NULL,NULL,NULL,'settings:access-control:forgot-password',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+    -- Settings > VerificationSettings
+  ('1900000000000019010','1900000000000002001','menu','VerificationSettings','验证设置','verification-settings','/settings/verification-settings',NULL,NULL,NULL,1,2,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019011','1900000000000019010','button','VerificationSettingsQuery','查询',NULL,NULL,NULL,NULL,'settings:verification-settings:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019012','1900000000000019010','button','VerificationSettingsUpdate','编辑',NULL,NULL,NULL,NULL,'settings:verification-settings:update',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 
 CREATE TABLE sys_role_menu_permission (
   id bigint PRIMARY KEY,

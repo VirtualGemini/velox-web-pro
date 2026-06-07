@@ -290,6 +290,9 @@ public class AccountInfoServiceImpl implements AccountInfoService {
             security.setUpdateBy(currentOperator());
             userSecurityMapper.updateById(security);
         }
+        // 改密后失效该用户全部会话（含当前会话），强制以新密码重新登录
+        accountSessionService.forceLogoutAll(userId);
+        securitySessionService.logoutByLoginId(userId);
         return true;
     }
 
@@ -330,6 +333,9 @@ public class AccountInfoServiceImpl implements AccountInfoService {
                     verificationCodeStore.verifyMfaCode(userId, command.getEmailCode());
             if (result == VerificationCodeStore.VerificationResult.EXPIRED) {
                 throw new ApiException(BusinessErrorCode.ACCOUNT_DELETION_EMAIL_CODE_EXPIRED);
+            }
+            if (result == VerificationCodeStore.VerificationResult.TOO_MANY_ATTEMPTS) {
+                throw new ApiException(BusinessErrorCode.VERIFY_CODE_TOO_MANY_ATTEMPTS);
             }
             if (result == VerificationCodeStore.VerificationResult.INVALID) {
                 throw new ApiException(BusinessErrorCode.ACCOUNT_DELETION_EMAIL_CODE_ERROR);
@@ -466,6 +472,9 @@ public class AccountInfoServiceImpl implements AccountInfoService {
         VerificationCodeStore.VerificationResult result = verificationCodeStore.verifyMfaCode(userId, code);
         if (result == VerificationCodeStore.VerificationResult.EXPIRED) {
             throw new ApiException(BusinessErrorCode.MFA_CODE_EXPIRED);
+        }
+        if (result == VerificationCodeStore.VerificationResult.TOO_MANY_ATTEMPTS) {
+            throw new ApiException(BusinessErrorCode.VERIFY_CODE_TOO_MANY_ATTEMPTS);
         }
         if (result == VerificationCodeStore.VerificationResult.INVALID) {
             throw new ApiException(BusinessErrorCode.MFA_CODE_ERROR);

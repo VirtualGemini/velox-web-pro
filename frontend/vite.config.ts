@@ -33,6 +33,14 @@ export default async ({ mode }: { mode: string }) => {
     base: VITE_BASE_URL,
     server: {
       port: Number(VITE_PORT),
+      // CSP 以 Report-Only 观察违规（不阻断 SPA），违规输出到浏览器控制台。
+      // Report-Only 只能由 HTTP 响应头下发（<meta> 不支持），故由 dev server 注入；
+      // dev 含 'unsafe-eval'（Vite/devtools/依赖预构建在开发期会 eval）与 ws/wss（HMR），避免误伤。
+      // 生产环境改由静态服务器/反代下发同名头，且通常无需 'unsafe-eval'。
+      headers: {
+        'Content-Security-Policy-Report-Only':
+          "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http://localhost:* https: ws://localhost:* wss://localhost:*; frame-src 'self'; object-src 'none'; base-uri 'self'"
+      },
       proxy: {
         '/api': {
           target: VITE_API_PROXY_URL,

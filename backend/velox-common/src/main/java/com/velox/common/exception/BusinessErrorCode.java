@@ -92,6 +92,8 @@ public enum BusinessErrorCode implements ErrorCode {
     EMAIL_UNBIND_TOTP_REQUIRED(12061, "请先输入 TOTP 动态口令"),
     REGISTER_DISABLED(12062, "注册功能已关闭"),
     FORGOT_PASSWORD_DISABLED(12063, "忘记密码功能已关闭"),
+    TOO_MANY_REQUESTS(12064, "操作过于频繁，请稍后重试"),
+    VERIFY_CODE_TOO_MANY_ATTEMPTS(12065, "验证码错误次数过多，请重新获取"),
 
     // ---- 文件模块 (13000-13999) ----
     FILE_UPLOAD_FAILED(13000, "文件上传失败"),

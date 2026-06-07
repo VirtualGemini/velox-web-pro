@@ -72,8 +72,6 @@ export const useAccountStore = defineStore(
     const searchHistory = ref<AppRouteRecord[]>([])
     // 访问令牌
     const accessToken = ref('')
-    // 刷新令牌
-    const refreshToken = ref('')
 
     // 计算属性：获取用户信息
     const getAccountInfo = computed(() => info.value)
@@ -137,13 +135,9 @@ export const useAccountStore = defineStore(
     /**
      * 设置令牌
      * @param newAccessToken 访问令牌
-     * @param newRefreshToken 刷新令牌（可选）
      */
-    const setToken = (newAccessToken: string, newRefreshToken?: string) => {
+    const setToken = (newAccessToken: string) => {
       accessToken.value = newAccessToken
-      if (newRefreshToken) {
-        refreshToken.value = newRefreshToken
-      }
     }
 
     /**
@@ -190,7 +184,6 @@ export const useAccountStore = defineStore(
       isLock.value = false
       lockPassword.value = ''
       accessToken.value = ''
-      refreshToken.value = ''
       activeUserId.value = ''
       isPostLoginNavigating.value = false
       pendingDeletionLogin.value = null
@@ -231,7 +224,6 @@ export const useAccountStore = defineStore(
       }
 
       accessToken.value = nextToken
-      refreshToken.value = typeof snapshot.refreshToken === 'string' ? snapshot.refreshToken : ''
       info.value = nextInfo
       activeUserId.value = nextUserId
       isPostLoginNavigating.value = false
@@ -324,7 +316,6 @@ export const useAccountStore = defineStore(
       pendingDeletionLogin,
       searchHistory,
       accessToken,
-      refreshToken,
       getAccountInfo,
       getUserInfo,
       canReadUserCache,

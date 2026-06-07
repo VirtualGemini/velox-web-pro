@@ -37,11 +37,6 @@ services:
     image: redis:7-alpine
     container_name: velox-redis
     restart: always
-    # Redis 是后端硬依赖（验证码、登录态、账号语言等共享存储）。
-    # 强制 requirepass；REDIS_PASSWORD 未设置时容器启动即失败，避免无密码裸奔。
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?set REDIS_PASSWORD}"]
-    environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD}
     ports:
       - "6379:6379"
     healthcheck:

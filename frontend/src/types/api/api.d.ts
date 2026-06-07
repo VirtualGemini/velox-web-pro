@@ -66,6 +66,14 @@ declare namespace Api {
     interface LoginParams {
       userName: string
       password: string
+      /** 滑块完成后由后端签发的一次性 captcha 票据 */
+      captchaTicket?: string
+    }
+
+    /** captcha 票据响应 */
+    interface CaptchaTicketResponse {
+      captchaTicket: string
+      ttl: number
     }
 
     /** 验证码登录的渠道类型 */
@@ -87,7 +95,6 @@ declare namespace Api {
     /** 登录响应 */
     interface LoginResponse {
       token: string
-      refreshToken: string
       mfaChallenge?: string
       mfaType?: 'email' | 'totp'
       mfaEmailMasked?: string

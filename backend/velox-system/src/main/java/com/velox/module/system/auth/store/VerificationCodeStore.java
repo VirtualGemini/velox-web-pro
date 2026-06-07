@@ -64,9 +64,19 @@ public interface VerificationCodeStore {
 
     String peekProofTicket(String scene, String proofTicket);
 
+    /**
+     * TOTP 校验失败计数自增；返回自增后的当前次数（用于上限判断）。
+     * 与基于验证码 store 的邮箱 MFA 不同，TOTP 无存储码，故单独按挑战计数。
+     */
+    long incrementTotpAttempt(String challenge, int ttlSeconds);
+
+    /** 清除 TOTP 失败计数（挑战完成/作废时调用）。 */
+    void clearTotpAttempts(String challenge);
+
     enum VerificationResult {
         MATCHED,
         INVALID,
-        EXPIRED
+        EXPIRED,
+        TOO_MANY_ATTEMPTS
     }
 }

@@ -1,7 +1,7 @@
 package com.velox.module.system.account.security.service.impl;
 
-import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.DigestUtil;
+import com.velox.module.system.auth.support.SecureCodeGenerator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.velox.common.exception.ApiException;
 import com.velox.common.exception.BusinessErrorCode;
@@ -170,7 +170,7 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
 
         EmailBuilder emailBuilder = requireEmailBuilder();
         SystemAccountSecurityProperties.Rebind.Email rebindConfig = accountSecurityProperties.getRebind().getEmail();
-        String code = RandomUtil.randomNumbers(6);
+        String code = SecureCodeGenerator.numeric(6);
         if (!verificationCodeStore.trySaveRebindCode(
                 REBIND_PROOF_SCOPE,
                 currentEmail,
@@ -216,7 +216,7 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
 
         EmailBuilder emailBuilder = requireEmailBuilder();
         SystemAccountSecurityProperties.Rebind.Email rebindConfig = accountSecurityProperties.getRebind().getEmail();
-        String code = RandomUtil.randomNumbers(6);
+        String code = SecureCodeGenerator.numeric(6);
         if (!verificationCodeStore.trySaveRebindCode(
                 REBIND_PROOF_SCOPE,
                 currentEmail,
@@ -302,7 +302,7 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
 
         EmailBuilder emailBuilder = requireEmailBuilder();
         SystemAccountSecurityProperties.Rebind.Email rebindConfig = accountSecurityProperties.getRebind().getEmail();
-        String code = RandomUtil.randomNumbers(6);
+        String code = SecureCodeGenerator.numeric(6);
         if (!verificationCodeStore.trySaveRebindCode("email", newEmail, code,
                 rebindConfig.getCodeTtlSeconds(), rebindConfig.getResendIntervalSeconds())) {
             throw new ApiException(BusinessErrorCode.REBIND_CODE_SEND_TOO_FREQUENT);
@@ -360,6 +360,9 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
         if (result == VerificationCodeStore.VerificationResult.EXPIRED) {
             throw new ApiException(BusinessErrorCode.REBIND_CODE_EXPIRED);
         }
+        if (result == VerificationCodeStore.VerificationResult.TOO_MANY_ATTEMPTS) {
+            throw new ApiException(BusinessErrorCode.VERIFY_CODE_TOO_MANY_ATTEMPTS);
+        }
         if (result == VerificationCodeStore.VerificationResult.INVALID) {
             throw new ApiException(BusinessErrorCode.REBIND_CODE_ERROR);
         }
@@ -387,6 +390,9 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
                 verificationCodeStore.verifyRebindCode(REBIND_PROOF_SCOPE, currentEmail, command.getCurrentEmailCode());
         if (emailCodeResult == VerificationCodeStore.VerificationResult.EXPIRED) {
             throw new ApiException(BusinessErrorCode.REBIND_CURRENT_EMAIL_CODE_EXPIRED);
+        }
+        if (emailCodeResult == VerificationCodeStore.VerificationResult.TOO_MANY_ATTEMPTS) {
+            throw new ApiException(BusinessErrorCode.VERIFY_CODE_TOO_MANY_ATTEMPTS);
         }
         if (emailCodeResult == VerificationCodeStore.VerificationResult.INVALID) {
             throw new ApiException(BusinessErrorCode.REBIND_CURRENT_EMAIL_CODE_ERROR);
@@ -458,7 +464,7 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
 
         EmailBuilder emailBuilder = requireEmailBuilder();
         SystemAccountSecurityProperties.Mfa.Email mfaConfig = accountSecurityProperties.getMfa().getEmail();
-        String code = RandomUtil.randomNumbers(6);
+        String code = SecureCodeGenerator.numeric(6);
         if (!verificationCodeStore.trySaveMfaCode(userId, code,
                 mfaConfig.getTtlSeconds(), mfaConfig.getResendIntervalSeconds())) {
             throw new ApiException(BusinessErrorCode.MFA_CODE_SEND_TOO_FREQUENT);
@@ -514,6 +520,9 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
                     verificationCodeStore.verifyMfaCode(userId, command.getCode());
             if (result == VerificationCodeStore.VerificationResult.EXPIRED) {
                 throw new ApiException(BusinessErrorCode.MFA_CODE_EXPIRED);
+            }
+            if (result == VerificationCodeStore.VerificationResult.TOO_MANY_ATTEMPTS) {
+                throw new ApiException(BusinessErrorCode.VERIFY_CODE_TOO_MANY_ATTEMPTS);
             }
             if (result == VerificationCodeStore.VerificationResult.INVALID) {
                 throw new ApiException(BusinessErrorCode.MFA_CODE_ERROR);
@@ -653,7 +662,7 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
     private List<String> generateRecoveryCodes() {
         List<String> recoveryCodes = new ArrayList<>(TOTP_RECOVERY_CODE_COUNT);
         for (int i = 0; i < TOTP_RECOVERY_CODE_COUNT; i++) {
-            recoveryCodes.add(RandomUtil.randomStringUpper(4) + "-" + RandomUtil.randomStringUpper(4));
+            recoveryCodes.add(SecureCodeGenerator.upperAlphaNumeric(4) + "-" + SecureCodeGenerator.upperAlphaNumeric(4));
         }
         return recoveryCodes;
     }
@@ -772,6 +781,9 @@ public class AccountSecurityServiceImpl implements AccountSecurityService {
                 verificationCodeStore.verifyRebindCode(REBIND_PROOF_SCOPE, currentEmail, currentEmailCode);
         if (result == VerificationCodeStore.VerificationResult.EXPIRED) {
             throw new ApiException(BusinessErrorCode.REBIND_CURRENT_EMAIL_CODE_EXPIRED);
+        }
+        if (result == VerificationCodeStore.VerificationResult.TOO_MANY_ATTEMPTS) {
+            throw new ApiException(BusinessErrorCode.VERIFY_CODE_TOO_MANY_ATTEMPTS);
         }
         if (result == VerificationCodeStore.VerificationResult.INVALID) {
             throw new ApiException(BusinessErrorCode.REBIND_CURRENT_EMAIL_CODE_ERROR);

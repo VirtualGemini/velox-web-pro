@@ -25,6 +25,9 @@ public class LoginCommand {
     @Schema(description = "openapi.system.auth.login_command.captcha_code_key")
     private String captchaCodeKey;
 
+    @Schema(description = "登录 captcha 一次性票据（滑块完成后由后端签发）")
+    private String captchaTicket;
+
     public LoginCommand() {
     }
 
@@ -58,5 +61,13 @@ public class LoginCommand {
 
     public void setCaptchaCodeKey(String captchaCodeKey) {
         this.captchaCodeKey = captchaCodeKey;
+    }
+
+    public String getCaptchaTicket() {
+        return captchaTicket;
+    }
+
+    public void setCaptchaTicket(String captchaTicket) {
+        this.captchaTicket = captchaTicket;
     }
 }

@@ -17,6 +17,7 @@ abstract class AbstractVerificationCodeStore implements VerificationCodeStore {
     protected static final String REBIND_SENT_PREFIX = "auth:rebind:sent:";
     protected static final String MFA_CODE_PREFIX = "auth:mfa:email:";
     protected static final String MFA_CODE_SENT_PREFIX = "auth:mfa:email:sent:";
+    protected static final String MFA_TOTP_ATTEMPT_PREFIX = "auth:mfa:totp-attempts:";
     protected static final String MFA_CHALLENGE_PREFIX = "auth:mfa:challenge:";
     protected static final String PROOF_TICKET_PREFIX = "auth:proof:";
 

@@ -13,6 +13,7 @@ import com.velox.module.system.account.dto.AdminPasswordResetCommand;
 import com.velox.module.system.account.dto.AdminSecurityEmailCommand;
 import com.velox.module.system.auth.properties.SystemAccountSecurityProperties;
 import com.velox.module.system.auth.service.PasswordCipherService;
+import com.velox.module.system.auth.session.AccountSessionService;
 import com.velox.module.system.domain.model.Account;
 import com.velox.module.system.domain.model.AccountSecurity;
 import com.velox.module.system.id.generator.SystemEntityIdGenerator;
@@ -46,6 +47,7 @@ public class AdminAccountSecurityServiceImpl implements AdminAccountSecurityServ
     private final PasswordCipherService passwordCipherService;
     private final SystemAccountSecurityProperties accountSecurityProperties;
     private final SecuritySessionService securitySessionService;
+    private final AccountSessionService accountSessionService;
     private final PermissionService permissionService;
     private final SystemEntityIdGenerator entityIdGenerator;
     private final SystemFrontendIdCodecSupport frontendIdCodecSupport;
@@ -55,6 +57,7 @@ public class AdminAccountSecurityServiceImpl implements AdminAccountSecurityServ
                                            PasswordCipherService passwordCipherService,
                                            SystemAccountSecurityProperties accountSecurityProperties,
                                            SecuritySessionService securitySessionService,
+                                           AccountSessionService accountSessionService,
                                            PermissionService permissionService,
                                            SystemEntityIdGenerator entityIdGenerator,
                                            SystemFrontendIdCodecSupport frontendIdCodecSupport) {
@@ -63,6 +66,7 @@ public class AdminAccountSecurityServiceImpl implements AdminAccountSecurityServ
         this.passwordCipherService = passwordCipherService;
         this.accountSecurityProperties = accountSecurityProperties;
         this.securitySessionService = securitySessionService;
+        this.accountSessionService = accountSessionService;
         this.permissionService = permissionService;
         this.entityIdGenerator = entityIdGenerator;
         this.frontendIdCodecSupport = frontendIdCodecSupport;
@@ -86,6 +90,9 @@ public class AdminAccountSecurityServiceImpl implements AdminAccountSecurityServ
         security.setLastPasswordChangeAt(LocalDateTime.now(ZoneOffset.UTC));
         security.setUpdateBy(operator);
         saveSecurity(security);
+        // 管理员重置后失效目标用户全部会话，强制其以新密码重新登录
+        accountSessionService.forceLogoutAll(user.getId());
+        securitySessionService.logoutByLoginId(user.getId());
         return true;
     }
 

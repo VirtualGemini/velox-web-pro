@@ -579,6 +579,45 @@ INSERT INTO `sys_access_control` (`id`, `general_register_enabled`, `forgot_pass
   ('1900000000000002010',1,1,'password,email_code','github,linuxdo','github,linuxdo','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 /*!40000 ALTER TABLE `sys_access_control` ENABLE KEYS */;
 
+--
+-- Table structure for table `sys_verification_policy`
+--
+
+DROP TABLE IF EXISTS `sys_verification_policy`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_verification_policy` (
+  `id` bigint NOT NULL COMMENT 'Primary Key ID',
+  `scene_key` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Scene key (login/verify_code/captcha/send_code/mfa)',
+  `enabled` tinyint DEFAULT '1' COMMENT 'Enabled (0-Off 1-On)',
+  `max_attempts` int DEFAULT NULL COMMENT 'Max retry attempts',
+  `recovery_seconds` int DEFAULT NULL COMMENT 'Recovery time (seconds)',
+  `limit_by_account` tinyint DEFAULT '1' COMMENT 'Limit by account/email dimension (0/1)',
+  `limit_by_ip` tinyint DEFAULT '0' COMMENT 'Limit by IP dimension (0/1)',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Created Time',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated Time',
+  `create_by` bigint DEFAULT NULL COMMENT 'Created By',
+  `update_by` bigint DEFAULT NULL COMMENT 'Updated By',
+  `deleted` tinyint DEFAULT '0' COMMENT 'Logical Delete (0-Not Deleted 1-Deleted)',
+  `active_scene_key` varchar(32) COLLATE utf8mb4_unicode_ci GENERATED ALWAYS AS ((case when (`deleted` = 0) then `scene_key` else NULL end)) STORED COMMENT 'Active scene key',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_verification_policy_scene` (`active_scene_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Verification Policy Config Table';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_verification_policy`
+--
+
+/*!40000 ALTER TABLE `sys_verification_policy` DISABLE KEYS */;
+INSERT INTO `sys_verification_policy` (`id`, `scene_key`, `enabled`, `max_attempts`, `recovery_seconds`, `limit_by_account`, `limit_by_ip`, `create_time`, `update_time`, `create_by`, `update_by`, `deleted`) VALUES
+  ('1900000000000019001','login',1,5,1800,1,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019002','verify_code',1,5,600,1,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019003','captcha',1,10,60,0,1,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019004','send_code',1,1,60,1,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019005','mfa',1,5,300,1,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+/*!40000 ALTER TABLE `sys_verification_policy` ENABLE KEYS */;
+
 -- Table structure for table `sys_menu`
 --
 
@@ -692,7 +731,10 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `menu_type`, `name`, `title`, `path`,
   ('1900000000000002005','1900000000000002002','button','AccessControlThirdPartyRegister','Third-party Registration',NULL,NULL,NULL,NULL,'settings:access-control:third-party-register',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000002006','1900000000000002002','button','AccessControlLoginMethod','Login Methods',NULL,NULL,NULL,NULL,'settings:access-control:login-method',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000002007','1900000000000002002','button','AccessControlThirdPartyLogin','Third-party Login',NULL,NULL,NULL,NULL,'settings:access-control:third-party-login',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000002008','1900000000000002002','button','AccessControlForgotPassword','Forgot Password',NULL,NULL,NULL,NULL,'settings:access-control:forgot-password',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+  ('1900000000000002008','1900000000000002002','button','AccessControlForgotPassword','Forgot Password',NULL,NULL,NULL,NULL,'settings:access-control:forgot-password',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019010','1900000000000002001','menu','VerificationSettings','Verification Settings','verification-settings','/settings/verification-settings',NULL,NULL,NULL,1,2,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019011','1900000000000019010','button','VerificationSettingsQuery','Query',NULL,NULL,NULL,NULL,'settings:verification-settings:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000019012','1900000000000019010','button','VerificationSettingsUpdate','Update',NULL,NULL,NULL,NULL,'settings:verification-settings:update',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 /*!40000 ALTER TABLE `sys_menu` ENABLE KEYS */;
 
 --

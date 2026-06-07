@@ -169,7 +169,7 @@
       if (!valid) return
 
       loading.value = true
-      const { token, refreshToken } = await fetchVerifyMfaChallenge({
+      const { token } = await fetchVerifyMfaChallenge({
         challenge: challenge.value,
         code: formData.code
       })
@@ -181,7 +181,6 @@
       await completeLogin({
         accountStore: userStore,
         token,
-        refreshToken,
         redirect: route.query.redirect as string | undefined,
         router,
         successTitle: t('login.success.title'),

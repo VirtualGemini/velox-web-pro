@@ -15,6 +15,16 @@ export function fetchLogin(params: Api.Auth.LoginParams) {
 }
 
 /**
+ * 获取登录滑块 captcha 一次性票据（滑块完成后调用，登录时随 payload 提交）
+ */
+export function fetchCaptchaTicket() {
+  return request.post<Api.Auth.CaptchaTicketResponse>({
+    url: '/api/auth/captcha/ticket',
+    showErrorMessage: false
+  })
+}
+
+/**
  * 发送登录验证码（邮箱）
  */
 export function fetchSendLoginCode(data: Api.Auth.LoginCodeSendParams) {

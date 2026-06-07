@@ -116,7 +116,7 @@
   import { useI18n } from 'vue-i18n'
   import { HttpError } from '@/utils/http/error'
   import { logger } from '@/utils/sys/logger'
-  import { fetchLogin, fetchGetAccessConfig } from '@/api/auth'
+  import { fetchLogin, fetchCaptchaTicket, fetchGetAccessConfig } from '@/api/auth'
   import type { FormInstance, FormRules } from 'element-plus'
   import { useSettingStore } from '@/store/modules/setting'
   import { completeLogin } from '../shared/completeLogin'
@@ -162,6 +162,26 @@
   const route = useRoute()
   const isPassing = ref(false)
   const isClickPass = ref(false)
+  // 滑块完成后由后端签发的一次性 captcha 票据（登录时随 payload 提交，一次性消费）
+  const captchaTicket = ref('')
+
+  const ensureCaptchaTicket = async () => {
+    try {
+      const res = await fetchCaptchaTicket()
+      captchaTicket.value = res.captchaTicket
+    } catch {
+      captchaTicket.value = ''
+    }
+  }
+
+  // 滑块通过即向后端取票；滑块重置/失效则清票
+  watch(isPassing, (passed) => {
+    if (passed) {
+      ensureCaptchaTicket()
+    } else {
+      captchaTicket.value = ''
+    }
+  })
 
   const formRef = ref<FormInstance>()
 
@@ -195,15 +215,21 @@
 
       loading.value = true
 
+      // 兜底：滑块已过但票据尚未就绪时，登录前补取
+      if (!captchaTicket.value) {
+        await ensureCaptchaTicket()
+      }
+
       // 登录请求
       const { username, password } = formData
 
       const response = await fetchLogin({
         userName: username,
-        password
+        password,
+        captchaTicket: captchaTicket.value || undefined
       })
 
-      const { token, refreshToken, mfaChallenge, mfaType, mfaEmailMasked, mfaTotpDigits } = response
+      const { token, mfaChallenge, mfaType, mfaEmailMasked, mfaTotpDigits } = response
 
       if (mfaChallenge) {
         grantAuthRouteAccess('MfaChallenge')
@@ -222,7 +248,7 @@
 
       if (response.pendingDeletion) {
         if (response.token) {
-          userStore.setToken(response.token, response.refreshToken)
+          userStore.setToken(response.token)
         }
         userStore.setPendingDeletionLogin(response)
         userStore.setAccountInfo({
@@ -245,7 +271,6 @@
       await completeLogin({
         accountStore: userStore,
         token,
-        refreshToken,
         redirect: route.query.redirect as string | undefined,
         router,
         successTitle: t('login.success.title'),
@@ -262,9 +287,10 @@
     }
   }
 
-  // 重置拖拽验证
+  // 重置拖拽验证（票据一次性消费，重置后需重新取票）
   const resetDragVerify = () => {
     dragVerify.value?.reset()
+    captchaTicket.value = ''
   }
 </script>
 

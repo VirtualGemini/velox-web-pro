@@ -250,6 +250,12 @@
 
 <style lang="scss" scoped>
   .access-control-page {
+    // 该页为普通表单内容（非 VeloxTable 自管滚动），需让卡片体在内容超高时滚动，
+    // 覆盖 .velox-table-card .el-card__body 的 overflow:hidden（仅作用于本页）。
+    :deep(.el-card__body) {
+      overflow-y: auto;
+    }
+
     .page-header {
       margin-bottom: 20px;
 

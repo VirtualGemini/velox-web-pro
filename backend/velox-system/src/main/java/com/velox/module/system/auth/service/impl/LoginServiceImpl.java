@@ -1,7 +1,7 @@
 package com.velox.module.system.auth.service.impl;
 
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.util.RandomUtil;
+import com.velox.module.system.auth.support.SecureCodeGenerator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.velox.common.exception.ApiException;
 import com.velox.common.exception.BusinessErrorCode;
@@ -10,6 +10,7 @@ import com.velox.email.api.message.SendResponse;
 import com.velox.email.common.error.EmailErrorCode;
 import com.velox.framework.security.api.session.SecuritySessionService;
 import com.velox.module.system.auth.dto.CaptchaDTO;
+import com.velox.module.system.auth.dto.CaptchaTicketDTO;
 import com.velox.module.system.auth.dto.CodeLoginCommand;
 import com.velox.module.system.auth.dto.ForgotPasswordCodeCommand;
 import com.velox.module.system.auth.dto.LoginCodeSendCommand;
@@ -23,6 +24,10 @@ import com.velox.module.system.auth.properties.SystemAccountSecurityProperties;
 import com.velox.module.system.auth.properties.SystemAuthProperties;
 import com.velox.module.system.auth.service.LoginService;
 import com.velox.module.system.auth.service.PasswordCipherService;
+import com.velox.module.system.auth.session.AccountSessionService;
+import com.velox.module.system.verification.common.VerificationScene;
+import com.velox.module.system.verification.enforce.ClientIpHolder;
+import com.velox.module.system.verification.enforce.VerificationPolicyEnforcer;
 import com.velox.module.system.auth.status.ActiveUserStatusService;
 import com.velox.module.system.auth.store.VerificationCodeStore;
 import com.velox.module.system.accesscontrol.service.AccessControlService;
@@ -67,6 +72,7 @@ public class LoginServiceImpl implements LoginService {
             "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     private static final java.util.regex.Pattern PHONE_PATTERN = java.util.regex.Pattern.compile(
             "^1\\d{10}$");
+    private static final String CAPTCHA_SCENE = "login-captcha";
 
     private final AccountMapper userMapper;
     private final ProfileMapper profileMapper;
@@ -81,6 +87,8 @@ public class LoginServiceImpl implements LoginService {
     private final VerificationCodeStore verificationCodeStore;
     private final ActiveUserStatusService activeUserStatusService;
     private final SecuritySessionService securitySessionService;
+    private final AccountSessionService accountSessionService;
+    private final VerificationPolicyEnforcer verificationPolicyEnforcer;
     private final TotpService totpService;
     private final AccessControlService accessControlService;
     private final MailTemplateRenderService mailTemplateRenderService;
@@ -99,6 +107,8 @@ public class LoginServiceImpl implements LoginService {
                             VerificationCodeStore verificationCodeStore,
                             ActiveUserStatusService activeUserStatusService,
                             SecuritySessionService securitySessionService,
+                            AccountSessionService accountSessionService,
+                            VerificationPolicyEnforcer verificationPolicyEnforcer,
                             TotpService totpService,
                             AccessControlService accessControlService,
                             MailTemplateRenderService mailTemplateRenderService,
@@ -116,6 +126,8 @@ public class LoginServiceImpl implements LoginService {
         this.verificationCodeStore = verificationCodeStore;
         this.activeUserStatusService = activeUserStatusService;
         this.securitySessionService = securitySessionService;
+        this.accountSessionService = accountSessionService;
+        this.verificationPolicyEnforcer = verificationPolicyEnforcer;
         this.totpService = totpService;
         this.accessControlService = accessControlService;
         this.mailTemplateRenderService = mailTemplateRenderService;
@@ -138,6 +150,14 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
+    public CaptchaTicketDTO issueCaptchaTicket() {
+        String ticket = IdUtil.simpleUUID();
+        int ttl = authProperties.getCaptcha().getTicketTtlSeconds();
+        verificationCodeStore.saveProofTicket(CAPTCHA_SCENE, ticket, "1", ttl);
+        return new CaptchaTicketDTO(ticket, ttl);
+    }
+
+    @Override
     public AccessControlRespVO getAccessConfig() {
         return accessControlService.getConfig();
     }
@@ -145,10 +165,11 @@ public class LoginServiceImpl implements LoginService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public TokenDTO login(LoginCommand command) {
-        validateCaptchaIfPresent(command.getCaptchaCode(), command.getCaptchaCodeKey());
+        validateCaptchaTicket(command.getCaptchaTicket());
 
         String username = command.getUsername();
         String password = command.getPassword();
+        String ip = ClientIpHolder.get();
 
         if (username == null || username.isBlank()) {
             throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
@@ -159,15 +180,19 @@ public class LoginServiceImpl implements LoginService {
         }
 
         Account user = findUserByAccount(username);
+        String acct = user != null ? user.getUsername() : username.trim();
+
+        if (verificationPolicyEnforcer.isLocked(VerificationScene.LOGIN, acct, ip)) {
+            throw new ApiException(BusinessErrorCode.ACCOUNT_LOCKED);
+        }
 
         if (user == null) {
+            verificationPolicyEnforcer.recordFailure(VerificationScene.LOGIN, acct, ip);
             throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
         }
 
-        checkLoginLock(user);
-
         if (!passwordCipherService.matches(password, user.getPassword())) {
-            increaseLoginFailCount(user);
+            verificationPolicyEnforcer.recordFailure(VerificationScene.LOGIN, acct, ip);
             throw new ApiException(BusinessErrorCode.LOGIN_FAILED);
         }
 
@@ -182,7 +207,7 @@ public class LoginServiceImpl implements LoginService {
         AccountSecurity security = ensureUserSecurity(user);
         ensureLoginMethodAllowed(security, "password");
 
-        resetLoginFailCount(user);
+        verificationPolicyEnforcer.reset(VerificationScene.LOGIN, acct, ip);
         upgradePasswordIfNeeded(user, password);
 
         String mfaType = resolveMfaType(security, "password");
@@ -268,11 +293,17 @@ public class LoginServiceImpl implements LoginService {
 
         Account user = findUserByEmail(email);
         if (user == null) {
-            throw new ApiException(BusinessErrorCode.EMAIL_NOT_BOUND);
+            // 中性化：邮箱不存在时静默成功，避免邮箱枚举
+            return;
         }
+        String resetSendIp = ClientIpHolder.get();
+        if (verificationPolicyEnforcer.isLocked(VerificationScene.SEND_CODE, email, resetSendIp)) {
+            throw new ApiException(BusinessErrorCode.RESET_CODE_SEND_TOO_FREQUENT);
+        }
+        verificationPolicyEnforcer.recordFailure(VerificationScene.SEND_CODE, email, resetSendIp);
 
         EmailBuilder emailBuilder = requireEmailBuilder();
-        String code = RandomUtil.randomNumbers(6);
+        String code = SecureCodeGenerator.numeric(6);
         if (!verificationCodeStore.trySaveResetCode(email, code)) {
             throw new ApiException(BusinessErrorCode.RESET_CODE_SEND_TOO_FREQUENT);
         }
@@ -316,13 +347,17 @@ public class LoginServiceImpl implements LoginService {
 
         Account user = findUserByEmail(email);
         if (user == null) {
-            throw new ApiException(BusinessErrorCode.EMAIL_NOT_BOUND);
+            // 中性化：与验证码错误同义，避免邮箱枚举
+            throw new ApiException(BusinessErrorCode.RESET_CODE_ERROR);
         }
 
         VerificationCodeStore.VerificationResult verificationResult =
                 verificationCodeStore.verifyResetCode(email, command.getCode());
         if (verificationResult == VerificationCodeStore.VerificationResult.EXPIRED) {
             throw new ApiException(BusinessErrorCode.RESET_CODE_EXPIRED);
+        }
+        if (verificationResult == VerificationCodeStore.VerificationResult.TOO_MANY_ATTEMPTS) {
+            throw new ApiException(BusinessErrorCode.VERIFY_CODE_TOO_MANY_ATTEMPTS);
         }
         if (verificationResult == VerificationCodeStore.VerificationResult.INVALID) {
             throw new ApiException(BusinessErrorCode.RESET_CODE_ERROR);
@@ -336,6 +371,9 @@ public class LoginServiceImpl implements LoginService {
         user.setLoginFailCount(0);
         user.setLoginFailTime(null);
         userMapper.updateById(user);
+        // 找回密码后失效该用户全部会话，封堵任何既有（含攻击者）会话
+        accountSessionService.forceLogoutAll(user.getId());
+        securitySessionService.logoutByLoginId(user.getId());
     }
 
     @Override
@@ -361,11 +399,17 @@ public class LoginServiceImpl implements LoginService {
 
         Account user = findUserByEmail(email);
         if (user == null) {
-            throw new ApiException(BusinessErrorCode.EMAIL_NOT_BOUND);
+            // 中性化：邮箱不存在时静默成功，避免邮箱枚举
+            return;
         }
+        String sendIp = ClientIpHolder.get();
+        if (verificationPolicyEnforcer.isLocked(VerificationScene.SEND_CODE, email, sendIp)) {
+            throw new ApiException(BusinessErrorCode.LOGIN_CODE_SEND_TOO_FREQUENT);
+        }
+        verificationPolicyEnforcer.recordFailure(VerificationScene.SEND_CODE, email, sendIp);
 
         EmailBuilder emailBuilder = requireEmailBuilder();
-        String code = RandomUtil.randomNumbers(6);
+        String code = SecureCodeGenerator.numeric(6);
         if (!verificationCodeStore.trySaveLoginCode(email, code)) {
             throw new ApiException(BusinessErrorCode.LOGIN_CODE_SEND_TOO_FREQUENT);
         }
@@ -409,18 +453,25 @@ public class LoginServiceImpl implements LoginService {
 
         Account user = findUserByEmail(email);
         if (user == null) {
-            throw new ApiException(BusinessErrorCode.EMAIL_NOT_BOUND);
+            // 中性化：与验证码错误同义，避免邮箱枚举
+            throw new ApiException(BusinessErrorCode.LOGIN_CODE_ERROR);
         }
 
-        checkLoginLock(user);
+        String ip = ClientIpHolder.get();
+        if (verificationPolicyEnforcer.isLocked(VerificationScene.LOGIN, user.getUsername(), ip)) {
+            throw new ApiException(BusinessErrorCode.ACCOUNT_LOCKED);
+        }
 
         VerificationCodeStore.VerificationResult verificationResult =
                 verificationCodeStore.verifyLoginCode(email, command.getCode());
         if (verificationResult == VerificationCodeStore.VerificationResult.EXPIRED) {
             throw new ApiException(BusinessErrorCode.LOGIN_CODE_EXPIRED);
         }
+        if (verificationResult == VerificationCodeStore.VerificationResult.TOO_MANY_ATTEMPTS) {
+            throw new ApiException(BusinessErrorCode.VERIFY_CODE_TOO_MANY_ATTEMPTS);
+        }
         if (verificationResult == VerificationCodeStore.VerificationResult.INVALID) {
-            increaseLoginFailCount(user);
+            verificationPolicyEnforcer.recordFailure(VerificationScene.LOGIN, user.getUsername(), ip);
             throw new ApiException(BusinessErrorCode.LOGIN_CODE_ERROR);
         }
 
@@ -435,7 +486,7 @@ public class LoginServiceImpl implements LoginService {
         AccountSecurity security = ensureUserSecurity(user);
         ensureLoginMethodAllowed(security, "email_code");
 
-        resetLoginFailCount(user);
+        verificationPolicyEnforcer.reset(VerificationScene.LOGIN, user.getUsername(), ip);
 
         // 邮箱验证码登录天然完成了邮箱因素校验，因此跳过邮箱二次验证；
         // 但 TOTP 是独立因素，仍需要继续走虚拟 MFA 设备验证挑战。
@@ -474,8 +525,13 @@ public class LoginServiceImpl implements LoginService {
         }
 
         EmailBuilder emailBuilder = requireEmailBuilder();
+        String mfaSendIp = ClientIpHolder.get();
+        if (verificationPolicyEnforcer.isLocked(VerificationScene.SEND_CODE, userId, mfaSendIp)) {
+            throw new ApiException(BusinessErrorCode.MFA_CODE_SEND_TOO_FREQUENT);
+        }
+        verificationPolicyEnforcer.recordFailure(VerificationScene.SEND_CODE, userId, mfaSendIp);
         SystemAccountSecurityProperties.Mfa.Email mfaConfig = accountSecurityProperties.getMfa().getEmail();
-        String code = RandomUtil.randomNumbers(6);
+        String code = SecureCodeGenerator.numeric(6);
         if (!verificationCodeStore.trySaveMfaCode(userId, code,
                 mfaConfig.getTtlSeconds(), mfaConfig.getResendIntervalSeconds())) {
             throw new ApiException(BusinessErrorCode.MFA_CODE_SEND_TOO_FREQUENT);
@@ -521,12 +577,17 @@ public class LoginServiceImpl implements LoginService {
         }
 
         AccountSecurity security = ensureUserSecurity(user);
+        String mfaIp = ClientIpHolder.get();
+        if (verificationPolicyEnforcer.isLocked(VerificationScene.MFA, userId, mfaIp)) {
+            throw new ApiException(BusinessErrorCode.ACCOUNT_LOCKED);
+        }
         if (Integer.valueOf(1).equals(security.getMfaTotpEnabled())) {
             if (!StringUtils.hasText(security.getMfaTotpSecret())) {
                 throw new ApiException(BusinessErrorCode.MFA_TOTP_NOT_PROVISIONED);
             }
             TotpVerifyResult totpResult = totpService.verify(security.getMfaTotpSecret(), command.getCode());
             if (!totpResult.matched()) {
+                verificationPolicyEnforcer.recordFailure(VerificationScene.MFA, userId, mfaIp);
                 throw new ApiException(BusinessErrorCode.MFA_TOTP_CODE_ERROR);
             }
         } else if (Integer.valueOf(1).equals(security.getMfaEmailEnabled())) {
@@ -535,7 +596,11 @@ public class LoginServiceImpl implements LoginService {
             if (result == VerificationCodeStore.VerificationResult.EXPIRED) {
                 throw new ApiException(BusinessErrorCode.MFA_CODE_EXPIRED);
             }
+            if (result == VerificationCodeStore.VerificationResult.TOO_MANY_ATTEMPTS) {
+                throw new ApiException(BusinessErrorCode.VERIFY_CODE_TOO_MANY_ATTEMPTS);
+            }
             if (result == VerificationCodeStore.VerificationResult.INVALID) {
+                verificationPolicyEnforcer.recordFailure(VerificationScene.MFA, userId, mfaIp);
                 throw new ApiException(BusinessErrorCode.MFA_CODE_ERROR);
             }
         } else {
@@ -543,6 +608,7 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.MFA_NOT_ENABLED);
         }
 
+        verificationPolicyEnforcer.reset(VerificationScene.MFA, userId, mfaIp);
         verificationCodeStore.consumeMfaChallenge(command.getChallenge());
 
         return performLogin(user);
@@ -713,57 +779,18 @@ public class LoginServiceImpl implements LoginService {
                 .collect(Collectors.toList());
     }
 
-    private void validateCaptchaIfPresent(String captchaCode, String key) {
-        boolean captchaCodeBlank = captchaCode == null || captchaCode.isBlank();
-        boolean keyBlank = key == null || key.isBlank();
-
-        if (captchaCodeBlank && keyBlank) {
+    private void validateCaptchaTicket(String captchaTicket) {
+        // 灰度/应急：未强制时跳过票据校验（受 velox.system.auth.captcha.enforce 控制）。
+        if (!authProperties.getCaptcha().isEnforce()) {
             return;
         }
-
-        if (captchaCodeBlank || keyBlank) {
+        if (captchaTicket == null || captchaTicket.isBlank()) {
             throw new ApiException(BusinessErrorCode.CAPTCHA_ERROR);
         }
-
-        VerificationCodeStore.VerificationResult captchaResult = verificationCodeStore.consumeCaptcha(key, captchaCode);
-        if (captchaResult == VerificationCodeStore.VerificationResult.EXPIRED) {
-            throw new ApiException(BusinessErrorCode.CAPTCHA_EXPIRED);
-        }
-        if (captchaResult == VerificationCodeStore.VerificationResult.INVALID) {
+        // 一次性消费：缺失/已用/过期均为 null。
+        String result = verificationCodeStore.consumeProofTicket(CAPTCHA_SCENE, captchaTicket);
+        if (result == null) {
             throw new ApiException(BusinessErrorCode.CAPTCHA_ERROR);
-        }
-    }
-
-    private void checkLoginLock(Account user) {
-        if (user.getLoginFailTime() == null) {
-            return;
-        }
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-        if (user.getLoginFailTime().isAfter(now)) {
-            throw new ApiException(BusinessErrorCode.ACCOUNT_LOCKED);
-        }
-        user.setLoginFailCount(0);
-        user.setLoginFailTime(null);
-        userMapper.updateById(user);
-    }
-
-    private void increaseLoginFailCount(Account user) {
-        int failCount = user.getLoginFailCount() == null ? 0 : user.getLoginFailCount();
-        user.setLoginFailCount(failCount + 1);
-
-        if (failCount + 1 >= authProperties.getLogin().getMaxFailCount()) {
-            user.setLoginFailTime(LocalDateTime.now(ZoneOffset.UTC)
-                    .plusMinutes(authProperties.getLogin().getLockMinutes()));
-        }
-
-        userMapper.updateById(user);
-    }
-
-    private void resetLoginFailCount(Account user) {
-        if (user.getLoginFailCount() != null && user.getLoginFailCount() > 0) {
-            user.setLoginFailCount(0);
-            user.setLoginFailTime(null);
-            userMapper.updateById(user);
         }
     }
 

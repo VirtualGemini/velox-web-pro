@@ -21,7 +21,7 @@ spring:
     import: classpath:id.yml
   profiles:
     # 当前默认激活环境
-    active: dev
+    active: local
   application:
     # 应用名称
     name: velox
@@ -183,6 +183,7 @@ velox:
           - /login-code/send
           - /login-code/login
           - /captcha
+          - /captcha/ticket
           - /access-config
           - /register
           - /forgot-password/code
@@ -215,10 +216,14 @@ velox:
           # 显式退出登录后的离线判定秒数；设置为 0 表示立即离线
           logout-offline-seconds: 120
       captcha:
-        # 图形验证码有效期（秒）
+        # 图形验证码有效期（秒）；旧图形验证码已弃用，仅保留端点
         ttl-seconds: 120
         # 验证码缓存的最大条数
         max-cache-size: 10000
+        # 是否强制登录滑块 captcha 票据校验；灰度/应急可关（关时 login 跳过票据校验）
+        enforce: false
+        # 登录 captcha 票据有效期（秒）
+        ticket-ttl-seconds: 180
       verification:
         # 验证码 HMAC 摘要密钥，建议通过环境变量覆盖
         secret: ${VERIFICATION_SECRET:change-this-verification-secret}
@@ -226,6 +231,17 @@ velox:
         reset-code-ttl-seconds: 600
         # 邮件重置验证码重复发送间隔（秒）
         reset-code-resend-interval-seconds: 60
+        # 同一验证码允许的最大错误次数，达到即作废（需重新获取）
+        max-verify-attempts: 5
+      rate-limit:
+        # 认证端点 IP 限流总开关；应急可关（Redis 异常时本就 fail-open 放行）
+        enabled: true
+        trusted-proxy:
+          # 是否信任 X-Forwarded-For。默认 false 仅取 remoteAddr，防止伪造绕过限流；
+          # 生产部署在反代/LB 后必须开启并设正确跳数，否则全员共享 LB IP 误限
+          enabled: false
+          trusted-hops: 1
+        # 各端点 IP 维度限额默认见 SystemAuthProperties.RateLimit；如需调整在此用 rules 覆盖
     account-security:
       login-methods:
         # 全局允许的登录方式集合（用户层选择只能取该集合的子集）
