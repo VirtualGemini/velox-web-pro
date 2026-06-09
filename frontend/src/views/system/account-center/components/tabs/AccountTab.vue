@@ -98,7 +98,7 @@
       <h1 class="text-xl font-medium leading-8 text-g-900">
         {{ t('pages.system.accountCenter.account.title') }}
       </h1>
-      <p class="mt-1 text-sm text-g-600">
+      <p class="mt-1 text-sm leading-6 text-g-600">
         {{ t('pages.system.accountCenter.account.desc') }}
       </p>
     </header>
