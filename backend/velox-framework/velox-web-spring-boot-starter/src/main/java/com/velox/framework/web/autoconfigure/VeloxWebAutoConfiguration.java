@@ -7,6 +7,7 @@ import com.velox.framework.web.common.servlet.WebFilterNames;
 import com.velox.framework.web.core.logging.DefaultRequestLogHandler;
 import com.velox.framework.web.core.mvc.DefaultVeloxWebMvcConfigurer;
 import com.velox.framework.web.core.path.DefaultApiPathPrefixResolver;
+import com.velox.framework.web.core.json.RequestZoneLocalDateTimeSerializer;
 import com.velox.framework.web.core.locale.DefaultRequestLocaleResolver;
 import com.velox.framework.web.core.servlet.DefaultRequestLocaleFilterRegistrationCustomizer;
 import com.velox.framework.web.core.servlet.DefaultRequestTimeZoneFilterRegistrationCustomizer;
@@ -25,6 +26,7 @@ import com.velox.framework.web.spi.timezone.RequestTimeZoneResolver;
 import com.velox.framework.web.spi.servlet.TraceIdFilterRegistrationCustomizer;
 import com.velox.framework.web.spi.tracing.TraceIdResolver;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -32,6 +34,8 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.LocaleResolver;
+
+import java.time.LocalDateTime;
 
 @AutoConfiguration(before = WebMvcAutoConfiguration.class)
 @EnableConfigurationProperties(VeloxProperties.class)
@@ -41,6 +45,15 @@ public class VeloxWebAutoConfiguration {
     @ConditionalOnMissingBean
     public ApiPathPrefixResolver apiPathPrefixResolver() {
         return new DefaultApiPathPrefixResolver();
+    }
+
+    /**
+     * 全局将 {@link LocalDateTime} 响应字段按当前请求时区输出为 {@code yyyy-MM-dd HH:mm:ss}，
+     * 替代 Jackson 默认的 ISO-8601(含 {@code T}) 格式，统一所有接口的时间展示。
+     */
+    @Bean
+    public Jackson2ObjectMapperBuilderCustomizer veloxLocalDateTimeSerializerCustomizer() {
+        return builder -> builder.serializerByType(LocalDateTime.class, new RequestZoneLocalDateTimeSerializer());
     }
 
     @Bean

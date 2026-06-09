@@ -40,6 +40,10 @@ import com.velox.module.system.domain.model.AccountRole;
 import com.velox.module.system.domain.model.AccountSecurity;
 import com.velox.module.system.domain.model.AccountSession;
 import com.velox.module.system.id.generator.SystemEntityIdGenerator;
+import com.velox.module.system.log.domain.model.LoginLogRecord;
+import com.velox.module.system.log.event.LoginLogEvent;
+import com.velox.module.system.log.persistence.LoginLogMapper;
+import com.velox.module.system.log.support.LogRecordEnricher;
 import com.velox.module.system.mail.service.MailTemplateRenderService;
 import com.velox.module.system.mail.template.MailTemplateType;
 import com.velox.module.system.mail.template.RecipientLanguageResolver;
@@ -53,9 +57,16 @@ import com.velox.framework.totp.api.model.TotpVerifyResult;
 import com.velox.framework.totp.api.service.TotpService;
 import com.wf.captcha.SpecCaptcha;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -93,6 +104,9 @@ public class LoginServiceImpl implements LoginService {
     private final AccessControlService accessControlService;
     private final MailTemplateRenderService mailTemplateRenderService;
     private final RecipientLanguageResolver recipientLanguageResolver;
+    private final ApplicationEventPublisher eventPublisher;
+    private final LogRecordEnricher logRecordEnricher;
+    private final LoginLogMapper loginLogMapper;
 
     public LoginServiceImpl(AccountMapper userMapper,
                             ProfileMapper profileMapper,
@@ -112,7 +126,10 @@ public class LoginServiceImpl implements LoginService {
                             TotpService totpService,
                             AccessControlService accessControlService,
                             MailTemplateRenderService mailTemplateRenderService,
-                            RecipientLanguageResolver recipientLanguageResolver) {
+                            RecipientLanguageResolver recipientLanguageResolver,
+                            ApplicationEventPublisher eventPublisher,
+                            LogRecordEnricher logRecordEnricher,
+                            LoginLogMapper loginLogMapper) {
         this.userMapper = userMapper;
         this.profileMapper = profileMapper;
         this.roleMapper = roleMapper;
@@ -132,6 +149,9 @@ public class LoginServiceImpl implements LoginService {
         this.accessControlService = accessControlService;
         this.mailTemplateRenderService = mailTemplateRenderService;
         this.recipientLanguageResolver = recipientLanguageResolver;
+        this.eventPublisher = eventPublisher;
+        this.logRecordEnricher = logRecordEnricher;
+        this.loginLogMapper = loginLogMapper;
     }
 
     @Override
@@ -165,6 +185,19 @@ public class LoginServiceImpl implements LoginService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public TokenDTO login(LoginCommand command) {
+        String username = command.getUsername();
+        try {
+            TokenDTO token = doPasswordLogin(command);
+            String mfaType = token != null ? token.getMfaType() : null;
+            publishLoginLog(null, username, "LOGIN", "password", mfaType, true, null, null, token != null ? token.getSessionId() : null);
+            return token;
+        } catch (ApiException exception) {
+            publishLoginLog(null, username, "LOGIN", "password", null, false, String.valueOf(exception.getErrorCode().code()), exception.getRawMessage(), null);
+            throw exception;
+        }
+    }
+
+    private TokenDTO doPasswordLogin(LoginCommand command) {
         validateCaptchaTicket(command.getCaptchaTicket());
 
         String username = command.getUsername();
@@ -381,8 +414,10 @@ public class LoginServiceImpl implements LoginService {
     public void logout() {
         String userId = securitySessionService.currentLoginIdOrNull();
         String tokenValue = securitySessionService.currentTokenOrNull();
+        String sessionId = activeUserStatusService.sessionIdByToken(tokenValue);
         securitySessionService.logout();
         activeUserStatusService.recordLogout(userId, tokenValue);
+        publishLoginLog(userId, null, "LOGOUT", null, null, true, null, null, sessionId);
     }
 
     @Override
@@ -441,6 +476,17 @@ public class LoginServiceImpl implements LoginService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public TokenDTO loginByCode(CodeLoginCommand command) {
+        try {
+            TokenDTO token = doLoginByCode(command);
+            publishLoginLog(null, command.getTarget(), "LOGIN", "email_code", token != null ? token.getMfaType() : null, true, null, null, token != null ? token.getSessionId() : null);
+            return token;
+        } catch (ApiException exception) {
+            publishLoginLog(null, command.getTarget(), "LOGIN", "email_code", null, false, String.valueOf(exception.getErrorCode().code()), exception.getRawMessage(), null);
+            throw exception;
+        }
+    }
+
+    private TokenDTO doLoginByCode(CodeLoginCommand command) {
         String type = command.getType() == null ? "" : command.getType().trim().toLowerCase();
         if (!"email".equals(type)) {
             throw new ApiException(BusinessErrorCode.EMAIL_REQUIRED);
@@ -564,6 +610,18 @@ public class LoginServiceImpl implements LoginService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public TokenDTO verifyMfaChallenge(MfaChallengeVerifyCommand command) {
+        String userIdForLog = verificationCodeStore.peekMfaChallenge(command.getChallenge());
+        try {
+            TokenDTO token = doVerifyMfaChallenge(command);
+            publishLoginLog(userIdForLog, null, "MFA_VERIFY", null, null, true, null, null, token != null ? token.getSessionId() : null);
+            return token;
+        } catch (ApiException exception) {
+            publishLoginLog(userIdForLog, null, "MFA_VERIFY", null, null, false, String.valueOf(exception.getErrorCode().code()), exception.getRawMessage(), null);
+            throw exception;
+        }
+    }
+
+    private TokenDTO doVerifyMfaChallenge(MfaChallengeVerifyCommand command) {
         String userId = verificationCodeStore.peekMfaChallenge(command.getChallenge());
         if (!StringUtils.hasText(userId)) {
             throw new ApiException(BusinessErrorCode.MFA_CHALLENGE_EXPIRED);
@@ -627,7 +685,9 @@ public class LoginServiceImpl implements LoginService {
             }
             throw exception;
         }
-        return new TokenDTO(token, null);
+        TokenDTO dto = new TokenDTO(token, null);
+        dto.setSessionId(sessionId);
+        return dto;
     }
 
     private TokenDTO issuePendingDeletionToken(Account user) {
@@ -641,6 +701,7 @@ public class LoginServiceImpl implements LoginService {
         AccountSecurity security = ensureUserSecurity(user);
         TokenDTO dto = new TokenDTO();
         dto.setToken(token);
+        dto.setSessionId(sessionId);
         dto.setPendingDeletion(true);
         dto.setAccountId(user.getId());
         dto.setUserName(user.getUsername());
@@ -865,5 +926,128 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiException(BusinessErrorCode.EMAIL_SERVICE_DISABLED);
         }
         return emailBuilder;
+    }
+
+    private void publishLoginLog(String accountId,
+                                 String username,
+                                 String eventType,
+                                 String loginMethod,
+                                 String mfaType,
+                                 boolean success,
+                                 String failureCode,
+                                 String failureMessage,
+                                 String sessionId) {
+        try {
+            Account account = null;
+            if (StringUtils.hasText(accountId)) {
+                account = userMapper.selectOne(new LambdaQueryWrapper<Account>()
+                        .eq(Account::getId, accountId)
+                        .eq(Account::getDeleted, 0)
+                        .last("limit 1"));
+            } else if (StringUtils.hasText(username)) {
+                account = findUserByAccount(username);
+            }
+            LoginLogRecord record = new LoginLogRecord();
+            record.setAccountId(account != null ? account.getId() : accountId);
+            record.setUsername(account != null ? account.getUsername() : normalizeLogUsername(username));
+            record.setEventType(eventType);
+            record.setLoginMethod(loginMethod);
+            record.setMfaType(mfaType);
+            record.setResult(success ? 1 : 0);
+            record.setFailureCode(failureCode);
+            record.setFailureMessage(failureMessage);
+            record.setSessionId(sessionId);
+            if ("LOGOUT".equals(eventType)) {
+                record.setLogoutTime(LocalDateTime.now(ZoneOffset.UTC));
+            }
+            record.setEventTime(LocalDateTime.now(ZoneOffset.UTC));
+            record.setFirstLogin(isFirstLogin(record.getAccountId()));
+            logRecordEnricher.enrich(record, currentRequest());
+            record.setRiskType(resolveLoginRisk(record));
+            publishLoginLogEvent(record, success);
+        } catch (RuntimeException ignored) {
+            // Logging must never affect authentication flow.
+        }
+    }
+
+    private void publishLoginLogEvent(LoginLogRecord record, boolean success) {
+        Runnable publisher = () -> eventPublisher.publishEvent(new LoginLogEvent(record));
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            publisher.run();
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                if (success) {
+                    publisher.run();
+                }
+            }
+
+            @Override
+            public void afterCompletion(int status) {
+                if (!success) {
+                    publisher.run();
+                }
+            }
+        });
+    }
+
+    private String normalizeLogUsername(String username) {
+        if (!StringUtils.hasText(username)) {
+            return null;
+        }
+        return username.trim();
+    }
+
+    private Integer isFirstLogin(String accountId) {
+        if (!StringUtils.hasText(accountId)) {
+            return null;
+        }
+        long count = loginLogMapper.selectCount(new LambdaQueryWrapper<LoginLogRecord>()
+                .eq(LoginLogRecord::getDeleted, 0)
+                .eq(LoginLogRecord::getAccountId, accountId)
+                .eq(LoginLogRecord::getEventType, "LOGIN")
+                .eq(LoginLogRecord::getResult, 1));
+        return count == 0 ? 1 : 0;
+    }
+
+    private String resolveLoginRisk(LoginLogRecord record) {
+        if (record == null || record.getResult() == null || record.getResult() != 1 || !StringUtils.hasText(record.getAccountId())) {
+            return "NONE";
+        }
+        if (Integer.valueOf(1).equals(record.getFirstLogin())) {
+            return "NONE";
+        }
+        if (StringUtils.hasText(record.getClientIp())) {
+            long sameIpCount = loginLogMapper.selectCount(new LambdaQueryWrapper<LoginLogRecord>()
+                    .eq(LoginLogRecord::getDeleted, 0)
+                    .eq(LoginLogRecord::getAccountId, record.getAccountId())
+                    .eq(LoginLogRecord::getEventType, "LOGIN")
+                    .eq(LoginLogRecord::getResult, 1)
+                    .eq(LoginLogRecord::getClientIp, record.getClientIp()));
+            if (sameIpCount == 0) {
+                return "NEW_LOCATION";
+            }
+        }
+        if (StringUtils.hasText(record.getUserAgent())) {
+            long sameDeviceCount = loginLogMapper.selectCount(new LambdaQueryWrapper<LoginLogRecord>()
+                    .eq(LoginLogRecord::getDeleted, 0)
+                    .eq(LoginLogRecord::getAccountId, record.getAccountId())
+                    .eq(LoginLogRecord::getEventType, "LOGIN")
+                    .eq(LoginLogRecord::getResult, 1)
+                    .eq(LoginLogRecord::getUserAgent, record.getUserAgent()));
+            if (sameDeviceCount == 0) {
+                return "NEW_DEVICE";
+            }
+        }
+        return "NONE";
+    }
+
+    private HttpServletRequest currentRequest() {
+        if (RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attributes) {
+            return attributes.getRequest();
+        }
+        return null;
     }
 }

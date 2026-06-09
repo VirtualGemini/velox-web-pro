@@ -41,6 +41,11 @@ import { logger } from '@/utils/sys/logger'
 type InferApiParams<T> = T extends (params: infer P) => any ? P : never
 type InferApiResponse<T> = T extends (params: any) => Promise<infer R> ? R : never
 type InferRecordType<T> = T extends Api.Common.PaginatedResponse<infer U> ? U : never
+type FetchDataOptions = {
+  operationLogQuery?: boolean
+}
+
+const OPERATION_LOG_QUERY_PARAM = '__operationLogQuery'
 
 // 优化的配置接口 - 支持自动类型推导
 export interface UseTableConfig<
@@ -279,7 +284,8 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
   // 获取数据的核心方法
   const fetchData = async (
     params?: Partial<TParams>,
-    useCache = enableCache
+    useCache = enableCache,
+    options?: FetchDataOptions
   ): Promise<ApiResponse<TRecord>> => {
     // 取消上一个请求
     if (abortController) {
@@ -312,6 +318,10 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
           delete (filteredParams as Record<string, unknown>)[key]
         })
         requestParams = filteredParams as TParams
+      }
+
+      if (options?.operationLogQuery) {
+        ;(requestParams as Record<string, unknown>)[OPERATION_LOG_QUERY_PARAM] = 'true'
       }
 
       // 检查缓存
@@ -412,9 +422,12 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
   }
 
   // 获取数据 (保持当前页)
-  const getData = async (params?: Partial<TParams>): Promise<ApiResponse<TRecord> | void> => {
+  const getData = async (
+    params?: Partial<TParams>,
+    options?: FetchDataOptions
+  ): Promise<ApiResponse<TRecord> | void> => {
     try {
-      return await fetchData(params)
+      return await fetchData(params, enableCache, options)
     } catch {
       // 错误已在 fetchData 中处理
       return Promise.resolve()
@@ -422,7 +435,10 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
   }
 
   // 分页获取数据 (重置到第一页) - 专门用于搜索场景
-  const getDataByPage = async (params?: Partial<TParams>): Promise<ApiResponse<TRecord> | void> => {
+  const getDataByPage = async (
+    params?: Partial<TParams>,
+    options?: FetchDataOptions
+  ): Promise<ApiResponse<TRecord> | void> => {
     pagination.current = 1
     ;(searchParams as Record<string, unknown>)[pageKey] = 1
 
@@ -430,7 +446,7 @@ function useTableImpl<TApiFn extends (params: any) => Promise<any>>(
     clearCache(CacheInvalidationStrategy.CLEAR_CURRENT, '搜索数据')
 
     try {
-      return await fetchData(params, false) // 搜索时不使用缓存
+      return await fetchData(params, false, options) // 搜索时不使用缓存
     } catch {
       // 错误已在 fetchData 中处理
       return Promise.resolve()

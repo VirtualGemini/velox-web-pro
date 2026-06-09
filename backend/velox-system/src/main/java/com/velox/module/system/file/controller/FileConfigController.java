@@ -5,6 +5,8 @@ import com.velox.common.result.Result;
 import com.velox.framework.security.api.annotation.RequirePermission;
 import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
 import com.velox.module.system.file.service.FileConfigService;
+import com.velox.module.system.log.annotation.OperationLog;
+import com.velox.module.system.log.annotation.OperationType;
 import com.velox.module.system.file.vo.FileConfigPageReqVO;
 import com.velox.module.system.file.vo.FileConfigRespVO;
 import com.velox.module.system.file.vo.FileConfigSaveReqVO;
@@ -37,6 +39,7 @@ public class FileConfigController {
     @PostMapping("/create")
     @Operation(summary = "openapi.system.file_config.create.summary")
     @RequirePermission("system:file-config:create")
+    @OperationLog(module = "system.file_config", action = "create", type = OperationType.CREATE)
     public Result<String> createFileConfig(@Valid @RequestBody FileConfigSaveReqVO createReqVO) {
         return Result.ok(frontendIdCodecSupport.encodeIdentifier(fileConfigService.createFileConfig(createReqVO)));
     }
@@ -44,6 +47,7 @@ public class FileConfigController {
     @PutMapping("/update")
     @Operation(summary = "openapi.system.file_config.update.summary")
     @RequirePermission("system:file-config:update")
+    @OperationLog(module = "system.file_config", action = "update", type = OperationType.UPDATE)
     public Result<Boolean> updateFileConfig(@Valid @RequestBody FileConfigSaveReqVO updateReqVO) {
         fileConfigService.updateFileConfig(updateReqVO);
         return Result.ok(true);
@@ -53,6 +57,7 @@ public class FileConfigController {
     @Operation(summary = "openapi.system.file_config.update_master.summary")
     @Parameter(name = "id", description = "openapi.common.id", required = true)
     @RequirePermission("system:file-config:update")
+    @OperationLog(module = "system.file_config", action = "update_master", type = OperationType.UPDATE, targetType = "file-config", targetIdExpression = "#arg0")
     public Result<Boolean> updateFileConfigMaster(@RequestParam("id") String id) {
         fileConfigService.updateFileConfigMaster(id);
         return Result.ok(true);
@@ -63,6 +68,7 @@ public class FileConfigController {
     @Parameter(name = "id", description = "openapi.common.id", required = true)
     @Parameter(name = "enabled", description = "openapi.common.enabled", required = true)
     @RequirePermission("system:file-config:update")
+    @OperationLog(module = "system.file_config", action = "update_enabled", type = OperationType.UPDATE, targetType = "file-config", targetIdExpression = "#arg0")
     public Result<Boolean> updateFileConfigEnabled(@RequestParam("id") String id,
                                                     @RequestParam("enabled") Integer enabled) {
         fileConfigService.updateFileConfigEnabled(id, enabled);
@@ -73,6 +79,7 @@ public class FileConfigController {
     @Operation(summary = "openapi.system.file_config.delete.summary")
     @Parameter(name = "id", description = "openapi.common.id", required = true)
     @RequirePermission("system:file-config:delete")
+    @OperationLog(module = "system.file_config", action = "delete", type = OperationType.DELETE, targetType = "file-config", targetIdExpression = "#arg0")
     public Result<Boolean> deleteFileConfig(@RequestParam("id") String id) {
         fileConfigService.deleteFileConfig(id);
         return Result.ok(true);
@@ -81,6 +88,7 @@ public class FileConfigController {
     @DeleteMapping("/delete-batch")
     @Operation(summary = "openapi.system.file_config.delete_batch.summary")
     @RequirePermission("system:file-config:delete")
+    @OperationLog(module = "system.file_config", action = "delete_batch", type = OperationType.DELETE)
     public Result<Boolean> deleteFileConfigList(@RequestParam("ids") List<String> ids) {
         fileConfigService.deleteFileConfigList(ids);
         return Result.ok(true);
@@ -97,6 +105,15 @@ public class FileConfigController {
     @GetMapping("/page")
     @Operation(summary = "openapi.system.file_config.page.summary")
     @RequirePermission("system:file-config:query")
+    @OperationLog(
+            module = "system.file_config",
+            action = "query",
+            type = OperationType.QUERY,
+            queryParamNames = {
+                    "name", "storage", "enabled",
+                    "createTimeStart", "createTimeEnd", "updateTimeStart", "updateTimeEnd"
+            }
+    )
     public Result<PageResult<FileConfigRespVO>> getFileConfigPage(FileConfigPageReqVO pageReqVO) {
         return Result.ok(fileConfigService.getFileConfigPage(pageReqVO));
     }

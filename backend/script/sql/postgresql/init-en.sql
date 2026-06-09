@@ -1,6 +1,9 @@
 -- Business IDs are stored as BIGINT; velox.id.snowflake.enabled=true uses Snowflake and false uses database sequences.
 DROP TABLE IF EXISTS sys_role_menu_permission CASCADE;
 DROP TABLE IF EXISTS sys_menu CASCADE;
+DROP TABLE IF EXISTS sys_api_log CASCADE;
+DROP TABLE IF EXISTS sys_operation_log CASCADE;
+DROP TABLE IF EXISTS sys_login_log CASCADE;
 DROP TABLE IF EXISTS sys_access_control CASCADE;
 DROP TABLE IF EXISTS sys_verification_policy CASCADE;
 DROP TABLE IF EXISTS sys_account_security CASCADE;
@@ -41,7 +44,10 @@ INSERT INTO sys_id_sequence (business_type, current_value) VALUES
   ('sys_mail_group',0),
   ('sys_mail_channel',0),
   ('sys_mail_account',0),
-  ('sys_mail_template',0);
+  ('sys_mail_template',0),
+  ('sys_login_log',0),
+  ('sys_operation_log',0),
+  ('sys_api_log',0);
 
 CREATE TABLE sys_file_config (
   id bigint PRIMARY KEY,
@@ -349,6 +355,162 @@ INSERT INTO sys_account_security (id, account_id, email, login_methods, mfa_emai
   ('1900000000000000127','1900000000000000087','admin@velox.web','password',0,0,NULL,NULL,NULL,NULL,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000000128','1900000000000000048','user@velox.web','password',0,0,NULL,NULL,NULL,NULL,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 
+CREATE TABLE sys_login_log (
+  id bigint PRIMARY KEY,
+  account_id bigint,
+  username varchar(64),
+  event_type varchar(32),
+  login_method varchar(32),
+  mfa_type varchar(32),
+  result smallint,
+  failure_code varchar(64),
+  failure_message varchar(512),
+  session_id varchar(128),
+  logout_time timestamp,
+  first_login smallint,
+  risk_type varchar(32),
+  trace_id varchar(128),
+  client_ip varchar(64),
+  ip_version varchar(8),
+  country_code varchar(16),
+  country_name varchar(64),
+  province_name varchar(64),
+  city_name varchar(64),
+  district_name varchar(64),
+  ip_location varchar(255),
+  isp varchar(128),
+  location_source varchar(64),
+  location_parsed_at timestamp,
+  user_agent text,
+  browser varchar(128),
+  os varchar(128),
+  device_type varchar(64),
+  event_time timestamp,
+  create_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  update_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  create_by bigint,
+  update_by bigint,
+  deleted smallint DEFAULT 0
+);
+
+CREATE INDEX idx_login_log_event_time ON sys_login_log (event_time);
+CREATE INDEX idx_login_log_account_id ON sys_login_log (account_id);
+CREATE INDEX idx_login_log_username ON sys_login_log (username);
+CREATE INDEX idx_login_log_client_ip ON sys_login_log (client_ip);
+CREATE INDEX idx_login_log_trace_id ON sys_login_log (trace_id);
+CREATE INDEX idx_login_log_deleted ON sys_login_log (deleted);
+
+CREATE TABLE sys_operation_log (
+  id bigint PRIMARY KEY,
+  module_name varchar(100),
+  action_name varchar(100),
+  operation_type varchar(32),
+  target_type varchar(64),
+  target_id varchar(128),
+  account_id bigint,
+  username varchar(64),
+  operator_type varchar(32),
+  request_method varchar(16),
+  request_uri varchar(512),
+  java_method varchar(512),
+  request_params text,
+  before_data text,
+  after_data text,
+  response_summary text,
+  result smallint,
+  error_code varchar(64),
+  error_message varchar(1024),
+  cost_time_ms bigint,
+  trace_id varchar(128),
+  client_ip varchar(64),
+  ip_version varchar(8),
+  country_code varchar(16),
+  country_name varchar(64),
+  province_name varchar(64),
+  city_name varchar(64),
+  district_name varchar(64),
+  ip_location varchar(255),
+  isp varchar(128),
+  location_source varchar(64),
+  location_parsed_at timestamp,
+  user_agent text,
+  browser varchar(128),
+  os varchar(128),
+  device_type varchar(64),
+  operation_time timestamp,
+  create_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  update_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  create_by bigint,
+  update_by bigint,
+  deleted smallint DEFAULT 0
+);
+
+CREATE INDEX idx_operation_log_operation_time ON sys_operation_log (operation_time);
+CREATE INDEX idx_operation_log_account_id ON sys_operation_log (account_id);
+CREATE INDEX idx_operation_log_module ON sys_operation_log (module_name);
+CREATE INDEX idx_operation_log_client_ip ON sys_operation_log (client_ip);
+CREATE INDEX idx_operation_log_trace_id ON sys_operation_log (trace_id);
+CREATE INDEX idx_operation_log_deleted ON sys_operation_log (deleted);
+
+CREATE TABLE sys_api_log (
+  id bigint PRIMARY KEY,
+  account_id bigint,
+  username varchar(64),
+  caller_app varchar(128),
+  request_url varchar(1024),
+  request_method varchar(16),
+  request_uri varchar(512),
+  matched_pattern varchar(512),
+  java_method varchar(512),
+  http_status integer,
+  business_code varchar(64),
+  business_message varchar(512),
+  result smallint,
+  request_query text,
+  request_headers text,
+  request_body text,
+  response_body text,
+  request_size bigint,
+  response_size bigint,
+  error_code varchar(64),
+  error_message varchar(1024),
+  exception_stack text,
+  server_ip varchar(64),
+  server_node varchar(128),
+  request_time timestamp,
+  response_time timestamp,
+  cost_time_ms bigint,
+  trace_id varchar(128),
+  client_ip varchar(64),
+  ip_version varchar(8),
+  country_code varchar(16),
+  country_name varchar(64),
+  province_name varchar(64),
+  city_name varchar(64),
+  district_name varchar(64),
+  ip_location varchar(255),
+  isp varchar(128),
+  location_source varchar(64),
+  location_parsed_at timestamp,
+  user_agent text,
+  browser varchar(128),
+  os varchar(128),
+  device_type varchar(64),
+  api_time timestamp,
+  create_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  update_time timestamp DEFAULT CURRENT_TIMESTAMP,
+  create_by bigint,
+  update_by bigint,
+  deleted smallint DEFAULT 0
+);
+
+CREATE INDEX idx_api_log_api_time ON sys_api_log (api_time);
+CREATE INDEX idx_api_log_account_id ON sys_api_log (account_id);
+CREATE INDEX idx_api_log_request_uri ON sys_api_log (request_uri);
+CREATE INDEX idx_api_log_client_ip ON sys_api_log (client_ip);
+CREATE INDEX idx_api_log_trace_id ON sys_api_log (trace_id);
+CREATE INDEX idx_api_log_deleted ON sys_api_log (deleted);
+
 CREATE TABLE sys_access_control (
   id bigint PRIMARY KEY,
   general_register_enabled smallint DEFAULT 1,
@@ -481,7 +643,24 @@ INSERT INTO sys_menu (id, parent_id, menu_type, name, title, path, component, re
   ('1900000000000003103','1900000000000003101','button','EmailTemplateCreate','Create',NULL,NULL,NULL,NULL,'system:mail-template:create',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000003104','1900000000000003101','button','EmailTemplateUpdate','Edit',NULL,NULL,NULL,NULL,'system:mail-template:update',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000003105','1900000000000003101','button','EmailTemplateDelete','Delete',NULL,NULL,NULL,NULL,'system:mail-template:delete',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  -- Settings
+  -- Log Management
+  ('1900000000000004000',NULL,'menu','LogManagement','Log Management','/log','/index/index',NULL,'ri:file-list-3-line',NULL,1,80,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- Log Management > LoginLog
+  ('1900000000000004001','1900000000000004000','menu','LoginLog','Login Log','login','/system/log/login',NULL,NULL,NULL,1,1,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004010','1900000000000004001','button','LoginLogQuery','Query',NULL,NULL,NULL,NULL,'system:log:login:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004011','1900000000000004001','button','LoginLogDelete','Delete',NULL,NULL,NULL,NULL,'system:log:login:delete',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004012','1900000000000004001','button','LoginLogClean','Clear',NULL,NULL,NULL,NULL,'system:log:login:clean',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- Log Management > OperationLog
+  ('1900000000000004002','1900000000000004000','menu','OperationLog','Operation Log','operation','/system/log/operation',NULL,NULL,NULL,1,2,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004020','1900000000000004002','button','OperationLogQuery','Query',NULL,NULL,NULL,NULL,'system:log:operation:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004021','1900000000000004002','button','OperationLogDelete','Delete',NULL,NULL,NULL,NULL,'system:log:operation:delete',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004022','1900000000000004002','button','OperationLogClean','Clear',NULL,NULL,NULL,NULL,'system:log:operation:clean',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- Log Management > ApiLog
+  ('1900000000000004003','1900000000000004000','menu','ApiLog','API Log','api','/system/log/api',NULL,NULL,NULL,1,3,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004030','1900000000000004003','button','ApiLogQuery','Query',NULL,NULL,NULL,NULL,'system:log:api:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004031','1900000000000004003','button','ApiLogDelete','Delete',NULL,NULL,NULL,NULL,'system:log:api:delete',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004032','1900000000000004003','button','ApiLogClean','Clear',NULL,NULL,NULL,NULL,'system:log:api:clean',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+    -- Settings
   ('1900000000000002001',NULL,'menu','Settings','Settings','/settings','/index/index',NULL,'ri:settings-4-line',NULL,1,90,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- Settings > AccessControl
   ('1900000000000002002','1900000000000002001','menu','AccessControl','Access Control','access-control','/settings/access-control',NULL,NULL,NULL,1,1,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
@@ -556,5 +735,32 @@ INSERT INTO sys_role_menu_permission (id, role_id, menu_id, create_time, update_
   ('1900000000000002069','1900000000000000032','1900000000000000008','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- AccountCenter page direct grant (R_ADMIN / R_USER): page visibility = menu grant (RBAC refactor 4.4)
   ('1900000000000002070','1900000000000000073','1900000000000000035','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000002071','1900000000000000032','1900000000000000035','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
-
+  ('1900000000000002071','1900000000000000032','1900000000000000035','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- R_ADMIN -> Log Management
+  ('1900000000000004100','1900000000000000073','1900000000000004000','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004101','1900000000000000073','1900000000000004001','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004102','1900000000000000073','1900000000000004010','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004103','1900000000000000073','1900000000000004011','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004104','1900000000000000073','1900000000000004012','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004107','1900000000000000073','1900000000000004002','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004108','1900000000000000073','1900000000000004020','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004109','1900000000000000073','1900000000000004021','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004110','1900000000000000073','1900000000000004022','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004112','1900000000000000073','1900000000000004003','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004113','1900000000000000073','1900000000000004030','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004114','1900000000000000073','1900000000000004031','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004115','1900000000000000073','1900000000000004032','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- R_SUPER -> Log Management
+  ('1900000000000004200','1900000000000000023','1900000000000004000','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004201','1900000000000000023','1900000000000004001','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004202','1900000000000000023','1900000000000004010','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004203','1900000000000000023','1900000000000004011','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004204','1900000000000000023','1900000000000004012','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004207','1900000000000000023','1900000000000004002','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004208','1900000000000000023','1900000000000004020','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004209','1900000000000000023','1900000000000004021','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004210','1900000000000000023','1900000000000004022','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004212','1900000000000000023','1900000000000004003','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004213','1900000000000000023','1900000000000004030','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004214','1900000000000000023','1900000000000004031','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004215','1900000000000000023','1900000000000004032','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);

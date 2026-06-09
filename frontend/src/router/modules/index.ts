@@ -2,6 +2,7 @@ import { AppRouteRecord } from '@/types/router'
 import { dashboardRoutes } from './dashboard'
 import { systemRoutes } from './system'
 import { configRoutes } from './config'
+import { logRoutes } from './log'
 import { settingsRoutes } from './settings'
 
 /**
@@ -11,5 +12,6 @@ export const routeModules: AppRouteRecord[] = [
   dashboardRoutes,
   systemRoutes,
   configRoutes,
+  logRoutes,
   settingsRoutes
 ]

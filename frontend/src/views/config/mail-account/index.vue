@@ -795,7 +795,11 @@
 
   function renderChannel(row: MailAccount) {
     const protocol = row.protocol || row.channelName
-    return h(ElTag, { size: 'small', type: channelTagType(protocol), effect: 'dark' }, () => protocol || '-')
+    return h(
+      ElTag,
+      { size: 'small', type: channelTagType(protocol), effect: 'dark' },
+      () => protocol || '-'
+    )
   }
 
   function renderHealth(row: MailAccount) {
@@ -981,7 +985,7 @@
       updateTimeEnd: params.updateTimeRange?.[1],
       page: 1
     })
-    getData()
+    getData(undefined, { operationLogQuery: true })
   }
 
   function handleReset() {

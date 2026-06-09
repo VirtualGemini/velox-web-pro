@@ -4,6 +4,8 @@ import com.velox.common.result.PageResult;
 import com.velox.common.result.Result;
 import com.velox.framework.security.api.annotation.RequirePermission;
 import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
+import com.velox.module.system.log.annotation.OperationLog;
+import com.velox.module.system.log.annotation.OperationType;
 import com.velox.module.system.mail.service.MailAccountService;
 import com.velox.module.system.mail.vo.MailAccountPageReqVO;
 import com.velox.module.system.mail.vo.MailAccountRespVO;
@@ -95,6 +97,15 @@ public class MailAccountController {
     @GetMapping("/page")
     @Operation(summary = "openapi.system.mail_account.page.summary")
     @RequirePermission("system:mail-account:query")
+    @OperationLog(
+            module = "system.mail_account",
+            action = "query",
+            type = OperationType.QUERY,
+            queryParamNames = {
+                    "name", "groupId", "channelId", "healthStatus", "enabled",
+                    "createTimeStart", "createTimeEnd", "updateTimeStart", "updateTimeEnd"
+            }
+    )
     public Result<PageResult<MailAccountRespVO>> getMailAccountPage(MailAccountPageReqVO pageReqVO) {
         return Result.ok(mailAccountService.getMailAccountPage(pageReqVO));
     }

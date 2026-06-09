@@ -1,5 +1,7 @@
 package com.velox.module.system.auth.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class TokenDTO {
     private String token;
     private Object userInfo;
@@ -35,6 +37,13 @@ public class TokenDTO {
     private String deletionRequestedAt;
 
     private String deletionExpiresAt;
+
+    /**
+     * Internal session identifier used by login audit logs. This is not part of the public
+     * token response and must never be serialized to clients.
+     */
+    @JsonIgnore
+    private String sessionId;
 
     public TokenDTO() {
     }
@@ -152,5 +161,13 @@ public class TokenDTO {
 
     public void setDeletionExpiresAt(String deletionExpiresAt) {
         this.deletionExpiresAt = deletionExpiresAt;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 }

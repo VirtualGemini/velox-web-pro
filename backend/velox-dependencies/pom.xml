@@ -24,6 +24,7 @@
         <postgresql.version>42.7.7</postgresql.version>
         <sa-token.version>1.40.0</sa-token.version>
         <easy-captcha.version>1.6.2</easy-captcha.version>
+        <ip2region.version>3.3.7</ip2region.version>
     </properties>
 
     <dependencyManagement>
@@ -100,6 +101,12 @@
                 <groupId>com.github.whvcse</groupId>
                 <artifactId>easy-captcha</artifactId>
                 <version>${easy-captcha.version}</version>
+            </dependency>
+            <!-- Apache-2.0: offline IP region lookup for audit logs. -->
+            <dependency>
+                <groupId>org.lionsoul</groupId>
+                <artifactId>ip2region</artifactId>
+                <version>${ip2region.version}</version>
             </dependency>
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>

@@ -76,7 +76,10 @@ INSERT INTO `sys_id_sequence` (`business_type`, `current_value`) VALUES
   ('sys_mail_group',0),
   ('sys_mail_channel',0),
   ('sys_mail_account',0),
-  ('sys_mail_template',0);
+  ('sys_mail_template',0),
+  ('sys_login_log',0),
+  ('sys_operation_log',0),
+  ('sys_api_log',0);
 /*!40000 ALTER TABLE `sys_id_sequence` ENABLE KEYS */;
 
 --
@@ -547,6 +550,186 @@ INSERT INTO `sys_account_security` (`id`, `account_id`, `email`, `login_methods`
 /*!40000 ALTER TABLE `sys_account_security` ENABLE KEYS */;
 
 --
+-- Table structure for table `sys_login_log`
+--
+
+DROP TABLE IF EXISTS `sys_login_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_login_log` (
+  `id` bigint NOT NULL COMMENT '主键ID',
+  `account_id` bigint DEFAULT NULL COMMENT '账号ID',
+  `username` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户名',
+  `event_type` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '登录事件类型',
+  `login_method` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '登录方式',
+  `mfa_type` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '二次验证类型',
+  `result` tinyint DEFAULT NULL COMMENT '结果(1-成功 0-失败)',
+  `failure_code` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '失败编码',
+  `failure_message` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '失败信息',
+  `session_id` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '会话ID',
+  `logout_time` datetime DEFAULT NULL COMMENT '登出会话时间',
+  `first_login` tinyint DEFAULT NULL COMMENT '是否首次登录(1-是 0-否)',
+  `risk_type` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '登录风险类型',
+  `trace_id` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '链路ID',
+  `client_ip` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '客户端IP',
+  `ip_version` varchar(8) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP版本',
+  `country_code` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '国家编码',
+  `country_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '国家名称',
+  `province_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '省份名称',
+  `city_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '城市名称',
+  `district_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '区县名称',
+  `ip_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP归属地',
+  `isp` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '运营商',
+  `location_source` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '位置来源',
+  `location_parsed_at` datetime DEFAULT NULL COMMENT '位置解析时间',
+  `user_agent` text COLLATE utf8mb4_unicode_ci COMMENT 'User-Agent',
+  `browser` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '浏览器',
+  `os` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '操作系统',
+  `device_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '设备类型',
+  `event_time` datetime DEFAULT NULL COMMENT '事件时间',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_by` bigint DEFAULT NULL COMMENT '创建人',
+  `update_by` bigint DEFAULT NULL COMMENT '更新人',
+  `deleted` tinyint DEFAULT '0' COMMENT '逻辑删除(0-未删除 1-已删除)',
+  PRIMARY KEY (`id`),
+  KEY `idx_login_log_event_time` (`event_time`),
+  KEY `idx_login_log_account_id` (`account_id`),
+  KEY `idx_login_log_username` (`username`),
+  KEY `idx_login_log_client_ip` (`client_ip`),
+  KEY `idx_login_log_trace_id` (`trace_id`),
+  KEY `idx_login_log_deleted` (`deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='登录日志表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `sys_operation_log`
+--
+
+DROP TABLE IF EXISTS `sys_operation_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_operation_log` (
+  `id` bigint NOT NULL COMMENT '主键ID',
+  `module_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '模块名称',
+  `action_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '操作名称',
+  `operation_type` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '操作类型',
+  `target_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '目标类型',
+  `target_id` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '目标ID',
+  `account_id` bigint DEFAULT NULL COMMENT '账号ID',
+  `username` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户名',
+  `operator_type` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '操作者类型',
+  `request_method` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求方法',
+  `request_uri` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求地址',
+  `java_method` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Java方法',
+  `request_params` text COLLATE utf8mb4_unicode_ci COMMENT '请求参数',
+  `before_data` mediumtext COLLATE utf8mb4_unicode_ci COMMENT '修改前数据',
+  `after_data` mediumtext COLLATE utf8mb4_unicode_ci COMMENT '修改后数据',
+  `response_summary` text COLLATE utf8mb4_unicode_ci COMMENT '响应摘要',
+  `result` tinyint DEFAULT NULL COMMENT '结果(1-成功 0-失败)',
+  `error_code` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '错误编码',
+  `error_message` varchar(1024) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '错误信息',
+  `cost_time_ms` bigint DEFAULT NULL COMMENT '耗时(毫秒)',
+  `trace_id` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '链路ID',
+  `client_ip` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '客户端IP',
+  `ip_version` varchar(8) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP版本',
+  `country_code` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '国家编码',
+  `country_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '国家名称',
+  `province_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '省份名称',
+  `city_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '城市名称',
+  `district_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '区县名称',
+  `ip_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP归属地',
+  `isp` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '运营商',
+  `location_source` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '位置来源',
+  `location_parsed_at` datetime DEFAULT NULL COMMENT '位置解析时间',
+  `user_agent` text COLLATE utf8mb4_unicode_ci COMMENT 'User-Agent',
+  `browser` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '浏览器',
+  `os` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '操作系统',
+  `device_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '设备类型',
+  `operation_time` datetime DEFAULT NULL COMMENT '操作时间',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_by` bigint DEFAULT NULL COMMENT '创建人',
+  `update_by` bigint DEFAULT NULL COMMENT '更新人',
+  `deleted` tinyint DEFAULT '0' COMMENT '逻辑删除(0-未删除 1-已删除)',
+  PRIMARY KEY (`id`),
+  KEY `idx_operation_log_operation_time` (`operation_time`),
+  KEY `idx_operation_log_account_id` (`account_id`),
+  KEY `idx_operation_log_module` (`module_name`),
+  KEY `idx_operation_log_client_ip` (`client_ip`),
+  KEY `idx_operation_log_trace_id` (`trace_id`),
+  KEY `idx_operation_log_deleted` (`deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='操作日志表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `sys_api_log`
+--
+
+DROP TABLE IF EXISTS `sys_api_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_api_log` (
+  `id` bigint NOT NULL COMMENT '主键ID',
+  `account_id` bigint DEFAULT NULL COMMENT '账号ID',
+  `username` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户名',
+  `caller_app` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '调用方应用',
+  `request_url` varchar(1024) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '接口完整地址',
+  `request_method` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求方法',
+  `request_uri` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求地址',
+  `matched_pattern` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '匹配路径',
+  `java_method` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Java方法',
+  `http_status` int DEFAULT NULL COMMENT 'HTTP状态码',
+  `business_code` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '业务编码',
+  `business_message` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '业务信息',
+  `result` tinyint DEFAULT NULL COMMENT '结果(1-成功 0-失败)',
+  `request_query` text COLLATE utf8mb4_unicode_ci COMMENT '请求查询参数',
+  `request_headers` text COLLATE utf8mb4_unicode_ci COMMENT '请求头',
+  `request_body` mediumtext COLLATE utf8mb4_unicode_ci COMMENT '请求体',
+  `response_body` mediumtext COLLATE utf8mb4_unicode_ci COMMENT '响应体',
+  `request_size` bigint DEFAULT NULL COMMENT '请求大小',
+  `response_size` bigint DEFAULT NULL COMMENT '响应大小',
+  `error_code` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '错误编码',
+  `error_message` varchar(1024) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '错误信息',
+  `exception_stack` mediumtext COLLATE utf8mb4_unicode_ci COMMENT '异常堆栈',
+  `server_ip` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '服务器IP',
+  `server_node` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '服务节点',
+  `request_time` datetime DEFAULT NULL COMMENT '请求进入时间',
+  `response_time` datetime DEFAULT NULL COMMENT '响应返回时间',
+  `cost_time_ms` bigint DEFAULT NULL COMMENT '耗时(毫秒)',
+  `trace_id` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '链路ID',
+  `client_ip` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '客户端IP',
+  `ip_version` varchar(8) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP版本',
+  `country_code` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '国家编码',
+  `country_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '国家名称',
+  `province_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '省份名称',
+  `city_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '城市名称',
+  `district_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '区县名称',
+  `ip_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP归属地',
+  `isp` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '运营商',
+  `location_source` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '位置来源',
+  `location_parsed_at` datetime DEFAULT NULL COMMENT '位置解析时间',
+  `user_agent` text COLLATE utf8mb4_unicode_ci COMMENT 'User-Agent',
+  `browser` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '浏览器',
+  `os` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '操作系统',
+  `device_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '设备类型',
+  `api_time` datetime DEFAULT NULL COMMENT 'API时间',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_by` bigint DEFAULT NULL COMMENT '创建人',
+  `update_by` bigint DEFAULT NULL COMMENT '更新人',
+  `deleted` tinyint DEFAULT '0' COMMENT '逻辑删除(0-未删除 1-已删除)',
+  PRIMARY KEY (`id`),
+  KEY `idx_api_log_api_time` (`api_time`),
+  KEY `idx_api_log_account_id` (`account_id`),
+  KEY `idx_api_log_request_uri` (`request_uri`),
+  KEY `idx_api_log_client_ip` (`client_ip`),
+  KEY `idx_api_log_trace_id` (`trace_id`),
+  KEY `idx_api_log_deleted` (`deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='API日志表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 --
 -- Table structure for table `sys_access_control`
 --
@@ -722,6 +905,23 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `menu_type`, `name`, `title`, `path`,
   ('1900000000000003103','1900000000000003101','button','EmailTemplateCreate','新增',NULL,NULL,NULL,NULL,'system:mail-template:create',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000003104','1900000000000003101','button','EmailTemplateUpdate','编辑',NULL,NULL,NULL,NULL,'system:mail-template:update',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000003105','1900000000000003101','button','EmailTemplateDelete','删除',NULL,NULL,NULL,NULL,'system:mail-template:delete',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- Log Management
+  ('1900000000000004000',NULL,'menu','LogManagement','日志管理','/log','/index/index',NULL,'ri:file-list-3-line',NULL,1,80,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- Log Management > LoginLog
+  ('1900000000000004001','1900000000000004000','menu','LoginLog','登录日志','login','/system/log/login',NULL,NULL,NULL,1,1,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004010','1900000000000004001','button','LoginLogQuery','查询',NULL,NULL,NULL,NULL,'system:log:login:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004011','1900000000000004001','button','LoginLogDelete','删除',NULL,NULL,NULL,NULL,'system:log:login:delete',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004012','1900000000000004001','button','LoginLogClean','清空',NULL,NULL,NULL,NULL,'system:log:login:clean',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- Log Management > OperationLog
+  ('1900000000000004002','1900000000000004000','menu','OperationLog','操作日志','operation','/system/log/operation',NULL,NULL,NULL,1,2,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004020','1900000000000004002','button','OperationLogQuery','查询',NULL,NULL,NULL,NULL,'system:log:operation:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004021','1900000000000004002','button','OperationLogDelete','删除',NULL,NULL,NULL,NULL,'system:log:operation:delete',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004022','1900000000000004002','button','OperationLogClean','清空',NULL,NULL,NULL,NULL,'system:log:operation:clean',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- Log Management > ApiLog
+  ('1900000000000004003','1900000000000004000','menu','ApiLog','API 日志','api','/system/log/api',NULL,NULL,NULL,1,3,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004030','1900000000000004003','button','ApiLogQuery','查询',NULL,NULL,NULL,NULL,'system:log:api:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004031','1900000000000004003','button','ApiLogDelete','删除',NULL,NULL,NULL,NULL,'system:log:api:delete',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004032','1900000000000004003','button','ApiLogClean','清空',NULL,NULL,NULL,NULL,'system:log:api:clean',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- Settings
   ('1900000000000002001',NULL,'menu','Settings','设置','/settings','/index/index',NULL,'ri:settings-4-line',NULL,1,90,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- Settings > AccessControl
@@ -813,7 +1013,35 @@ INSERT INTO `sys_role_menu_permission` (`id`, `role_id`, `menu_id`, `create_time
   ('1900000000000002069','1900000000000000032','1900000000000000008','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- AccountCenter page direct grant (R_ADMIN / R_USER): page visibility = menu grant (RBAC refactor 4.4)
   ('1900000000000002070','1900000000000000073','1900000000000000035','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000002071','1900000000000000032','1900000000000000035','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+  ('1900000000000002071','1900000000000000032','1900000000000000035','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- R_ADMIN -> Log Management
+  ('1900000000000004100','1900000000000000073','1900000000000004000','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004101','1900000000000000073','1900000000000004001','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004102','1900000000000000073','1900000000000004010','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004103','1900000000000000073','1900000000000004011','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004104','1900000000000000073','1900000000000004012','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004107','1900000000000000073','1900000000000004002','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004108','1900000000000000073','1900000000000004020','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004109','1900000000000000073','1900000000000004021','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004110','1900000000000000073','1900000000000004022','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004112','1900000000000000073','1900000000000004003','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004113','1900000000000000073','1900000000000004030','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004114','1900000000000000073','1900000000000004031','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004115','1900000000000000073','1900000000000004032','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- R_SUPER -> Log Management
+  ('1900000000000004200','1900000000000000023','1900000000000004000','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004201','1900000000000000023','1900000000000004001','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004202','1900000000000000023','1900000000000004010','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004203','1900000000000000023','1900000000000004011','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004204','1900000000000000023','1900000000000004012','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004207','1900000000000000023','1900000000000004002','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004208','1900000000000000023','1900000000000004020','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004209','1900000000000000023','1900000000000004021','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004210','1900000000000000023','1900000000000004022','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004212','1900000000000000023','1900000000000004003','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004213','1900000000000000023','1900000000000004030','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004214','1900000000000000023','1900000000000004031','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004215','1900000000000000023','1900000000000004032','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 /*!40000 ALTER TABLE `sys_role_menu_permission` ENABLE KEYS */;
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

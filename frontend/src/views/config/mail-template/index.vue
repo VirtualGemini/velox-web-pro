@@ -930,7 +930,7 @@
       updateTimeEnd: params.updateTimeRange?.[1],
       page: 1
     })
-    await withPageLoading(() => getTableData())
+    await withPageLoading(() => getTableData(undefined, { operationLogQuery: true }))
   }
 
   async function handleReset() {

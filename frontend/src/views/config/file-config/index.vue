@@ -1369,7 +1369,7 @@
       updateTimeEnd: params.updateTimeRange?.[1],
       page: 1
     })
-    getData()
+    getData(undefined, { operationLogQuery: true })
   }
 
   function handleReset() {

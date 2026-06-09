@@ -57,6 +57,15 @@ velox:
           - table: sys_mail_template
             id-column: id
             business-type: sys_mail_template
+          - table: sys_login_log
+            id-column: id
+            business-type: sys_login_log
+          - table: sys_operation_log
+            id-column: id
+            business-type: sys_operation_log
+          - table: sys_api_log
+            id-column: id
+            business-type: sys_api_log
         # 声明式引用图：只有这里注册的引用列才会跟随身份域一起迁移
         references:
           - table: sys_account
@@ -217,6 +226,39 @@ velox:
                 kind: audit
           - table: sys_mail_template
             mappings:
+              - column: create_by
+                target-business-type: sys_account
+                kind: audit
+              - column: update_by
+                target-business-type: sys_account
+                kind: audit
+          - table: sys_login_log
+            mappings:
+              - column: account_id
+                target-business-type: sys_account
+                kind: explicit
+              - column: create_by
+                target-business-type: sys_account
+                kind: audit
+              - column: update_by
+                target-business-type: sys_account
+                kind: audit
+          - table: sys_operation_log
+            mappings:
+              - column: account_id
+                target-business-type: sys_account
+                kind: explicit
+              - column: create_by
+                target-business-type: sys_account
+                kind: audit
+              - column: update_by
+                target-business-type: sys_account
+                kind: audit
+          - table: sys_api_log
+            mappings:
+              - column: account_id
+                target-business-type: sys_account
+                kind: explicit
               - column: create_by
                 target-business-type: sys_account
                 kind: audit

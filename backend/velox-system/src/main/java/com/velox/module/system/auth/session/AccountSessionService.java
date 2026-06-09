@@ -16,6 +16,8 @@ public interface AccountSessionService {
 
     void forceLogoutAll(String accountId);
 
+    String sessionIdByToken(String tokenValue);
+
     boolean isOnline(String accountId);
 
     Map<String, String> resolveStatuses(Collection<String> accountIds);

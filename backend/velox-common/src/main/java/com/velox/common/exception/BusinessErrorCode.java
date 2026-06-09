@@ -149,6 +149,10 @@ public enum BusinessErrorCode implements ErrorCode {
     MAIL_TEMPLATE_LAST_OF_TYPE(23104, "该类型至少需保留一条模板，无法删除"),
     MAIL_TEMPLATE_CONTENT_EMPTY(23105, "邮件模板主题和正文不能为空"),
     MAIL_TEMPLATE_SYSTEM_BUILTIN_DELETE_FORBIDDEN(23106, "系统内置模板不可删除"),
+
+    // ---- 日志模块 (24000-24099) ----
+    LOG_RECORD_NOT_FOUND(24000, "日志记录不存在"),
+    LOG_DELETE_IDS_EMPTY(24001, "请选择要删除的日志记录"),
     ;
 
     private final int code;

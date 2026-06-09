@@ -11,7 +11,8 @@ import org.springframework.context.annotation.Configuration;
         "com.velox.module.system.file.persistence",
         "com.velox.module.system.accesscontrol.persistence",
         "com.velox.module.system.verification.persistence",
-        "com.velox.module.system.mail.persistence"
+        "com.velox.module.system.mail.persistence",
+        "com.velox.module.system.log.persistence"
 })
 public class SystemModulePackageScan {
 }

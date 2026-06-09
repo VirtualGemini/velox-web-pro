@@ -3,6 +3,8 @@ package com.velox.module.system.account.controller;
 import com.velox.common.result.Result;
 import com.velox.framework.security.api.annotation.RequirePermission;
 import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
+import com.velox.module.system.log.annotation.OperationLog;
+import com.velox.module.system.log.annotation.OperationType;
 import com.velox.module.system.account.dto.AccountDetailCardDTO;
 import com.velox.module.system.account.dto.AccountListItemDTO;
 import com.velox.module.system.account.dto.AccountQuery;
@@ -44,6 +46,15 @@ public class AccountManageController {
 
     @Operation(summary = "openapi.system.account.manage.list.summary")
     @RequirePermission("system:account:query")
+    @OperationLog(
+            module = "system.account",
+            action = "query",
+            type = OperationType.QUERY,
+            queryParamNames = {
+                    "username", "email", "remark", "status", "activeStatus",
+                    "createTimeStart", "createTimeEnd", "updateTimeStart", "updateTimeEnd"
+            }
+    )
     @GetMapping("/list")
     public Result<PageResult<AccountListItemDTO>> list(AccountQuery query) {
         return Result.ok(accountManageService.list(query));
@@ -58,6 +69,7 @@ public class AccountManageController {
 
     @Operation(summary = "openapi.system.account.manage.create.summary")
     @RequirePermission("system:account:create")
+    @OperationLog(module = "system.account", action = "create", type = OperationType.CREATE, excludeParamNames = {"password"})
     @PostMapping
     public Result<String> create(@Valid @RequestBody AccountSaveCommand command) {
         return Result.ok(frontendIdCodecSupport.encodeIdentifier(accountManageService.create(command)));
@@ -65,6 +77,7 @@ public class AccountManageController {
 
     @Operation(summary = "openapi.system.account.manage.update.summary")
     @RequirePermission("system:account:update")
+    @OperationLog(module = "system.account", action = "update", type = OperationType.UPDATE, targetType = "account", targetIdExpression = "#arg0", excludeParamNames = {"password"})
     @PutMapping("/{accountId}")
     public Result<Boolean> update(@PathVariable("accountId") String accountId, @Valid @RequestBody AccountSaveCommand command) {
         return Result.ok(accountManageService.update(accountId, command));
@@ -72,6 +85,7 @@ public class AccountManageController {
 
     @Operation(summary = "openapi.system.account.manage.update_profile.summary")
     @RequirePermission("system:account:update")
+    @OperationLog(module = "system.account", action = "update_profile", type = OperationType.UPDATE, targetType = "account", targetIdExpression = "#arg0")
     @PutMapping("/{accountId}/profile")
     public Result<Boolean> updateProfile(@PathVariable("accountId") String accountId, @Valid @RequestBody AdminProfileUpdateCommand command) {
         return Result.ok(accountManageService.updateProfile(accountId, command));
@@ -79,6 +93,7 @@ public class AccountManageController {
 
     @Operation(summary = "openapi.system.account.manage.delete.summary")
     @RequirePermission("system:account:delete")
+    @OperationLog(module = "system.account", action = "delete", type = OperationType.DELETE, targetType = "account", targetIdExpression = "#arg0")
     @DeleteMapping("/{accountId}")
     public Result<Boolean> delete(@PathVariable("accountId") String accountId) {
         return Result.ok(accountManageService.delete(accountId));
@@ -86,6 +101,7 @@ public class AccountManageController {
 
     @Operation(summary = "openapi.system.account.manage.delete_batch.summary")
     @RequirePermission("system:account:delete")
+    @OperationLog(module = "system.account", action = "delete_batch", type = OperationType.DELETE)
     @DeleteMapping("/delete-batch")
     public Result<Boolean> deleteBatch(@RequestParam("ids") List<String> ids) {
         return Result.ok(accountManageService.deleteBatch(ids));
@@ -93,6 +109,7 @@ public class AccountManageController {
 
     @Operation(summary = "openapi.system.account.manage.cancel_batch.summary")
     @RequirePermission("system:account:update")
+    @OperationLog(module = "system.account", action = "cancel_batch", type = OperationType.UPDATE)
     @PutMapping("/cancel-batch")
     public Result<Boolean> cancelBatch(@RequestParam("ids") List<String> ids) {
         return Result.ok(accountManageService.cancelBatch(ids));

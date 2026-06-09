@@ -253,7 +253,7 @@
    */
   const handleSearch = (params: RoleSearchFormParams) => {
     replaceSearchParams(params)
-    getData()
+    getData(undefined, { operationLogQuery: true })
   }
 
   const buttonMoreClick = (item: ButtonMoreItem, row: RoleListItem) => {

@@ -259,7 +259,7 @@
 
   const handleSearch = (params: Api.SystemManage.AccountSearchParams) => {
     replaceSearchParams(params)
-    getData()
+    getData(undefined, { operationLogQuery: true })
   }
 
   const showDialog = (type: DialogType, row?: AccountListItem): void => {

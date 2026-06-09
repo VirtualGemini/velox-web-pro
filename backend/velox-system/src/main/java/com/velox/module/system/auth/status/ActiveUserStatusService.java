@@ -26,6 +26,10 @@ public interface ActiveUserStatusService {
 
     void recordLogout(String userId, String tokenValue);
 
+    default String sessionIdByToken(String tokenValue) {
+        return null;
+    }
+
     boolean isOnline(String userId);
 
     Map<String, String> resolveStatuses(Collection<String> userIds);

@@ -4,6 +4,8 @@ import com.velox.common.result.Result;
 import com.velox.framework.security.api.annotation.RequireAuthenticated;
 import com.velox.framework.security.api.annotation.RequirePermission;
 import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
+import com.velox.module.system.log.annotation.OperationLog;
+import com.velox.module.system.log.annotation.OperationType;
 import com.velox.module.system.menu.dto.MenuSaveCommand;
 import com.velox.module.system.menu.dto.MenuRouteDTO;
 import com.velox.module.system.menu.service.MenuService;
@@ -54,6 +56,7 @@ public class MenuController {
 
     @Operation(summary = "openapi.system.menu.create.summary")
     @RequirePermission("system:menu:create")
+    @OperationLog(module = "system.menu", action = "create", type = OperationType.CREATE)
     @PostMapping
     public Result<String> create(@Valid @RequestBody MenuSaveCommand command) {
         return Result.ok(frontendIdCodecSupport.encodeIdentifier(menuService.create(command)));
@@ -61,6 +64,7 @@ public class MenuController {
 
     @Operation(summary = "openapi.system.menu.update.summary")
     @RequirePermission("system:menu:update")
+    @OperationLog(module = "system.menu", action = "update", type = OperationType.UPDATE, targetType = "menu", targetIdExpression = "#arg0")
     @PutMapping("/{menuId}")
     public Result<Boolean> update(@PathVariable("menuId") String menuId, @Valid @RequestBody MenuSaveCommand command) {
         return Result.ok(menuService.update(menuId, command));
@@ -68,6 +72,7 @@ public class MenuController {
 
     @Operation(summary = "openapi.system.menu.delete.summary")
     @RequirePermission("system:menu:delete")
+    @OperationLog(module = "system.menu", action = "delete", type = OperationType.DELETE, targetType = "menu", targetIdExpression = "#arg0")
     @DeleteMapping("/{menuId}")
     public Result<Boolean> delete(@PathVariable("menuId") String menuId) {
         return Result.ok(menuService.delete(menuId));

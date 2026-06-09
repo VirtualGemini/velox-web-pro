@@ -3,6 +3,8 @@ package com.velox.module.system.role.controller;
 import com.velox.common.result.Result;
 import com.velox.framework.security.api.annotation.RequirePermission;
 import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
+import com.velox.module.system.log.annotation.OperationLog;
+import com.velox.module.system.log.annotation.OperationType;
 import com.velox.module.system.role.dto.RoleBoundAccountsDTO;
 import com.velox.module.system.role.dto.RoleListItemDTO;
 import com.velox.module.system.role.dto.RoleMenuPermissionUpdateCommand;
@@ -37,6 +39,15 @@ public class RoleController {
 
     @Operation(summary = "openapi.system.role.list.summary")
     @RequirePermission("system:role:query")
+    @OperationLog(
+            module = "system.role",
+            action = "query",
+            type = OperationType.QUERY,
+            queryParamNames = {
+                    "roleName", "roleCode", "description", "type", "enabled",
+                    "createTimeStart", "createTimeEnd", "updateTimeStart", "updateTimeEnd"
+            }
+    )
     @GetMapping("/list")
     public Result<PageResult<RoleListItemDTO>> list(RoleQuery query) {
         return Result.ok(roleService.list(query));
@@ -44,6 +55,7 @@ public class RoleController {
 
     @Operation(summary = "openapi.system.role.create.summary")
     @RequirePermission("system:role:create")
+    @OperationLog(module = "system.role", action = "create", type = OperationType.CREATE)
     @PostMapping
     public Result<String> create(@Valid @RequestBody RoleSaveCommand command) {
         return Result.ok(frontendIdCodecSupport.encodeIdentifier(roleService.create(command)));
@@ -51,6 +63,7 @@ public class RoleController {
 
     @Operation(summary = "openapi.system.role.update.summary")
     @RequirePermission("system:role:update")
+    @OperationLog(module = "system.role", action = "update", type = OperationType.UPDATE, targetType = "role", targetIdExpression = "#arg0")
     @PutMapping("/{roleId}")
     public Result<Boolean> update(@PathVariable("roleId") String roleId, @Valid @RequestBody RoleSaveCommand command) {
         return Result.ok(roleService.update(roleId, command));
@@ -58,6 +71,7 @@ public class RoleController {
 
     @Operation(summary = "openapi.system.role.delete.summary")
     @RequirePermission("system:role:delete")
+    @OperationLog(module = "system.role", action = "delete", type = OperationType.DELETE, targetType = "role", targetIdExpression = "#arg0")
     @DeleteMapping("/{roleId}")
     public Result<Boolean> delete(@PathVariable("roleId") String roleId) {
         return Result.ok(roleService.delete(roleId));
@@ -65,6 +79,7 @@ public class RoleController {
 
     @Operation(summary = "openapi.system.role.delete_batch.summary")
     @RequirePermission("system:role:delete")
+    @OperationLog(module = "system.role", action = "delete_batch", type = OperationType.DELETE)
     @DeleteMapping("/delete-batch")
     public Result<Boolean> deleteBatch(@RequestParam("ids") List<String> ids) {
         return Result.ok(roleService.deleteBatch(ids));
@@ -86,6 +101,7 @@ public class RoleController {
 
     @Operation(summary = "openapi.system.role.update_menu_permissions.summary")
     @RequirePermission("system:role:permission")
+    @OperationLog(module = "system.role", action = "update_permissions", type = OperationType.UPDATE, targetType = "role", targetIdExpression = "#arg0")
     @PutMapping("/{roleId}/menu-permissions")
     public Result<Boolean> updateRoleMenuPermissions(
             @PathVariable("roleId") String roleId,

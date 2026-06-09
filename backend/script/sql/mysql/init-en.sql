@@ -76,7 +76,10 @@ INSERT INTO `sys_id_sequence` (`business_type`, `current_value`) VALUES
   ('sys_mail_group',0),
   ('sys_mail_channel',0),
   ('sys_mail_account',0),
-  ('sys_mail_template',0);
+  ('sys_mail_template',0),
+  ('sys_login_log',0),
+  ('sys_operation_log',0),
+  ('sys_api_log',0);
 /*!40000 ALTER TABLE `sys_id_sequence` ENABLE KEYS */;
 
 --
@@ -547,6 +550,186 @@ INSERT INTO `sys_account_security` (`id`, `account_id`, `email`, `login_methods`
 /*!40000 ALTER TABLE `sys_account_security` ENABLE KEYS */;
 
 --
+-- Table structure for table `sys_login_log`
+--
+
+DROP TABLE IF EXISTS `sys_login_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_login_log` (
+  `id` bigint NOT NULL COMMENT 'Primary Key ID',
+  `account_id` bigint DEFAULT NULL COMMENT 'Account ID',
+  `username` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Username',
+  `event_type` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Login Event Type',
+  `login_method` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Login Method',
+  `mfa_type` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'MFA Type',
+  `result` tinyint DEFAULT NULL COMMENT 'Result (1-Success 0-Failed)',
+  `failure_code` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Failure Code',
+  `failure_message` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Failure Message',
+  `session_id` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Session ID',
+  `logout_time` datetime DEFAULT NULL COMMENT 'Logout Session Time',
+  `first_login` tinyint DEFAULT NULL COMMENT 'First Login (1-Yes 0-No)',
+  `risk_type` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Login Risk Type',
+  `trace_id` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Trace ID',
+  `client_ip` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Client IP',
+  `ip_version` varchar(8) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP Version',
+  `country_code` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Country Code',
+  `country_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Country Name',
+  `province_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Province Name',
+  `city_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'City Name',
+  `district_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'District Name',
+  `ip_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP Location',
+  `isp` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'ISP',
+  `location_source` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Location Source',
+  `location_parsed_at` datetime DEFAULT NULL COMMENT 'Location Parsed Time',
+  `user_agent` text COLLATE utf8mb4_unicode_ci COMMENT 'User-Agent',
+  `browser` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Browser',
+  `os` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Operating System',
+  `device_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Device Type',
+  `event_time` datetime DEFAULT NULL COMMENT 'Event Time',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Created Time',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated Time',
+  `create_by` bigint DEFAULT NULL COMMENT 'Created By',
+  `update_by` bigint DEFAULT NULL COMMENT 'Updated By',
+  `deleted` tinyint DEFAULT '0' COMMENT 'Logical Delete (0-Not Deleted 1-Deleted)',
+  PRIMARY KEY (`id`),
+  KEY `idx_login_log_event_time` (`event_time`),
+  KEY `idx_login_log_account_id` (`account_id`),
+  KEY `idx_login_log_username` (`username`),
+  KEY `idx_login_log_client_ip` (`client_ip`),
+  KEY `idx_login_log_trace_id` (`trace_id`),
+  KEY `idx_login_log_deleted` (`deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Login Log Table';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `sys_operation_log`
+--
+
+DROP TABLE IF EXISTS `sys_operation_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_operation_log` (
+  `id` bigint NOT NULL COMMENT 'Primary Key ID',
+  `module_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Module Name',
+  `action_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Action Name',
+  `operation_type` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Operation Type',
+  `target_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Target Type',
+  `target_id` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Target ID',
+  `account_id` bigint DEFAULT NULL COMMENT 'Account ID',
+  `username` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Username',
+  `operator_type` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Operator Type',
+  `request_method` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Request Method',
+  `request_uri` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Request URI',
+  `java_method` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Java Method',
+  `request_params` text COLLATE utf8mb4_unicode_ci COMMENT 'Request Parameters',
+  `before_data` mediumtext COLLATE utf8mb4_unicode_ci COMMENT 'Before Data',
+  `after_data` mediumtext COLLATE utf8mb4_unicode_ci COMMENT 'After Data',
+  `response_summary` text COLLATE utf8mb4_unicode_ci COMMENT 'Response Summary',
+  `result` tinyint DEFAULT NULL COMMENT 'Result (1-Success 0-Failed)',
+  `error_code` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Error Code',
+  `error_message` varchar(1024) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Error Message',
+  `cost_time_ms` bigint DEFAULT NULL COMMENT 'Cost Time (ms)',
+  `trace_id` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Trace ID',
+  `client_ip` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Client IP',
+  `ip_version` varchar(8) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP Version',
+  `country_code` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Country Code',
+  `country_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Country Name',
+  `province_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Province Name',
+  `city_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'City Name',
+  `district_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'District Name',
+  `ip_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP Location',
+  `isp` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'ISP',
+  `location_source` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Location Source',
+  `location_parsed_at` datetime DEFAULT NULL COMMENT 'Location Parsed Time',
+  `user_agent` text COLLATE utf8mb4_unicode_ci COMMENT 'User-Agent',
+  `browser` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Browser',
+  `os` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Operating System',
+  `device_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Device Type',
+  `operation_time` datetime DEFAULT NULL COMMENT 'Operation Time',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Created Time',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated Time',
+  `create_by` bigint DEFAULT NULL COMMENT 'Created By',
+  `update_by` bigint DEFAULT NULL COMMENT 'Updated By',
+  `deleted` tinyint DEFAULT '0' COMMENT 'Logical Delete (0-Not Deleted 1-Deleted)',
+  PRIMARY KEY (`id`),
+  KEY `idx_operation_log_operation_time` (`operation_time`),
+  KEY `idx_operation_log_account_id` (`account_id`),
+  KEY `idx_operation_log_module` (`module_name`),
+  KEY `idx_operation_log_client_ip` (`client_ip`),
+  KEY `idx_operation_log_trace_id` (`trace_id`),
+  KEY `idx_operation_log_deleted` (`deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Operation Log Table';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `sys_api_log`
+--
+
+DROP TABLE IF EXISTS `sys_api_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_api_log` (
+  `id` bigint NOT NULL COMMENT 'Primary Key ID',
+  `account_id` bigint DEFAULT NULL COMMENT 'Account ID',
+  `username` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Username',
+  `caller_app` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Caller Application',
+  `request_url` varchar(1024) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Full Request URL',
+  `request_method` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Request Method',
+  `request_uri` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Request URI',
+  `matched_pattern` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Matched Pattern',
+  `java_method` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Java Method',
+  `http_status` int DEFAULT NULL COMMENT 'HTTP Status',
+  `business_code` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Business Code',
+  `business_message` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Business Message',
+  `result` tinyint DEFAULT NULL COMMENT 'Result (1-Success 0-Failed)',
+  `request_query` text COLLATE utf8mb4_unicode_ci COMMENT 'Request Query',
+  `request_headers` text COLLATE utf8mb4_unicode_ci COMMENT 'Request Headers',
+  `request_body` mediumtext COLLATE utf8mb4_unicode_ci COMMENT 'Request Body',
+  `response_body` mediumtext COLLATE utf8mb4_unicode_ci COMMENT 'Response Body',
+  `request_size` bigint DEFAULT NULL COMMENT 'Request Size',
+  `response_size` bigint DEFAULT NULL COMMENT 'Response Size',
+  `error_code` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Error Code',
+  `error_message` varchar(1024) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Error Message',
+  `exception_stack` mediumtext COLLATE utf8mb4_unicode_ci COMMENT 'Exception Stack',
+  `server_ip` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Server IP',
+  `server_node` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Server Node',
+  `request_time` datetime DEFAULT NULL COMMENT 'Request Time',
+  `response_time` datetime DEFAULT NULL COMMENT 'Response Time',
+  `cost_time_ms` bigint DEFAULT NULL COMMENT 'Cost Time (ms)',
+  `trace_id` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Trace ID',
+  `client_ip` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Client IP',
+  `ip_version` varchar(8) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP Version',
+  `country_code` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Country Code',
+  `country_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Country Name',
+  `province_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Province Name',
+  `city_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'City Name',
+  `district_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'District Name',
+  `ip_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP Location',
+  `isp` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'ISP',
+  `location_source` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Location Source',
+  `location_parsed_at` datetime DEFAULT NULL COMMENT 'Location Parsed Time',
+  `user_agent` text COLLATE utf8mb4_unicode_ci COMMENT 'User-Agent',
+  `browser` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Browser',
+  `os` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Operating System',
+  `device_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Device Type',
+  `api_time` datetime DEFAULT NULL COMMENT 'API Time',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Created Time',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Updated Time',
+  `create_by` bigint DEFAULT NULL COMMENT 'Created By',
+  `update_by` bigint DEFAULT NULL COMMENT 'Updated By',
+  `deleted` tinyint DEFAULT '0' COMMENT 'Logical Delete (0-Not Deleted 1-Deleted)',
+  PRIMARY KEY (`id`),
+  KEY `idx_api_log_api_time` (`api_time`),
+  KEY `idx_api_log_account_id` (`account_id`),
+  KEY `idx_api_log_request_uri` (`request_uri`),
+  KEY `idx_api_log_client_ip` (`client_ip`),
+  KEY `idx_api_log_trace_id` (`trace_id`),
+  KEY `idx_api_log_deleted` (`deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='API Log Table';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 --
 -- Table structure for table `sys_access_control`
 --
@@ -722,6 +905,23 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `menu_type`, `name`, `title`, `path`,
   ('1900000000000003103','1900000000000003101','button','EmailTemplateCreate','Create',NULL,NULL,NULL,NULL,'system:mail-template:create',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000003104','1900000000000003101','button','EmailTemplateUpdate','Edit',NULL,NULL,NULL,NULL,'system:mail-template:update',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   ('1900000000000003105','1900000000000003101','button','EmailTemplateDelete','Delete',NULL,NULL,NULL,NULL,'system:mail-template:delete',1,4,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- Log Management
+  ('1900000000000004000',NULL,'menu','LogManagement','Log Management','/log','/index/index',NULL,'ri:file-list-3-line',NULL,1,80,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- Log Management > LoginLog
+  ('1900000000000004001','1900000000000004000','menu','LoginLog','Login Log','login','/system/log/login',NULL,NULL,NULL,1,1,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004010','1900000000000004001','button','LoginLogQuery','Query',NULL,NULL,NULL,NULL,'system:log:login:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004011','1900000000000004001','button','LoginLogDelete','Delete',NULL,NULL,NULL,NULL,'system:log:login:delete',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004012','1900000000000004001','button','LoginLogClean','Clear',NULL,NULL,NULL,NULL,'system:log:login:clean',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- Log Management > OperationLog
+  ('1900000000000004002','1900000000000004000','menu','OperationLog','Operation Log','operation','/system/log/operation',NULL,NULL,NULL,1,2,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004020','1900000000000004002','button','OperationLogQuery','Query',NULL,NULL,NULL,NULL,'system:log:operation:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004021','1900000000000004002','button','OperationLogDelete','Delete',NULL,NULL,NULL,NULL,'system:log:operation:delete',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004022','1900000000000004002','button','OperationLogClean','Clear',NULL,NULL,NULL,NULL,'system:log:operation:clean',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- Log Management > ApiLog
+  ('1900000000000004003','1900000000000004000','menu','ApiLog','API Log','api','/system/log/api',NULL,NULL,NULL,1,3,1,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004030','1900000000000004003','button','ApiLogQuery','Query',NULL,NULL,NULL,NULL,'system:log:api:query',1,1,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004031','1900000000000004003','button','ApiLogDelete','Delete',NULL,NULL,NULL,NULL,'system:log:api:delete',1,2,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004032','1900000000000004003','button','ApiLogClean','Clear',NULL,NULL,NULL,NULL,'system:log:api:clean',1,3,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- Settings
   ('1900000000000002001',NULL,'menu','Settings','Settings','/settings','/index/index',NULL,'ri:settings-4-line',NULL,1,90,0,0,0,NULL,0,0,NULL,0,NULL,0,'2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- Settings > AccessControl
@@ -813,7 +1013,35 @@ INSERT INTO `sys_role_menu_permission` (`id`, `role_id`, `menu_id`, `create_time
   ('1900000000000002069','1900000000000000032','1900000000000000008','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
   -- AccountCenter page direct grant (R_ADMIN / R_USER): page visibility = menu grant (RBAC refactor 4.4)
   ('1900000000000002070','1900000000000000073','1900000000000000035','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
-  ('1900000000000002071','1900000000000000032','1900000000000000035','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
+  ('1900000000000002071','1900000000000000032','1900000000000000035','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- R_ADMIN -> Log Management
+  ('1900000000000004100','1900000000000000073','1900000000000004000','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004101','1900000000000000073','1900000000000004001','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004102','1900000000000000073','1900000000000004010','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004103','1900000000000000073','1900000000000004011','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004104','1900000000000000073','1900000000000004012','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004107','1900000000000000073','1900000000000004002','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004108','1900000000000000073','1900000000000004020','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004109','1900000000000000073','1900000000000004021','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004110','1900000000000000073','1900000000000004022','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004112','1900000000000000073','1900000000000004003','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004113','1900000000000000073','1900000000000004030','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004114','1900000000000000073','1900000000000004031','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004115','1900000000000000073','1900000000000004032','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  -- R_SUPER -> Log Management
+  ('1900000000000004200','1900000000000000023','1900000000000004000','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004201','1900000000000000023','1900000000000004001','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004202','1900000000000000023','1900000000000004010','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004203','1900000000000000023','1900000000000004011','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004204','1900000000000000023','1900000000000004012','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004207','1900000000000000023','1900000000000004002','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004208','1900000000000000023','1900000000000004020','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004209','1900000000000000023','1900000000000004021','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004210','1900000000000000023','1900000000000004022','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004212','1900000000000000023','1900000000000004003','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004213','1900000000000000023','1900000000000004030','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004214','1900000000000000023','1900000000000004031','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0),
+  ('1900000000000004215','1900000000000000023','1900000000000004032','2026-05-10 12:00:00','2026-05-10 12:00:00',1900000000000000027,1900000000000000027,0);
 /*!40000 ALTER TABLE `sys_role_menu_permission` ENABLE KEYS */;
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

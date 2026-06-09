@@ -112,6 +112,15 @@ public class DatabaseAccountSessionService implements AccountSessionService {
     }
 
     @Override
+    public String sessionIdByToken(String tokenValue) {
+        if (!StringUtils.hasText(tokenValue)) {
+            return null;
+        }
+        AccountSession session = findByTokenHash(hashToken(tokenValue));
+        return session != null ? session.getId() : null;
+    }
+
+    @Override
     public boolean isOnline(String accountId) {
         if (!StringUtils.hasText(accountId)) {
             return false;

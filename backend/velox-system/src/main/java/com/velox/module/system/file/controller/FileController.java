@@ -15,6 +15,8 @@ import com.velox.module.system.file.vo.FilePageReqVO;
 import com.velox.module.system.file.vo.FilePresignedUrlRespVO;
 import com.velox.module.system.file.vo.FileRespVO;
 import com.velox.module.system.file.vo.FileUploadReqVO;
+import com.velox.module.system.log.annotation.OperationLog;
+import com.velox.module.system.log.annotation.OperationType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -104,6 +106,15 @@ public class FileController {
     @GetMapping("/page")
     @Operation(summary = "openapi.system.file.page.summary")
     @RequirePermission("system:file:query")
+    @OperationLog(
+            module = "system.file",
+            action = "query",
+            type = OperationType.QUERY,
+            queryParamNames = {
+                    "name", "type", "sizeMinBytes", "sizeMaxBytes",
+                    "uploadTimeStart", "uploadTimeEnd"
+            }
+    )
     public Result<PageResult<FileRespVO>> getFilePage(FilePageReqVO pageReqVO) {
         return Result.ok(fileService.getFilePage(pageReqVO));
     }

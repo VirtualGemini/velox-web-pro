@@ -486,7 +486,7 @@
       uploadTimeStart: searchParams.uploadTimeRange?.[0],
       uploadTimeEnd: searchParams.uploadTimeRange?.[1]
     })
-    getData()
+    getData(undefined, { operationLogQuery: true })
   }
 
   function handleReset() {

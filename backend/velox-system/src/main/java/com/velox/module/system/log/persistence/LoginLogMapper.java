@@ -1,0 +1,7 @@
+package com.velox.module.system.log.persistence;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.velox.module.system.log.domain.model.LoginLogRecord;
+
+public interface LoginLogMapper extends BaseMapper<LoginLogRecord> {
+}

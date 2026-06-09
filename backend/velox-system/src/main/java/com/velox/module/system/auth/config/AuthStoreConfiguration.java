@@ -34,6 +34,11 @@ public class AuthStoreConfiguration {
             }
 
             @Override
+            public String sessionIdByToken(String tokenValue) {
+                return accountSessionService.sessionIdByToken(tokenValue);
+            }
+
+            @Override
             public boolean isOnline(String userId) {
                 return accountSessionService.isOnline(userId);
             }

@@ -303,6 +303,12 @@
     "outside": {
       "title": "Outside"
     },
+    "log": {
+      "title": "Log Management",
+      "login": "Login Logs",
+      "operation": "Operation Logs",
+      "api": "API Logs"
+    },
     "result": {
       "title": "Result Page",
       "success": "Success",
@@ -1160,6 +1166,232 @@
           "selectFileFirst": "Please select a file",
           "uploadSuccess": "Uploaded successfully",
           "uploadFailed": "Upload failed"
+        }
+      },
+      "log": {
+        "common": {
+          "auth": {
+            "query": "Query",
+            "delete": "Delete",
+            "clean": "Clean"
+          },
+          "actions": {
+            "detail": "Details",
+            "clean": "Clean"
+          },
+          "search": {
+            "username": "Account",
+            "result": "Result",
+            "clientIp": "IP",
+            "countryName": "Country",
+            "provinceName": "Province",
+            "cityName": "City",
+            "traceId": "TraceId",
+            "rangeSeparator": "to",
+            "placeholders": {
+              "startTime": "Start Time",
+              "endTime": "End Time"
+            }
+          },
+          "columns": {
+            "username": "User",
+            "account": "Account",
+            "result": "Result",
+            "costTime": "Cost",
+            "location": "Location",
+            "clientIp": "IP",
+            "traceId": "TraceId",
+            "operation": "Operation",
+            "createTime": "Record Time"
+          },
+          "detail": {
+            "username": "User",
+            "accountId": "Account ID",
+            "result": "Result",
+            "traceId": "TraceId",
+            "clientIp": "IP",
+            "location": "Location",
+            "userAgent": "User-Agent",
+            "javaMethod": "Java Method",
+            "errorCode": "Error Code",
+            "errorMessage": "Error Message",
+            "costTime": "Cost",
+            "logId": "Log ID",
+            "createTime": "Record Time",
+            "deviceType": "Device Type",
+            "browser": "Browser",
+            "os": "OS"
+          },
+          "result": {
+            "success": "Success",
+            "fail": "Fail"
+          },
+          "sections": {
+            "overview": "Overview",
+            "request": "Request",
+            "environment": "Environment",
+            "identity": "Identity",
+            "result": "Result",
+            "audit": "Audit"
+          },
+          "messages": {
+            "cleanTitle": "Clean Confirmation",
+            "cleanSuccess": "Cleaned successfully"
+          }
+        },
+        "login": {
+          "search": {
+            "username": "Account",
+            "eventType": "Event Type",
+            "loginMethod": "Login Method",
+            "mfaType": "MFA Type",
+            "failureCode": "Failure Code",
+            "eventTimeRange": "Event Time"
+          },
+          "columns": {
+            "eventType": "Event",
+            "loginMethod": "Method",
+            "failureMessage": "Failure Reason",
+            "browserOs": "Browser/OS",
+            "eventTime": "Time"
+          },
+          "detail": {
+            "title": "Login Log Details",
+            "eventType": "Event Type",
+            "loginMethod": "Login Method",
+            "mfaType": "MFA Type",
+            "failureCode": "Failure Code",
+            "failureMessage": "Failure Reason",
+            "sessionId": "Session ID",
+            "browser": "Browser",
+            "os": "OS",
+            "eventTime": "Event Time",
+            "logoutTime": "Logout Session Time",
+            "firstLogin": "First Login",
+            "riskType": "Login Risk"
+          },
+          "eventTypes": {
+            "LOGIN": "Login",
+            "LOGOUT": "Logout",
+            "MFA_VERIFY": "MFA Verify",
+            "REGISTER": "Register"
+          },
+          "methods": {
+            "password": "Password",
+            "emailCode": "Email Code",
+            "oauth": "OAuth"
+          },
+          "messages": {
+            "confirmDelete": "Delete the selected {count} login log(s)? This action cannot be undone.",
+            "confirmClean": "Clean all login logs? This action cannot be undone."
+          },
+          "sections": {
+            "auth": "Auth",
+            "session": "Session"
+          },
+          "riskTypes": {
+            "NONE": "No Risk",
+            "NEW_LOCATION": "New Location",
+            "NEW_DEVICE": "New Device"
+          }
+        },
+        "operation": {
+          "search": {
+            "moduleName": "Module",
+            "actionName": "Action",
+            "operationType": "Operation Type",
+            "operationTimeRange": "Operation Time"
+          },
+          "columns": {
+            "moduleName": "Module",
+            "actionName": "Action",
+            "operationType": "Type",
+            "requestUri": "URL",
+            "operationTime": "Time"
+          },
+          "detail": {
+            "title": "Operation Log Details",
+            "moduleName": "Module",
+            "actionName": "Action",
+            "operationType": "Operation Type",
+            "targetType": "Target Type",
+            "targetId": "Target ID",
+            "requestMethod": "Request Method",
+            "requestUri": "Request URL",
+            "requestParams": "Request Params",
+            "responseSummary": "Response Summary",
+            "operationTime": "Operation Time",
+            "beforeData": "Before Data",
+            "afterData": "After Data"
+          },
+          "types": {
+            "OTHER": "Other",
+            "QUERY": "Query",
+            "CREATE": "Create",
+            "UPDATE": "Update",
+            "DELETE": "Delete",
+            "CLEAN": "Clean",
+            "FORCE": "Force"
+          },
+          "messages": {
+            "confirmDelete": "Delete the selected {count} operation log(s)? This action cannot be undone.",
+            "confirmClean": "Clean all operation logs? This action cannot be undone."
+          },
+          "sections": {
+            "operation": "Operation",
+            "change": "Data Change"
+          }
+        },
+        "api": {
+          "search": {
+            "requestUri": "Request Path",
+            "requestMethod": "Request Method",
+            "httpStatus": "HTTP Status",
+            "businessCode": "Business Code",
+            "costTimeMin": "Min Cost",
+            "costTimeMax": "Max Cost",
+            "apiTimeRange": "Request Time"
+          },
+          "columns": {
+            "requestMethod": "Method",
+            "requestUri": "Path",
+            "httpStatus": "HTTP",
+            "businessCode": "Business Code",
+            "apiTime": "Time"
+          },
+          "detail": {
+            "title": "API Log Details",
+            "requestMethod": "Request Method",
+            "requestUri": "Request Path",
+            "matchedPattern": "Matched Pattern",
+            "httpStatus": "HTTP Status",
+            "businessCode": "Business Code",
+            "businessMessage": "Business Message",
+            "requestQuery": "Query",
+            "requestBody": "Body",
+            "responseBody": "Response Summary",
+            "requestSize": "Request Size",
+            "responseSize": "Response Size",
+            "apiTime": "Request Time",
+            "callerApp": "Caller Application",
+            "requestUrl": "Full Request URL",
+            "requestHeaders": "Request Headers",
+            "exceptionStack": "Exception Stack",
+            "serverIp": "Server IP",
+            "serverNode": "Server Node",
+            "requestTime": "Request Time",
+            "responseTime": "Response Time"
+          },
+          "messages": {
+            "confirmDelete": "Delete the selected {count} API log(s)? This action cannot be undone.",
+            "confirmClean": "Clean all API logs? This action cannot be undone."
+          },
+          "sections": {
+            "caller": "Caller",
+            "response": "Response",
+            "exception": "Exception",
+            "node": "Node"
+          }
         }
       }
     },

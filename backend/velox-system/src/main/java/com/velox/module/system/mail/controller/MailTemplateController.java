@@ -4,6 +4,8 @@ import com.velox.common.result.PageResult;
 import com.velox.common.result.Result;
 import com.velox.framework.security.api.annotation.RequirePermission;
 import com.velox.module.system.id.frontend.SystemFrontendIdCodecSupport;
+import com.velox.module.system.log.annotation.OperationLog;
+import com.velox.module.system.log.annotation.OperationType;
 import com.velox.module.system.mail.service.MailTemplateService;
 import com.velox.module.system.mail.template.MailTemplateKind;
 import com.velox.module.system.mail.template.MailTemplateType;
@@ -92,6 +94,15 @@ public class MailTemplateController {
     @GetMapping("/page")
     @Operation(summary = "openapi.system.mail_template.page.summary")
     @RequirePermission("system:mail-template:query")
+    @OperationLog(
+            module = "system.mail_template",
+            action = "query",
+            type = OperationType.QUERY,
+            queryParamNames = {
+                    "name", "sendType", "templateType", "enabled", "remark",
+                    "createTimeStart", "createTimeEnd", "updateTimeStart", "updateTimeEnd"
+            }
+    )
     public Result<PageResult<MailTemplateRespVO>> getMailTemplatePage(MailTemplatePageReqVO pageReqVO) {
         return Result.ok(mailTemplateService.getMailTemplatePage(pageReqVO));
     }

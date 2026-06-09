@@ -303,6 +303,12 @@
     "outside": {
       "title": "内嵌页面"
     },
+    "log": {
+      "title": "日志管理",
+      "login": "登录日志",
+      "operation": "操作日志",
+      "api": "API 日志"
+    },
     "result": {
       "title": "结果页面",
       "success": "成功页",
@@ -1160,6 +1166,232 @@
           "selectFileFirst": "请选择文件",
           "uploadSuccess": "上传成功",
           "uploadFailed": "上传失败"
+        }
+      },
+      "log": {
+        "common": {
+          "auth": {
+            "query": "查询",
+            "delete": "删除",
+            "clean": "清空"
+          },
+          "actions": {
+            "detail": "详情",
+            "clean": "清空"
+          },
+          "search": {
+            "username": "账号",
+            "result": "结果",
+            "clientIp": "IP",
+            "countryName": "国家",
+            "provinceName": "省份",
+            "cityName": "城市",
+            "traceId": "TraceId",
+            "rangeSeparator": "至",
+            "placeholders": {
+              "startTime": "开始时间",
+              "endTime": "结束时间"
+            }
+          },
+          "columns": {
+            "username": "用户",
+            "account": "账号",
+            "result": "结果",
+            "costTime": "耗时",
+            "location": "位置",
+            "clientIp": "IP",
+            "traceId": "TraceId",
+            "operation": "操作",
+            "createTime": "记录时间"
+          },
+          "detail": {
+            "username": "用户",
+            "accountId": "账号ID",
+            "result": "结果",
+            "traceId": "TraceId",
+            "clientIp": "IP",
+            "location": "位置",
+            "userAgent": "User-Agent",
+            "javaMethod": "Java 方法",
+            "errorCode": "错误码",
+            "errorMessage": "错误信息",
+            "costTime": "耗时",
+            "logId": "日志ID",
+            "createTime": "记录时间",
+            "deviceType": "设备类型",
+            "browser": "浏览器",
+            "os": "操作系统"
+          },
+          "result": {
+            "success": "成功",
+            "fail": "失败"
+          },
+          "sections": {
+            "overview": "概览",
+            "request": "请求",
+            "environment": "环境",
+            "identity": "身份",
+            "result": "结果",
+            "audit": "审计"
+          },
+          "messages": {
+            "cleanTitle": "清空确认",
+            "cleanSuccess": "清空成功"
+          }
+        },
+        "login": {
+          "search": {
+            "username": "账号",
+            "eventType": "事件类型",
+            "loginMethod": "登录方式",
+            "mfaType": "MFA 类型",
+            "failureCode": "失败码",
+            "eventTimeRange": "事件时间"
+          },
+          "columns": {
+            "eventType": "事件",
+            "loginMethod": "方式",
+            "failureMessage": "失败原因",
+            "browserOs": "浏览器/系统",
+            "eventTime": "时间"
+          },
+          "detail": {
+            "title": "登录日志详情",
+            "eventType": "事件类型",
+            "loginMethod": "登录方式",
+            "mfaType": "MFA 类型",
+            "failureCode": "失败码",
+            "failureMessage": "失败原因",
+            "sessionId": "会话ID",
+            "browser": "浏览器",
+            "os": "操作系统",
+            "eventTime": "事件时间",
+            "logoutTime": "登出会话时间",
+            "firstLogin": "是否首次登录",
+            "riskType": "登录风险评估"
+          },
+          "eventTypes": {
+            "LOGIN": "登录",
+            "LOGOUT": "退出登录",
+            "MFA_VERIFY": "MFA 验证",
+            "REGISTER": "注册"
+          },
+          "methods": {
+            "password": "密码登录",
+            "emailCode": "邮箱验证码",
+            "oauth": "第三方登录"
+          },
+          "messages": {
+            "confirmDelete": "确定删除选中的 {count} 条登录日志吗？此操作不可恢复。",
+            "confirmClean": "确定清空全部登录日志吗？此操作不可恢复。"
+          },
+          "sections": {
+            "auth": "认证",
+            "session": "会话"
+          },
+          "riskTypes": {
+            "NONE": "无风险",
+            "NEW_LOCATION": "异地登录",
+            "NEW_DEVICE": "异常设备"
+          }
+        },
+        "operation": {
+          "search": {
+            "moduleName": "模块",
+            "actionName": "操作",
+            "operationType": "操作类型",
+            "operationTimeRange": "操作时间"
+          },
+          "columns": {
+            "moduleName": "模块",
+            "actionName": "操作",
+            "operationType": "类型",
+            "requestUri": "URL",
+            "operationTime": "时间"
+          },
+          "detail": {
+            "title": "操作日志详情",
+            "moduleName": "模块",
+            "actionName": "操作",
+            "operationType": "操作类型",
+            "targetType": "目标类型",
+            "targetId": "目标ID",
+            "requestMethod": "请求方法",
+            "requestUri": "请求地址",
+            "requestParams": "请求参数",
+            "responseSummary": "响应摘要",
+            "operationTime": "操作时间",
+            "beforeData": "修改前数据",
+            "afterData": "修改后数据"
+          },
+          "types": {
+            "OTHER": "其它",
+            "QUERY": "查询",
+            "CREATE": "新增",
+            "UPDATE": "更新",
+            "DELETE": "删除",
+            "CLEAN": "清空",
+            "FORCE": "强制"
+          },
+          "messages": {
+            "confirmDelete": "确定删除选中的 {count} 条操作日志吗？此操作不可恢复。",
+            "confirmClean": "确定清空全部操作日志吗？此操作不可恢复。"
+          },
+          "sections": {
+            "operation": "操作",
+            "change": "数据变更"
+          }
+        },
+        "api": {
+          "search": {
+            "requestUri": "请求路径",
+            "requestMethod": "请求方法",
+            "httpStatus": "HTTP 状态",
+            "businessCode": "业务码",
+            "costTimeMin": "最小耗时",
+            "costTimeMax": "最大耗时",
+            "apiTimeRange": "请求时间"
+          },
+          "columns": {
+            "requestMethod": "方法",
+            "requestUri": "路径",
+            "httpStatus": "HTTP",
+            "businessCode": "业务码",
+            "apiTime": "时间"
+          },
+          "detail": {
+            "title": "API 日志详情",
+            "requestMethod": "请求方法",
+            "requestUri": "请求路径",
+            "matchedPattern": "匹配路径",
+            "httpStatus": "HTTP 状态",
+            "businessCode": "业务码",
+            "businessMessage": "业务消息",
+            "requestQuery": "Query",
+            "requestBody": "Body",
+            "responseBody": "响应摘要",
+            "requestSize": "请求大小",
+            "responseSize": "响应大小",
+            "apiTime": "请求时间",
+            "callerApp": "调用方应用",
+            "requestUrl": "接口完整地址",
+            "requestHeaders": "请求头",
+            "exceptionStack": "异常堆栈",
+            "serverIp": "服务器IP",
+            "serverNode": "服务节点",
+            "requestTime": "请求进入时间",
+            "responseTime": "响应返回时间"
+          },
+          "messages": {
+            "confirmDelete": "确定删除选中的 {count} 条 API 日志吗？此操作不可恢复。",
+            "confirmClean": "确定清空全部 API 日志吗？此操作不可恢复。"
+          },
+          "sections": {
+            "caller": "调用方",
+            "response": "响应",
+            "exception": "异常",
+            "node": "节点"
+          }
         }
       }
     },
