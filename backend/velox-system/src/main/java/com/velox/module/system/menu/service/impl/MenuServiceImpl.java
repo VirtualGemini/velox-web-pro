@@ -158,9 +158,65 @@ public class MenuServiceImpl implements MenuService {
             }
         }
 
-        sortRoutes(roots);
+        // 门禁：定义了按钮权限却一个都没授予当前用户的页面无任何可用操作，连同被掏空的目录一并隐藏，
+        // 使「一个管理权限都没有 -> 该页面无路由 + 无法访问」在后端菜单构建层生效。R_SUPER 持有全部按钮，天然不受影响。
+        Set<String> menusWithDefinedButtons = collectMenusWithDefinedButtons();
+        List<MenuRouteDTO> visibleRoots = pruneInaccessibleRoutes(roots, menusWithDefinedButtons);
 
-        return roots;
+        sortRoutes(visibleRoots);
+
+        return visibleRoots;
+    }
+
+    /**
+     * 全量收集「至少定义了一个启用按钮」的菜单 ID（不区分是否授予当前用户）。
+     * 用于判断某页面是否属于「按钮驱动可见性」的页面。
+     */
+    private Set<String> collectMenusWithDefinedButtons() {
+        return menuMapper.selectList(MenuQuerySupport.selectColumns(new LambdaQueryWrapper<Menu>())
+                        .eq(Menu::getDeleted, 0)
+                        .eq(Menu::getIsEnable, 1)
+                        .eq(Menu::getMenuType, MENU_TYPE_BUTTON))
+                .stream()
+                .map(Menu::getParentId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /**
+     * 递归裁剪不可访问的路由节点：
+     * <ol>
+     *   <li>叶子页面定义了按钮权限、但当前用户一个都没拿到 -> 隐藏（无任何可用操作）；</li>
+     *   <li>目录节点的子菜单被全部裁剪后变为空壳 -> 隐藏（避免空菜单组）。</li>
+     * </ol>
+     */
+    private List<MenuRouteDTO> pruneInaccessibleRoutes(List<MenuRouteDTO> nodes, Set<String> menusWithDefinedButtons) {
+        List<MenuRouteDTO> kept = new ArrayList<>();
+        for (MenuRouteDTO node : nodes) {
+            boolean wasDirectory = node.getChildren() != null && !node.getChildren().isEmpty();
+            if (wasDirectory) {
+                node.setChildren(pruneInaccessibleRoutes(node.getChildren(), menusWithDefinedButtons));
+            }
+            if (!shouldHideRoute(node, wasDirectory, menusWithDefinedButtons)) {
+                kept.add(node);
+            }
+        }
+        return kept;
+    }
+
+    private boolean shouldHideRoute(MenuRouteDTO node, boolean wasDirectory, Set<String> menusWithDefinedButtons) {
+        boolean hasChildren = node.getChildren() != null && !node.getChildren().isEmpty();
+        // 目录被掏空 -> 隐藏
+        if (wasDirectory) {
+            return !hasChildren;
+        }
+        // 叶子页面：定义了按钮却未授予任何一个 -> 隐藏
+        if (menusWithDefinedButtons.contains(node.getId())) {
+            return node.getMeta() == null
+                    || node.getMeta().getAuthList() == null
+                    || node.getMeta().getAuthList().isEmpty();
+        }
+        return false;
     }
 
     private MenuRouteDTO toRoute(Menu menu, List<String> roleCodes) {

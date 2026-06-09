@@ -7,7 +7,7 @@
       </div>
 
       <div v-loading="loading" class="vs-list">
-        <div v-for="scene in scenes" :key="scene.sceneKey" class="vs-section">
+        <div v-for="scene in visibleScenes" :key="scene.sceneKey" class="vs-section">
           <div class="vs-section__head">
             <div class="vs-section__title">
               {{ t(`pages.settings.verificationSettings.scenes.${scene.sceneKey}.name`) }}
@@ -30,7 +30,7 @@
                 v-model="scene.maxAttempts"
                 :min="1"
                 :step="1"
-                :disabled="!canEdit || loading"
+                :disabled="loading"
                 controls-position="right"
                 @change="() => handleSave(scene)"
               />
@@ -46,7 +46,7 @@
                 v-model="scene.recoverySeconds"
                 :min="1"
                 :step="10"
-                :disabled="!canEdit || loading"
+                :disabled="loading"
                 controls-position="right"
                 @change="() => handleSave(scene)"
               />
@@ -60,15 +60,10 @@
               </span>
               <ElCheckboxGroup
                 v-model="scene.dimensions"
-                :disabled="!canEdit || loading"
+                :disabled="loading"
                 @change="() => handleSave(scene)"
               >
-                <ElCheckbox
-                  v-for="d in DIMENSIONS"
-                  :key="d"
-                  :value="d"
-                  :label="d"
-                >
+                <ElCheckbox v-for="d in DIMENSIONS" :key="d" :value="d" :label="d">
                   {{ t(`pages.settings.verificationSettings.dimensions.${d}`) }}
                 </ElCheckbox>
               </ElCheckboxGroup>
@@ -98,6 +93,15 @@
 
   const DIMENSIONS = ['account', 'ip'] as const
 
+  // 场景键 -> 管理权限标识；仅展示用户拥有对应权限的场景卡片
+  const SCENE_AUTH: Record<string, string> = {
+    login: 'settings:verification-settings:login',
+    verify_code: 'settings:verification-settings:verify-code',
+    captcha: 'settings:verification-settings:captcha',
+    send_code: 'settings:verification-settings:send-code',
+    mfa: 'settings:verification-settings:mfa'
+  }
+
   interface SceneRow {
     sceneKey: string
     enabled: boolean
@@ -112,6 +116,7 @@
   const snapshots: Record<string, SceneRow> = {}
 
   const canEdit = computed(() => hasAuth('settings:verification-settings:update'))
+  const visibleScenes = computed(() => scenes.filter((s) => hasAuth(SCENE_AUTH[s.sceneKey])))
 
   function toRow(data: VerificationPolicyConfig): SceneRow {
     const dimensions: string[] = []

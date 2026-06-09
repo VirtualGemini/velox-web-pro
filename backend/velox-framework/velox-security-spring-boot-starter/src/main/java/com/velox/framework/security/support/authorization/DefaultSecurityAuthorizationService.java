@@ -7,6 +7,9 @@ import com.velox.framework.security.common.message.SecurityCommonMessages;
 import com.velox.framework.security.exception.SecurityAuthenticationException;
 import com.velox.framework.security.exception.SecurityAuthorizationException;
 
+import java.util.Collection;
+import java.util.List;
+
 public class DefaultSecurityAuthorizationService implements SecurityAuthorizationService {
 
     private final SecuritySessionService securitySessionService;
@@ -34,6 +37,23 @@ public class DefaultSecurityAuthorizationService implements SecurityAuthorizatio
         }
         boolean allowed = securityPermissionProvider.getPermissions(loginId).stream()
                 .anyMatch(mark -> permission.trim().equals(mark));
+        if (!allowed) {
+            throw new SecurityAuthorizationException(SecurityCommonMessages.SECURITY_PERMISSION_DENIED);
+        }
+    }
+
+    @Override
+    public void checkAnyPermission(Collection<String> permissions) {
+        checkAuthenticated();
+        String loginId = securitySessionService.requireCurrentLoginId();
+        if (permissions == null || permissions.isEmpty()) {
+            throw new SecurityAuthorizationException(SecurityCommonMessages.SECURITY_PERMISSION_REQUIRED);
+        }
+        List<String> granted = securityPermissionProvider.getPermissions(loginId);
+        boolean allowed = permissions.stream()
+                .filter(permission -> permission != null && !permission.isBlank())
+                .map(String::trim)
+                .anyMatch(granted::contains);
         if (!allowed) {
             throw new SecurityAuthorizationException(SecurityCommonMessages.SECURITY_PERMISSION_DENIED);
         }

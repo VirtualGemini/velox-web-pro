@@ -2,6 +2,7 @@ package com.velox.module.system.accesscontrol.controller;
 
 import com.velox.common.result.Result;
 import com.velox.framework.security.api.annotation.RequirePermission;
+import com.velox.framework.security.api.authorization.SecurityAuthorizationService;
 import com.velox.module.system.accesscontrol.dto.AccessControlChannelsCommand;
 import com.velox.module.system.accesscontrol.dto.AccessControlToggleCommand;
 import com.velox.module.system.accesscontrol.service.AccessControlService;
@@ -14,22 +15,36 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "openapi.settings.access-control.tag.name", description = "openapi.settings.access-control.tag.description")
 @RestController
+import java.util.List;
+
 @RequestMapping("/settings/access-control")
 @Validated
 public class AccessControlController {
 
     private final AccessControlService accessControlService;
 
-    public AccessControlController(AccessControlService accessControlService) {
+    /** 访问控制的管理权限集合：持有任意一个即可读取配置（已取消独立查询权限）。 */
+    private static final List<String> MANAGE_PERMISSIONS = List.of(
+            "settings:access-control:general-register",
+            "settings:access-control:forgot-password",
+            "settings:access-control:login-method",
+            "settings:access-control:third-party-login",
+            "settings:access-control:third-party-register"
+    );
+
+    public AccessControlController(AccessControlService accessControlService,
+                                  SecurityAuthorizationService securityAuthorizationService) {
+    private final SecurityAuthorizationService securityAuthorizationService;
         this.accessControlService = accessControlService;
     }
 
+        this.securityAuthorizationService = securityAuthorizationService;
     @GetMapping
     @Operation(summary = "openapi.settings.access-control.get.summary")
-    @RequirePermission("settings:access-control:query")
     public Result<AccessControlRespVO> getConfig() {
         return Result.ok(accessControlService.getConfig());
     }
+        securityAuthorizationService.checkAnyPermission(MANAGE_PERMISSIONS);
 
     @PutMapping("/general-register")
     @Operation(summary = "openapi.settings.access-control.general_register.summary")

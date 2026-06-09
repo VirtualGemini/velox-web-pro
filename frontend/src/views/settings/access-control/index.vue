@@ -8,14 +8,14 @@
 
       <ElForm v-loading="loading" label-position="top" class="access-control-form">
         <!-- 通用注册 -->
-        <div class="ac-section">
+        <div v-if="hasAuth('settings:access-control:general-register')" class="ac-section">
           <div class="ac-section__head">
             <div class="ac-section__title">
               {{ t('pages.settings.accessControl.sections.generalRegister.title') }}
             </div>
             <ElSwitch
               v-model="form.generalRegisterEnabled"
-              :disabled="!hasAuth('settings:access-control:general-register') || loading"
+              :disabled="loading"
               @change="handleToggleGeneralRegister"
             />
           </div>
@@ -25,14 +25,14 @@
         </div>
 
         <!-- 忘记密码 -->
-        <div class="ac-section">
+        <div v-if="hasAuth('settings:access-control:forgot-password')" class="ac-section">
           <div class="ac-section__head">
             <div class="ac-section__title">
               {{ t('pages.settings.accessControl.sections.forgotPassword.title') }}
             </div>
             <ElSwitch
               v-model="form.forgotPasswordEnabled"
-              :disabled="!hasAuth('settings:access-control:forgot-password') || loading"
+              :disabled="loading"
               @change="handleToggleForgotPassword"
             />
           </div>
@@ -42,7 +42,7 @@
         </div>
 
         <!-- 普通登录方式 -->
-        <div class="ac-section">
+        <div v-if="hasAuth('settings:access-control:login-method')" class="ac-section">
           <div class="ac-section__title">
             {{ t('pages.settings.accessControl.sections.loginMethod.title') }}
           </div>
@@ -51,7 +51,7 @@
           </div>
           <ElCheckboxGroup
             v-model="form.loginMethods"
-            :disabled="!hasAuth('settings:access-control:login-method') || loading"
+            :disabled="loading"
             @change="handleUpdateLoginMethods"
           >
             <ElCheckbox
@@ -66,7 +66,7 @@
         </div>
 
         <!-- 第三方登录方式 -->
-        <div class="ac-section">
+        <div v-if="hasAuth('settings:access-control:third-party-login')" class="ac-section">
           <div class="ac-section__title">
             {{ t('pages.settings.accessControl.sections.thirdPartyLogin.title') }}
           </div>
@@ -75,7 +75,7 @@
           </div>
           <ElCheckboxGroup
             v-model="form.thirdPartyLoginChannels"
-            :disabled="!hasAuth('settings:access-control:third-party-login') || loading"
+            :disabled="loading"
             @change="handleUpdateThirdPartyLogin"
           >
             <ElCheckbox
@@ -90,7 +90,7 @@
         </div>
 
         <!-- 第三方注册方式 -->
-        <div class="ac-section">
+        <div v-if="hasAuth('settings:access-control:third-party-register')" class="ac-section">
           <div class="ac-section__title">
             {{ t('pages.settings.accessControl.sections.thirdPartyRegister.title') }}
           </div>
@@ -99,7 +99,7 @@
           </div>
           <ElCheckboxGroup
             v-model="form.thirdPartyRegisterChannels"
-            :disabled="!hasAuth('settings:access-control:third-party-register') || loading"
+            :disabled="loading"
             @change="handleUpdateThirdPartyRegister"
           >
             <ElCheckbox
