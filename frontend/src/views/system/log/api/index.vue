@@ -185,8 +185,7 @@
               ipLocation: row.ipLocation,
               countryName: row.countryName,
               provinceName: row.provinceName,
-              cityName: row.cityName,
-              isp: row.isp
+              cityName: row.cityName
             })
         },
         {
@@ -194,6 +193,12 @@
           label: 'pages.system.log.common.columns.clientIp',
           minWidth: 140,
           formatter: (row: ApiLogRecord) => formatFallback(row.clientIp)
+        },
+        {
+          prop: 'isp',
+          label: 'pages.system.log.common.columns.isp',
+          minWidth: 120,
+          formatter: (row: ApiLogRecord) => formatFallback(row.isp)
         },
         {
           prop: 'costTimeMs',
@@ -354,6 +359,7 @@
       prop: 'ipLocation',
       section: 'environment'
     },
+    { label: 'pages.system.log.common.detail.isp', prop: 'isp', section: 'environment' },
     {
       label: 'pages.system.log.common.detail.deviceType',
       prop: 'deviceType',

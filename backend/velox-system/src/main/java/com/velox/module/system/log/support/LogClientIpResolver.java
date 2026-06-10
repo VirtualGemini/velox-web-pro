@@ -14,7 +14,8 @@ public class LogClientIpResolver {
 
     private static final String X_FORWARDED_FOR = "X-Forwarded-For";
     private static final String[] SINGLE_IP_HEADERS = {
-            "CF-Connecting-IP", "True-Client-IP", "X-Real-IP", "Client-IP", "Proxy-Client-IP", "WL-Proxy-Client-IP"
+            "X-Forwarded-For", "CF-Connecting-IP", "True-Client-IP", "X-Real-IP",
+            "Client-IP", "Proxy-Client-IP", "WL-Proxy-Client-IP"
     };
 
     private final SystemLogProperties properties;
@@ -27,20 +28,13 @@ public class LogClientIpResolver {
         if (request == null) {
             return null;
         }
-        if (properties.getTrustedProxy().isEnabled()) {
+        if (properties.getTrustedProxy().isEnabled() || properties.isTrustProxyHeaders()) {
             String forwarded = request.getHeader(X_FORWARDED_FOR);
-            String forwardedIp = resolveForwardedFor(forwarded);
-            if (StringUtils.hasText(forwardedIp)) {
-                return normalize(forwardedIp);
-            }
-            String singleHeaderIp = resolveSingleIpHeader(request);
-            if (StringUtils.hasText(singleHeaderIp)) {
-                return normalize(singleHeaderIp);
-            }
-        } else if (properties.isTrustProxyHeaders()) {
-            String forwardedIp = firstValid(request.getHeader(X_FORWARDED_FOR));
-            if (StringUtils.hasText(forwardedIp)) {
-                return normalize(forwardedIp);
+            if (StringUtils.hasText(forwarded)) {
+                String clientIp = firstValid(forwarded);
+                if (StringUtils.hasText(clientIp)) {
+                    return normalize(clientIp);
+                }
             }
             String singleHeaderIp = resolveSingleIpHeader(request);
             if (StringUtils.hasText(singleHeaderIp)) {

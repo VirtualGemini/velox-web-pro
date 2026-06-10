@@ -24,9 +24,9 @@ public class UserAgentResolver {
     }
 
     private String browser(String ua) {
-        if (ua.contains("edg/")) return "Edge";
-        if (ua.contains("chrome/")) return "Chrome";
+        if (ua.contains("edg/") || ua.contains("edga/") || ua.contains("edgios/")) return "Edge";
         if (ua.contains("firefox/")) return "Firefox";
+        if (ua.contains("chrome/") || ua.contains("crios/")) return "Chrome";
         if (ua.contains("safari/") && !ua.contains("chrome/")) return "Safari";
         if (ua.contains("msie") || ua.contains("trident")) return "IE";
         return "Unknown";

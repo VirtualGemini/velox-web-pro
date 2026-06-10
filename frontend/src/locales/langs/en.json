@@ -1200,6 +1200,7 @@
             "costTime": "Cost",
             "location": "Location",
             "clientIp": "IP",
+            "isp": "ISP",
             "traceId": "TraceId",
             "operation": "Operation",
             "createTime": "Record Time"
@@ -1211,6 +1212,7 @@
             "traceId": "TraceId",
             "clientIp": "IP",
             "location": "Location",
+            "isp": "ISP",
             "userAgent": "User-Agent",
             "javaMethod": "Java Method",
             "errorCode": "Error Code",

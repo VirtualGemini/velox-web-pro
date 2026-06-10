@@ -1200,6 +1200,7 @@
             "costTime": "耗时",
             "location": "位置",
             "clientIp": "IP",
+            "isp": "运营商",
             "traceId": "TraceId",
             "operation": "操作",
             "createTime": "记录时间"
@@ -1211,6 +1212,7 @@
             "traceId": "TraceId",
             "clientIp": "IP",
             "location": "位置",
+            "isp": "运营商",
             "userAgent": "User-Agent",
             "javaMethod": "Java 方法",
             "errorCode": "错误码",
