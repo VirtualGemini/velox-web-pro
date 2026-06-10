@@ -174,7 +174,8 @@
               ipLocation: row.ipLocation,
               countryName: row.countryName,
               provinceName: row.provinceName,
-              cityName: row.cityName
+              cityName: row.cityName,
+              isp: row.isp
             })
         },
         {

@@ -8,7 +8,6 @@ public class IpLocation {
     private String countryName;
     private String provinceName;
     private String cityName;
-    private String districtName;
     private String isp;
     private String locationText;
     private String source;
@@ -24,8 +23,6 @@ public class IpLocation {
     public void setProvinceName(String provinceName) { this.provinceName = provinceName; }
     public String getCityName() { return cityName; }
     public void setCityName(String cityName) { this.cityName = cityName; }
-    public String getDistrictName() { return districtName; }
-    public void setDistrictName(String districtName) { this.districtName = districtName; }
     public String getIsp() { return isp; }
     public void setIsp(String isp) { this.isp = isp; }
     public String getLocationText() { return locationText; }

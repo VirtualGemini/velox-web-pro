@@ -38,7 +38,6 @@ public class ApiLogDTO {
     private String countryName;
     private String provinceName;
     private String cityName;
-    private String districtName;
     private String ipLocation;
     private String isp;
     private String locationSource;
@@ -119,8 +118,6 @@ public class ApiLogDTO {
     public void setProvinceName(String provinceName) { this.provinceName = provinceName; }
     public String getCityName() { return cityName; }
     public void setCityName(String cityName) { this.cityName = cityName; }
-    public String getDistrictName() { return districtName; }
-    public void setDistrictName(String districtName) { this.districtName = districtName; }
     public String getIpLocation() { return ipLocation; }
     public void setIpLocation(String ipLocation) { this.ipLocation = ipLocation; }
     public String getIsp() { return isp; }

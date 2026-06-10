@@ -9,12 +9,28 @@ public class SystemLogProperties {
 
     private final IpLocation ipLocation = new IpLocation();
     private final Payload payload = new Payload();
+    private final TrustedProxy trustedProxy = new TrustedProxy();
     private boolean trustProxyHeaders;
 
     public IpLocation getIpLocation() { return ipLocation; }
     public Payload getPayload() { return payload; }
+    public TrustedProxy getTrustedProxy() { return trustedProxy; }
     public boolean isTrustProxyHeaders() { return trustProxyHeaders; }
     public void setTrustProxyHeaders(boolean trustProxyHeaders) { this.trustProxyHeaders = trustProxyHeaders; }
+
+    public boolean shouldTrustProxyHeaders() {
+        return trustProxyHeaders || trustedProxy.isEnabled();
+    }
+
+    public static class TrustedProxy {
+        private boolean enabled = false;
+        private int trustedHops = 1;
+
+        public boolean isEnabled() { return enabled; }
+        public void setEnabled(boolean enabled) { this.enabled = enabled; }
+        public int getTrustedHops() { return trustedHops; }
+        public void setTrustedHops(int trustedHops) { this.trustedHops = trustedHops; }
+    }
 
     public static class IpLocation {
         private boolean enabled = true;

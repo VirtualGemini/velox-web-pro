@@ -98,10 +98,11 @@ public class Ip2RegionLocationResolver implements IpLocationResolver {
         }
         String[] parts = region.split("\\|");
         location.setCountryName(part(parts, 0));
-        location.setProvinceName(part(parts, 2));
-        location.setCityName(part(parts, 3));
-        location.setIsp(part(parts, 4));
-        location.setLocationText(join(location.getCountryName(), location.getProvinceName(), location.getCityName(), location.getIsp()));
+        location.setCountryCode(part(parts, 4));
+        location.setProvinceName(part(parts, 1));
+        location.setCityName(part(parts, 2));
+        location.setIsp(part(parts, 3));
+        location.setLocationText(join(location.getCountryName(), location.getProvinceName(), location.getCityName()));
         if (!StringUtils.hasText(location.getLocationText())) {
             location.setLocationText(properties.getIpLocation().getUnknownText());
         }

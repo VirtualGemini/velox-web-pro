@@ -1,6 +1,7 @@
 <template>
   <div class="location-cell">
-    <span>{{ text }}</span>
+    <span>{{ locationText }}</span>
+    <span v-if="ispText" class="isp-text">{{ ispText }}</span>
   </div>
 </template>
 
@@ -12,9 +13,10 @@
     countryName?: string
     provinceName?: string
     cityName?: string
+    isp?: string
   }>()
 
-  const text = computed(() => {
+  const locationText = computed(() => {
     const location = normalizeLocationPart(props.ipLocation)
     if (location) return location
 
@@ -24,6 +26,8 @@
 
     return parts.length > 0 ? parts.join(' / ') : UNKNOWN_TEXT
   })
+
+  const ispText = computed(() => normalizeLocationPart(props.isp))
 
   function normalizeLocationPart(value?: string) {
     const text = value?.trim()
@@ -38,5 +42,10 @@
     gap: 2px;
     min-width: 0;
     line-height: 1.35;
+  }
+
+  .isp-text {
+    font-size: 0.9em;
+    opacity: 0.7;
   }
 </style>

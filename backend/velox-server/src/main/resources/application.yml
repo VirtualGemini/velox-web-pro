@@ -100,6 +100,15 @@ springdoc:
       - name: en
         url: /v3/api-docs?lang=en
 
+# 日志模块配置
+system:
+  log:
+    trusted-proxy:
+      # 是否信任代理转发头。默认关闭，避免直接暴露后端时客户端伪造 IP；
+      # 部署在可信反代/LB 后可通过环境变量开启，并按链路设置 trusted-hops。
+      enabled: ${SYSTEM_LOG_TRUSTED_PROXY_ENABLED:false}
+      trusted-hops: ${SYSTEM_LOG_TRUSTED_PROXY_HOPS:1}
+
 # 应用自定义配置
 velox:
   # 系统名称

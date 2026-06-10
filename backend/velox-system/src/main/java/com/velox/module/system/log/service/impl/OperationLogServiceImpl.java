@@ -144,7 +144,6 @@ public class OperationLogServiceImpl implements OperationLogService {
         dto.setCountryName(r.getCountryName());
         dto.setProvinceName(r.getProvinceName());
         dto.setCityName(r.getCityName());
-        dto.setDistrictName(r.getDistrictName());
         dto.setIpLocation(r.getIpLocation());
         dto.setIsp(r.getIsp());
         dto.setLocationSource(r.getLocationSource());

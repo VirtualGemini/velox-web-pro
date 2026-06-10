@@ -102,7 +102,6 @@ public class LoginLogServiceImpl implements LoginLogService {
         like(wrapper, LoginLogRecord::getCountryName, query.getCountryName());
         like(wrapper, LoginLogRecord::getProvinceName, query.getProvinceName());
         like(wrapper, LoginLogRecord::getCityName, query.getCityName());
-        like(wrapper, LoginLogRecord::getDistrictName, query.getDistrictName());
         eq(wrapper, LoginLogRecord::getTraceId, query.getTraceId());
         if (StringUtils.hasText(query.getEventTimeStart())) wrapper.ge(LoginLogRecord::getEventTime, RequestDateTimeFormatter.parseToUtc(query.getEventTimeStart()));
         if (StringUtils.hasText(query.getEventTimeEnd())) wrapper.le(LoginLogRecord::getEventTime, RequestDateTimeFormatter.parseToUtc(query.getEventTimeEnd()));
@@ -141,7 +140,6 @@ public class LoginLogServiceImpl implements LoginLogService {
         dto.setCountryName(r.getCountryName());
         dto.setProvinceName(r.getProvinceName());
         dto.setCityName(r.getCityName());
-        dto.setDistrictName(r.getDistrictName());
         dto.setIpLocation(r.getIpLocation());
         dto.setIsp(r.getIsp());
         dto.setLocationSource(r.getLocationSource());

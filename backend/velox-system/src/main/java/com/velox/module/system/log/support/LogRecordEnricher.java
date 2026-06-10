@@ -62,16 +62,16 @@ public class LogRecordEnricher {
 
     private void applyLocation(LoginLogRecord record, IpLocation location) {
         if (location == null) return;
-        record.setIpVersion(location.getIpVersion()); record.setCountryCode(location.getCountryCode()); record.setCountryName(location.getCountryName()); record.setProvinceName(location.getProvinceName()); record.setCityName(location.getCityName()); record.setDistrictName(location.getDistrictName()); record.setIpLocation(location.getLocationText()); record.setIsp(location.getIsp()); record.setLocationSource(location.getSource()); record.setLocationParsedAt(location.getParsedAt());
+        record.setIpVersion(location.getIpVersion()); record.setCountryCode(location.getCountryCode()); record.setCountryName(location.getCountryName()); record.setProvinceName(location.getProvinceName()); record.setCityName(location.getCityName()); record.setIpLocation(location.getLocationText()); record.setIsp(location.getIsp()); record.setLocationSource(location.getSource()); record.setLocationParsedAt(location.getParsedAt());
     }
 
     private void applyLocation(OperationLogRecord record, IpLocation location) {
         if (location == null) return;
-        record.setIpVersion(location.getIpVersion()); record.setCountryCode(location.getCountryCode()); record.setCountryName(location.getCountryName()); record.setProvinceName(location.getProvinceName()); record.setCityName(location.getCityName()); record.setDistrictName(location.getDistrictName()); record.setIpLocation(location.getLocationText()); record.setIsp(location.getIsp()); record.setLocationSource(location.getSource()); record.setLocationParsedAt(location.getParsedAt());
+        record.setIpVersion(location.getIpVersion()); record.setCountryCode(location.getCountryCode()); record.setCountryName(location.getCountryName()); record.setProvinceName(location.getProvinceName()); record.setCityName(location.getCityName()); record.setIpLocation(location.getLocationText()); record.setIsp(location.getIsp()); record.setLocationSource(location.getSource()); record.setLocationParsedAt(location.getParsedAt());
     }
 
     private void applyLocation(ApiLogRecord record, IpLocation location) {
         if (location == null) return;
-        record.setIpVersion(location.getIpVersion()); record.setCountryCode(location.getCountryCode()); record.setCountryName(location.getCountryName()); record.setProvinceName(location.getProvinceName()); record.setCityName(location.getCityName()); record.setDistrictName(location.getDistrictName()); record.setIpLocation(location.getLocationText()); record.setIsp(location.getIsp()); record.setLocationSource(location.getSource()); record.setLocationParsedAt(location.getParsedAt());
+        record.setIpVersion(location.getIpVersion()); record.setCountryCode(location.getCountryCode()); record.setCountryName(location.getCountryName()); record.setProvinceName(location.getProvinceName()); record.setCityName(location.getCityName()); record.setIpLocation(location.getLocationText()); record.setIsp(location.getIsp()); record.setLocationSource(location.getSource()); record.setLocationParsedAt(location.getParsedAt());
     }
 }

@@ -39,7 +39,7 @@ public class LoginLogController {
             queryParamNames = {
                     "username", "accountId", "result", "clientIp", "countryName", "provinceName",
                     "cityName", "traceId", "eventType", "loginMethod", "mfaType", "failureCode",
-                    "districtName", "eventTimeStart", "eventTimeEnd"
+                    "eventTimeStart", "eventTimeEnd"
             }
     )
     @GetMapping("/list")

@@ -44,7 +44,8 @@ export default async ({ mode }: { mode: string }) => {
       proxy: {
         '/api': {
           target: VITE_API_PROXY_URL,
-          changeOrigin: true
+          changeOrigin: true,
+          xfwd: true
         }
       },
       host: true,

@@ -366,7 +366,7 @@ DROP TABLE IF EXISTS `sys_account`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sys_account` (
   `id` bigint NOT NULL COMMENT '主键ID',
-  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户名',
+  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '账号名',
   `password` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '密码',
   `remark` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '账号备注',
   `status` tinyint DEFAULT '1' COMMENT '账号状态(1-启用 2-禁用 3-异常 4-注销)',
@@ -379,7 +379,7 @@ CREATE TABLE `sys_account` (
   `create_by` bigint DEFAULT NULL COMMENT '创建人',
   `update_by` bigint DEFAULT NULL COMMENT '更新人',
   `deleted` tinyint DEFAULT '0' COMMENT '逻辑删除(0-未删除 1-已删除)',
-  `active_username` varchar(50) COLLATE utf8mb4_unicode_ci GENERATED ALWAYS AS ((case when (`deleted` = 0) then `username` else NULL end)) STORED COMMENT '未删除用户名',
+  `active_username` varchar(50) COLLATE utf8mb4_unicode_ci GENERATED ALWAYS AS ((case when (`deleted` = 0) then `username` else NULL end)) STORED COMMENT '未删除账号名',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_username` (`active_username`),
   KEY `idx_username` (`username`)
@@ -559,7 +559,7 @@ DROP TABLE IF EXISTS `sys_login_log`;
 CREATE TABLE `sys_login_log` (
   `id` bigint NOT NULL COMMENT '主键ID',
   `account_id` bigint DEFAULT NULL COMMENT '账号ID',
-  `username` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户名',
+  `username` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '账号名',
   `event_type` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '登录事件类型',
   `login_method` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '登录方式',
   `mfa_type` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '二次验证类型',
@@ -577,7 +577,6 @@ CREATE TABLE `sys_login_log` (
   `country_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '国家名称',
   `province_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '省份名称',
   `city_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '城市名称',
-  `district_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '区县名称',
   `ip_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP归属地',
   `isp` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '运营商',
   `location_source` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '位置来源',
@@ -617,7 +616,7 @@ CREATE TABLE `sys_operation_log` (
   `target_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '目标类型',
   `target_id` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '目标ID',
   `account_id` bigint DEFAULT NULL COMMENT '账号ID',
-  `username` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户名',
+  `username` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '账号名',
   `operator_type` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '操作者类型',
   `request_method` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求方法',
   `request_uri` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求地址',
@@ -637,7 +636,6 @@ CREATE TABLE `sys_operation_log` (
   `country_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '国家名称',
   `province_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '省份名称',
   `city_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '城市名称',
-  `district_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '区县名称',
   `ip_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP归属地',
   `isp` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '运营商',
   `location_source` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '位置来源',
@@ -672,7 +670,7 @@ DROP TABLE IF EXISTS `sys_api_log`;
 CREATE TABLE `sys_api_log` (
   `id` bigint NOT NULL COMMENT '主键ID',
   `account_id` bigint DEFAULT NULL COMMENT '账号ID',
-  `username` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户名',
+  `username` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '账号名',
   `caller_app` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '调用方应用',
   `request_url` varchar(1024) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '接口完整地址',
   `request_method` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求方法',
@@ -704,7 +702,6 @@ CREATE TABLE `sys_api_log` (
   `country_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '国家名称',
   `province_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '省份名称',
   `city_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '城市名称',
-  `district_name` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '区县名称',
   `ip_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP归属地',
   `isp` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '运营商',
   `location_source` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '位置来源',

@@ -27,6 +27,13 @@ logging:
     # 开发环境日志目录
     path: ./log
 
+system:
+  log:
+    trusted-proxy:
+      # 开发前端通常经 Vite 代理访问后端，需要信任一跳代理转发头才能记录真实设备 IP。
+      enabled: true
+      trusted-hops: 1
+
 velox:
   datasource:
     # 当前激活数据库类型，默认推荐 PostgreSQL；可选 mysql / postgresql
@@ -74,6 +81,11 @@ velox:
     swagger-public-enabled: true
   system:
     auth:
+      rate-limit:
+        trusted-proxy:
+          # 与开发 Vite 代理联调一致，避免所有登录设备共用 ::1 做 IP 限流。
+          enabled: true
+          trusted-hops: 1
       # 验证码 HMAC 摘要密钥；开发环境可使用默认值，生产环境必须覆盖
       verification:
         secret: ${VERIFICATION_SECRET:velox-dev-verification-secret}
