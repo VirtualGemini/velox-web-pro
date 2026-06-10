@@ -7,6 +7,7 @@ import com.velox.framework.web.common.servlet.WebFilterNames;
 import com.velox.framework.web.core.logging.DefaultRequestLogHandler;
 import com.velox.framework.web.core.mvc.DefaultVeloxWebMvcConfigurer;
 import com.velox.framework.web.core.path.DefaultApiPathPrefixResolver;
+import com.velox.framework.web.core.json.JavaScriptSafeLongSerializer;
 import com.velox.framework.web.core.json.RequestZoneLocalDateTimeSerializer;
 import com.velox.framework.web.core.locale.DefaultRequestLocaleResolver;
 import com.velox.framework.web.core.servlet.DefaultRequestLocaleFilterRegistrationCustomizer;
@@ -53,7 +54,10 @@ public class VeloxWebAutoConfiguration {
      */
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer veloxLocalDateTimeSerializerCustomizer() {
-        return builder -> builder.serializerByType(LocalDateTime.class, new RequestZoneLocalDateTimeSerializer());
+        return builder -> builder
+                .serializerByType(LocalDateTime.class, new RequestZoneLocalDateTimeSerializer())
+                .serializerByType(Long.class, new JavaScriptSafeLongSerializer())
+                .serializerByType(Long.TYPE, new JavaScriptSafeLongSerializer());
     }
 
     @Bean
