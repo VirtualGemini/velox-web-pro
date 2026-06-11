@@ -744,12 +744,14 @@
         {
           prop: 'createTime',
           label: 'pages.config.mailAccount.columns.createTime',
-          minWidth: 180
+          minWidth: 180,
+          sortable: true
         },
         {
           prop: 'updateTime',
           label: 'pages.config.mailAccount.columns.updateTime',
-          minWidth: 180
+          minWidth: 180,
+          sortable: true
         },
         {
           prop: 'operation',

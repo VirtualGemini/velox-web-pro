@@ -99,6 +99,8 @@ public class OperationLogServiceImpl implements OperationLogService {
         eq(wrapper, OperationLogRecord::getTraceId, query.getTraceId());
         if (StringUtils.hasText(query.getOperationTimeStart())) wrapper.ge(OperationLogRecord::getOperationTime, RequestDateTimeFormatter.parseToUtc(query.getOperationTimeStart()));
         if (StringUtils.hasText(query.getOperationTimeEnd())) wrapper.le(OperationLogRecord::getOperationTime, RequestDateTimeFormatter.parseToUtc(query.getOperationTimeEnd()));
+        if (StringUtils.hasText(query.getCreateTimeStart())) wrapper.ge(OperationLogRecord::getCreateTime, RequestDateTimeFormatter.parseToUtc(query.getCreateTimeStart()));
+        if (StringUtils.hasText(query.getCreateTimeEnd())) wrapper.le(OperationLogRecord::getCreateTime, RequestDateTimeFormatter.parseToUtc(query.getCreateTimeEnd()));
         return wrapper;
     }
 

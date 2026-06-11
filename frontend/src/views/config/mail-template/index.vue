@@ -556,12 +556,14 @@
         {
           prop: 'createTime',
           label: 'pages.config.mailTemplate.columns.createTime',
-          minWidth: 180
+          minWidth: 180,
+          sortable: true
         },
         {
           prop: 'updateTime',
           label: 'pages.config.mailTemplate.columns.updateTime',
-          minWidth: 180
+          minWidth: 180,
+          sortable: true
         },
         {
           prop: 'operation',

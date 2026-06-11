@@ -15,6 +15,8 @@ export interface BaseLogQuery {
   provinceName?: string
   cityName?: string
   traceId?: string
+  createTimeStart?: string
+  createTimeEnd?: string
 }
 
 export interface LoginLogQuery extends BaseLogQuery {
@@ -198,4 +200,8 @@ export function fetchDeleteApiLogs(ids: string[]) {
 
 export function fetchCleanApiLogs() {
   return request.del<boolean>({ url: '/api/log/api/clean' })
+}
+
+export function fetchApiLogHttpStatuses() {
+  return request.get<number[]>({ url: '/api/log/api/http-statuses' })
 }

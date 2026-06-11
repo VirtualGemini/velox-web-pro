@@ -1187,6 +1187,7 @@
             "provinceName": "Province",
             "cityName": "City",
             "traceId": "TraceId",
+            "recordTimeRange": "Record Time",
             "rangeSeparator": "to",
             "placeholders": {
               "startTime": "Start Time",
@@ -1255,7 +1256,7 @@
             "loginMethod": "Method",
             "failureMessage": "Failure Reason",
             "browserOs": "Browser/OS",
-            "eventTime": "Time"
+            "eventTime": "Event Time"
           },
           "detail": {
             "title": "Login Log Details",
@@ -1309,7 +1310,7 @@
             "actionName": "Action",
             "operationType": "Type",
             "requestUri": "URL",
-            "operationTime": "Time"
+            "operationTime": "Operation Time"
           },
           "detail": {
             "title": "Operation Log Details",
@@ -1359,7 +1360,7 @@
             "requestUri": "Path",
             "httpStatus": "HTTP",
             "businessCode": "Business Code",
-            "apiTime": "Time"
+            "apiTime": "Request Time"
           },
           "detail": {
             "title": "API Log Details",

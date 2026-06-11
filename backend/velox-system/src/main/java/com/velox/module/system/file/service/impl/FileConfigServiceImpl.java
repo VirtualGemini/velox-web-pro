@@ -228,9 +228,8 @@ public class FileConfigServiceImpl implements FileConfigService {
                 .ge(StrUtil.isNotBlank(pageReqVO.getUpdateTimeStart()), FileConfig::getUpdateTime,
                         RequestDateTimeFormatter.parseToUtc(pageReqVO.getUpdateTimeStart()))
                 .le(StrUtil.isNotBlank(pageReqVO.getUpdateTimeEnd()), FileConfig::getUpdateTime,
-                        RequestDateTimeFormatter.parseToUtc(pageReqVO.getUpdateTimeEnd()))
-                .orderByDesc(FileConfig::getCreateTime)
-                .orderByDesc(FileConfig::getUpdateTime);
+                        RequestDateTimeFormatter.parseToUtc(pageReqVO.getUpdateTimeEnd()));
+        wrapper.orderByDesc(FileConfig::getCreateTime).orderByDesc(FileConfig::getUpdateTime);
         Page<FileConfig> page = fileConfigMapper.selectPage(
                 new Page<>(pageReqVO.getPage(), pageReqVO.getSize()), wrapper);
         return PageResult.of(page.getTotal(), page.getCurrent(), page.getSize(),

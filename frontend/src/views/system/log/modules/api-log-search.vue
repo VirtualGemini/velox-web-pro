@@ -9,21 +9,21 @@
 </template>
 
 <script setup lang="ts">
-  import type { ApiLogQuery } from '@/api/log'
+  import { fetchApiLogHttpStatuses, type ApiLogQuery } from '@/api/log'
   import { HTTP_METHOD_OPTIONS, LOG_RESULT_OPTIONS } from '../constants'
 
   type ApiLogSearchForm = {
     requestUri?: string
     requestMethod?: string
     httpStatus?: number
-    businessCode?: string
     result?: 0 | 1
-    costTimeMin?: number
-    costTimeMax?: number
     username?: string
     clientIp?: string
-    traceId?: string
+    countryName?: string
+    provinceName?: string
+    cityName?: string
     apiTimeRange?: [string, string]
+    recordTimeRange?: [string, string]
   }
 
   interface Props {
@@ -45,6 +45,15 @@
     set: (value) => emit('update:modelValue', value)
   })
 
+  const httpStatusOptions = ref<{ label: string; value: number }[]>([])
+
+  async function loadHttpStatuses() {
+    const statuses = await fetchApiLogHttpStatuses()
+    httpStatusOptions.value = statuses.map((code) => ({ label: String(code), value: code }))
+  }
+
+  onMounted(loadHttpStatuses)
+
   const formItems = computed(() => [
     {
       label: 'pages.system.log.api.search.requestUri',
@@ -61,32 +70,14 @@
     {
       label: 'pages.system.log.api.search.httpStatus',
       key: 'httpStatus',
-      type: 'number',
-      props: { min: 100, max: 599, controlsPosition: 'right' }
-    },
-    {
-      label: 'pages.system.log.api.search.businessCode',
-      key: 'businessCode',
-      type: 'input',
-      clearable: true
+      type: 'select',
+      props: { options: httpStatusOptions.value, clearable: true, filterable: true }
     },
     {
       label: 'pages.system.log.common.search.result',
       key: 'result',
       type: 'select',
       props: { options: LOG_RESULT_OPTIONS, clearable: true }
-    },
-    {
-      label: 'pages.system.log.api.search.costTimeMin',
-      key: 'costTimeMin',
-      type: 'number',
-      props: { min: 0, controlsPosition: 'right' }
-    },
-    {
-      label: 'pages.system.log.api.search.costTimeMax',
-      key: 'costTimeMax',
-      type: 'number',
-      props: { min: 0, controlsPosition: 'right' }
     },
     {
       label: 'pages.system.log.common.search.username',
@@ -101,14 +92,39 @@
       clearable: true
     },
     {
-      label: 'pages.system.log.common.search.traceId',
-      key: 'traceId',
+      label: 'pages.system.log.common.search.countryName',
+      key: 'countryName',
+      type: 'input',
+      clearable: true
+    },
+    {
+      label: 'pages.system.log.common.search.provinceName',
+      key: 'provinceName',
+      type: 'input',
+      clearable: true
+    },
+    {
+      label: 'pages.system.log.common.search.cityName',
+      key: 'cityName',
       type: 'input',
       clearable: true
     },
     {
       label: 'pages.system.log.api.search.apiTimeRange',
       key: 'apiTimeRange',
+      type: 'datetimerange',
+      props: {
+        style: { width: '100%' },
+        clearable: true,
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+        startPlaceholder: 'pages.system.log.common.search.placeholders.startTime',
+        endPlaceholder: 'pages.system.log.common.search.placeholders.endTime',
+        rangeSeparator: 'pages.system.log.common.search.rangeSeparator'
+      }
+    },
+    {
+      label: 'pages.system.log.common.search.recordTimeRange',
+      key: 'recordTimeRange',
       type: 'datetimerange',
       props: {
         style: { width: '100%' },
@@ -131,15 +147,16 @@
       requestUri: params.requestUri,
       requestMethod: params.requestMethod,
       httpStatus: params.httpStatus,
-      businessCode: params.businessCode,
       result: params.result,
-      costTimeMin: params.costTimeMin,
-      costTimeMax: params.costTimeMax,
       username: params.username,
       clientIp: params.clientIp,
-      traceId: params.traceId,
+      countryName: params.countryName,
+      provinceName: params.provinceName,
+      cityName: params.cityName,
       apiTimeStart: params.apiTimeRange?.[0],
-      apiTimeEnd: params.apiTimeRange?.[1]
+      apiTimeEnd: params.apiTimeRange?.[1],
+      createTimeStart: params.recordTimeRange?.[0],
+      createTimeEnd: params.recordTimeRange?.[1]
     })
   }
 </script>

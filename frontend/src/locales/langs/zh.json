@@ -1187,6 +1187,7 @@
             "provinceName": "省份",
             "cityName": "城市",
             "traceId": "TraceId",
+            "recordTimeRange": "记录时间",
             "rangeSeparator": "至",
             "placeholders": {
               "startTime": "开始时间",
@@ -1255,7 +1256,7 @@
             "loginMethod": "方式",
             "failureMessage": "失败原因",
             "browserOs": "浏览器/系统",
-            "eventTime": "时间"
+            "eventTime": "事件时间"
           },
           "detail": {
             "title": "登录日志详情",
@@ -1309,7 +1310,7 @@
             "actionName": "操作",
             "operationType": "类型",
             "requestUri": "URL",
-            "operationTime": "时间"
+            "operationTime": "操作时间"
           },
           "detail": {
             "title": "操作日志详情",
@@ -1359,7 +1360,7 @@
             "requestUri": "路径",
             "httpStatus": "HTTP",
             "businessCode": "业务码",
-            "apiTime": "时间"
+            "apiTime": "请求时间"
           },
           "detail": {
             "title": "API 日志详情",

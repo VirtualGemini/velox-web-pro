@@ -285,6 +285,7 @@
           prop: 'size',
           label: 'pages.system.fileManage.columns.size',
           minWidth: 112,
+          sortable: true,
           formatter: (row: FileRecord) => formatFileSize(row.size)
         },
         {
@@ -315,6 +316,7 @@
           prop: 'uploadTime',
           label: 'pages.system.fileManage.columns.createTime',
           minWidth: 210,
+          sortable: true,
           formatter: (row: FileRecord) => row.uploadTime || '-'
         },
         {

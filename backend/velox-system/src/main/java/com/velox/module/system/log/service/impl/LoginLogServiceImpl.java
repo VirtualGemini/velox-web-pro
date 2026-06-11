@@ -105,6 +105,8 @@ public class LoginLogServiceImpl implements LoginLogService {
         eq(wrapper, LoginLogRecord::getTraceId, query.getTraceId());
         if (StringUtils.hasText(query.getEventTimeStart())) wrapper.ge(LoginLogRecord::getEventTime, RequestDateTimeFormatter.parseToUtc(query.getEventTimeStart()));
         if (StringUtils.hasText(query.getEventTimeEnd())) wrapper.le(LoginLogRecord::getEventTime, RequestDateTimeFormatter.parseToUtc(query.getEventTimeEnd()));
+        if (StringUtils.hasText(query.getCreateTimeStart())) wrapper.ge(LoginLogRecord::getCreateTime, RequestDateTimeFormatter.parseToUtc(query.getCreateTimeStart()));
+        if (StringUtils.hasText(query.getCreateTimeEnd())) wrapper.le(LoginLogRecord::getCreateTime, RequestDateTimeFormatter.parseToUtc(query.getCreateTimeEnd()));
         return wrapper;
     }
 

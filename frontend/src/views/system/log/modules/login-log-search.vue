@@ -16,15 +16,13 @@
     username?: string
     eventType?: string
     loginMethod?: string
-    mfaType?: string
     result?: 0 | 1
-    failureCode?: string
     clientIp?: string
     countryName?: string
     provinceName?: string
     cityName?: string
-    traceId?: string
     eventTimeRange?: [string, string]
+    recordTimeRange?: [string, string]
   }
 
   interface Props {
@@ -66,22 +64,10 @@
       props: { options: LOGIN_METHOD_OPTIONS, clearable: true }
     },
     {
-      label: 'pages.system.log.login.search.mfaType',
-      key: 'mfaType',
-      type: 'input',
-      clearable: true
-    },
-    {
       label: 'pages.system.log.common.search.result',
       key: 'result',
       type: 'select',
       props: { options: LOG_RESULT_OPTIONS, clearable: true }
-    },
-    {
-      label: 'pages.system.log.login.search.failureCode',
-      key: 'failureCode',
-      type: 'input',
-      clearable: true
     },
     {
       label: 'pages.system.log.common.search.clientIp',
@@ -108,14 +94,21 @@
       clearable: true
     },
     {
-      label: 'pages.system.log.common.search.traceId',
-      key: 'traceId',
-      type: 'input',
-      clearable: true
-    },
-    {
       label: 'pages.system.log.login.search.eventTimeRange',
       key: 'eventTimeRange',
+      type: 'datetimerange',
+      props: {
+        style: { width: '100%' },
+        clearable: true,
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+        startPlaceholder: 'pages.system.log.common.search.placeholders.startTime',
+        endPlaceholder: 'pages.system.log.common.search.placeholders.endTime',
+        rangeSeparator: 'pages.system.log.common.search.rangeSeparator'
+      }
+    },
+    {
+      label: 'pages.system.log.common.search.recordTimeRange',
+      key: 'recordTimeRange',
       type: 'datetimerange',
       props: {
         style: { width: '100%' },
@@ -138,16 +131,15 @@
       username: params.username,
       eventType: params.eventType,
       loginMethod: params.loginMethod,
-      mfaType: params.mfaType,
       result: params.result,
-      failureCode: params.failureCode,
       clientIp: params.clientIp,
       countryName: params.countryName,
       provinceName: params.provinceName,
       cityName: params.cityName,
-      traceId: params.traceId,
       eventTimeStart: params.eventTimeRange?.[0],
-      eventTimeEnd: params.eventTimeRange?.[1]
+      eventTimeEnd: params.eventTimeRange?.[1],
+      createTimeStart: params.recordTimeRange?.[0],
+      createTimeEnd: params.recordTimeRange?.[1]
     })
   }
 </script>

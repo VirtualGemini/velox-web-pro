@@ -100,13 +100,15 @@
   const currentRecord = ref<OperationLogRecord>()
   const searchForm = ref({
     moduleName: undefined,
-    actionName: undefined,
     operationType: undefined,
     username: undefined,
     result: undefined,
     clientIp: undefined,
-    traceId: undefined,
-    operationTimeRange: undefined as [string, string] | undefined
+    countryName: undefined,
+    provinceName: undefined,
+    cityName: undefined,
+    operationTimeRange: undefined as [string, string] | undefined,
+    recordTimeRange: undefined as [string, string] | undefined
   })
 
   const {
@@ -193,12 +195,20 @@
           prop: 'costTimeMs',
           label: 'pages.system.log.common.columns.costTime',
           minWidth: 110,
+          sortable: true,
           formatter: (row: OperationLogRecord) => formatCostTime(row.costTimeMs)
+        },
+        {
+          prop: 'operationTime',
+          label: 'pages.system.log.operation.columns.operationTime',
+          minWidth: 180,
+          sortable: true
         },
         {
           prop: 'createTime',
           label: 'pages.system.log.common.columns.createTime',
-          minWidth: 180
+          minWidth: 180,
+          sortable: true
         },
         {
           prop: 'operation',

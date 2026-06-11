@@ -109,14 +109,14 @@
     requestUri: undefined,
     requestMethod: undefined,
     httpStatus: undefined,
-    businessCode: undefined,
     result: undefined,
-    costTimeMin: undefined,
-    costTimeMax: undefined,
     username: undefined,
     clientIp: undefined,
-    traceId: undefined,
-    apiTimeRange: undefined as [string, string] | undefined
+    countryName: undefined,
+    provinceName: undefined,
+    cityName: undefined,
+    apiTimeRange: undefined as [string, string] | undefined,
+    recordTimeRange: undefined as [string, string] | undefined
   })
 
   const {
@@ -204,9 +204,21 @@
           prop: 'costTimeMs',
           label: 'pages.system.log.common.columns.costTime',
           minWidth: 110,
+          sortable: true,
           formatter: (row: ApiLogRecord) => formatCostTime(row.costTimeMs)
         },
-        { prop: 'createTime', label: 'pages.system.log.common.columns.createTime', minWidth: 180 },
+        {
+          prop: 'apiTime',
+          label: 'pages.system.log.api.columns.apiTime',
+          minWidth: 180,
+          sortable: true
+        },
+        {
+          prop: 'createTime',
+          label: 'pages.system.log.common.columns.createTime',
+          minWidth: 180,
+          sortable: true
+        },
         {
           prop: 'operation',
           label: 'pages.system.log.common.columns.operation',

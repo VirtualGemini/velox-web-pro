@@ -14,13 +14,15 @@
 
   type OperationLogSearchForm = {
     moduleName?: string
-    actionName?: string
     operationType?: string
     username?: string
     result?: 0 | 1
     clientIp?: string
-    traceId?: string
+    countryName?: string
+    provinceName?: string
+    cityName?: string
     operationTimeRange?: [string, string]
+    recordTimeRange?: [string, string]
   }
 
   interface Props {
@@ -50,12 +52,6 @@
       clearable: true
     },
     {
-      label: 'pages.system.log.operation.search.actionName',
-      key: 'actionName',
-      type: 'input',
-      clearable: true
-    },
-    {
       label: 'pages.system.log.operation.search.operationType',
       key: 'operationType',
       type: 'select',
@@ -80,14 +76,39 @@
       clearable: true
     },
     {
-      label: 'pages.system.log.common.search.traceId',
-      key: 'traceId',
+      label: 'pages.system.log.common.search.countryName',
+      key: 'countryName',
+      type: 'input',
+      clearable: true
+    },
+    {
+      label: 'pages.system.log.common.search.provinceName',
+      key: 'provinceName',
+      type: 'input',
+      clearable: true
+    },
+    {
+      label: 'pages.system.log.common.search.cityName',
+      key: 'cityName',
       type: 'input',
       clearable: true
     },
     {
       label: 'pages.system.log.operation.search.operationTimeRange',
       key: 'operationTimeRange',
+      type: 'datetimerange',
+      props: {
+        style: { width: '100%' },
+        clearable: true,
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+        startPlaceholder: 'pages.system.log.common.search.placeholders.startTime',
+        endPlaceholder: 'pages.system.log.common.search.placeholders.endTime',
+        rangeSeparator: 'pages.system.log.common.search.rangeSeparator'
+      }
+    },
+    {
+      label: 'pages.system.log.common.search.recordTimeRange',
+      key: 'recordTimeRange',
       type: 'datetimerange',
       props: {
         style: { width: '100%' },
@@ -108,14 +129,17 @@
     await searchBarRef.value.validate()
     emit('search', {
       moduleName: params.moduleName,
-      actionName: params.actionName,
       operationType: params.operationType,
       username: params.username,
       result: params.result,
       clientIp: params.clientIp,
-      traceId: params.traceId,
+      countryName: params.countryName,
+      provinceName: params.provinceName,
+      cityName: params.cityName,
       operationTimeStart: params.operationTimeRange?.[0],
-      operationTimeEnd: params.operationTimeRange?.[1]
+      operationTimeEnd: params.operationTimeRange?.[1],
+      createTimeStart: params.recordTimeRange?.[0],
+      createTimeEnd: params.recordTimeRange?.[1]
     })
   }
 </script>

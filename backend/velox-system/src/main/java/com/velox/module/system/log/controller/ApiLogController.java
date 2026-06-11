@@ -47,6 +47,13 @@ public class ApiLogController {
         return Result.ok(apiLogService.list(query));
     }
 
+    @Operation(summary = "openapi.system.log.api.http_statuses.summary")
+    @RequirePermission("system:log:api:query")
+    @GetMapping("/http-statuses")
+    public Result<List<Integer>> httpStatuses() {
+        return Result.ok(apiLogService.getHttpStatuses());
+    }
+
     @Operation(summary = "openapi.system.log.api.get.summary")
     @RequirePermission("system:log:api:query")
     @GetMapping("/{id}")

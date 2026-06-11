@@ -289,12 +289,14 @@
       prop: 'meta.createTime',
       label: 'pages.system.menu.columns.createTime',
       minWidth: 210,
+      sortable: true,
       formatter: (row: AppRouteRecord) => row.meta?.createTime || '-'
     },
     {
       prop: 'meta.updateTime',
       label: 'pages.system.menu.columns.updateTime',
       minWidth: 210,
+      sortable: true,
       formatter: (row: AppRouteRecord) => row.meta?.updateTime || '-'
     },
     {

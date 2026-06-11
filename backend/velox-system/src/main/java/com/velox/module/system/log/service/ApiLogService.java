@@ -13,4 +13,5 @@ public interface ApiLogService {
     boolean deleteBatch(List<String> ids);
     boolean clean();
     void record(ApiLogRecord record);
+    List<Integer> getHttpStatuses();
 }

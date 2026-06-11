@@ -6,6 +6,8 @@ public class LogPageQuery {
     private Long size;
     private Long pageNo;
     private Long pageSize;
+    private String createTimeStart;
+    private String createTimeEnd;
 
     public long page() {
         Long value = current != null ? current : pageNo;
@@ -25,4 +27,8 @@ public class LogPageQuery {
     public void setPageNo(Long pageNo) { this.pageNo = pageNo; }
     public Long getPageSize() { return pageSize; }
     public void setPageSize(Long pageSize) { this.pageSize = pageSize; }
+    public String getCreateTimeStart() { return createTimeStart; }
+    public void setCreateTimeStart(String createTimeStart) { this.createTimeStart = createTimeStart; }
+    public String getCreateTimeEnd() { return createTimeEnd; }
+    public void setCreateTimeEnd(String createTimeEnd) { this.createTimeEnd = createTimeEnd; }
 }

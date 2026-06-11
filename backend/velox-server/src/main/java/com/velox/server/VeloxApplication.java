@@ -36,7 +36,7 @@ public class VeloxApplication {
                 Application : {}
                 Port        : {}
                 Profile     : {}
-                GitHub      : https://github.com/VirtualGemini/velox-pro
+                GitHub      : https://github.com/VirtualGemini/velox-web-pro
                 ------------------------------------------------------------------------
                 Total time  : {} ms
                 Finished at : {}

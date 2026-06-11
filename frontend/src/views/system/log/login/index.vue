@@ -101,15 +101,13 @@
     username: undefined,
     eventType: undefined,
     loginMethod: undefined,
-    mfaType: undefined,
     result: undefined,
-    failureCode: undefined,
     clientIp: undefined,
     countryName: undefined,
     provinceName: undefined,
     cityName: undefined,
-    traceId: undefined,
-    eventTimeRange: undefined as [string, string] | undefined
+    eventTimeRange: undefined as [string, string] | undefined,
+    recordTimeRange: undefined as [string, string] | undefined
   })
 
   const {
@@ -144,12 +142,6 @@
           minWidth: 130,
           formatter: (row: LoginLogRecord) =>
             formatEnumLabel('pages.system.log.login.eventTypes', row.eventType)
-        },
-        {
-          prop: 'loginMethod',
-          label: 'pages.system.log.login.columns.loginMethod',
-          minWidth: 130,
-          formatter: (row: LoginLogRecord) => formatLoginMethod(row.loginMethod)
         },
         {
           prop: 'result',
@@ -191,7 +183,18 @@
           formatter: (row: LoginLogRecord) =>
             `${formatFallback(row.browser)} / ${formatFallback(row.os)}`
         },
-        { prop: 'createTime', label: 'pages.system.log.common.columns.createTime', minWidth: 180 },
+        {
+          prop: 'eventTime',
+          label: 'pages.system.log.login.columns.eventTime',
+          minWidth: 180,
+          sortable: true
+        },
+        {
+          prop: 'createTime',
+          label: 'pages.system.log.common.columns.createTime',
+          minWidth: 180,
+          sortable: true
+        },
         {
           prop: 'operation',
           label: 'pages.system.log.common.columns.operation',

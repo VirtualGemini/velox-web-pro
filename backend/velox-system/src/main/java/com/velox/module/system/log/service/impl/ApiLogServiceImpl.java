@@ -83,6 +83,21 @@ public class ApiLogServiceImpl implements ApiLogService {
         apiLogMapper.insert(record);
     }
 
+    @Override
+    public List<Integer> getHttpStatuses() {
+        return apiLogMapper.selectList(new LambdaQueryWrapper<ApiLogRecord>()
+                        .select(ApiLogRecord::getHttpStatus)
+                        .eq(ApiLogRecord::getDeleted, 0)
+                        .isNotNull(ApiLogRecord::getHttpStatus)
+                        .groupBy(ApiLogRecord::getHttpStatus)
+                        .orderByAsc(ApiLogRecord::getHttpStatus))
+                .stream()
+                .map(ApiLogRecord::getHttpStatus)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
     private LambdaQueryWrapper<ApiLogRecord> wrapper(ApiLogQuery query) {
         LambdaQueryWrapper<ApiLogRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ApiLogRecord::getDeleted, 0);
@@ -102,6 +117,8 @@ public class ApiLogServiceImpl implements ApiLogService {
         if (query.getCostTimeMax() != null) wrapper.le(ApiLogRecord::getCostTimeMs, query.getCostTimeMax());
         if (StringUtils.hasText(query.getApiTimeStart())) wrapper.ge(ApiLogRecord::getApiTime, RequestDateTimeFormatter.parseToUtc(query.getApiTimeStart()));
         if (StringUtils.hasText(query.getApiTimeEnd())) wrapper.le(ApiLogRecord::getApiTime, RequestDateTimeFormatter.parseToUtc(query.getApiTimeEnd()));
+        if (StringUtils.hasText(query.getCreateTimeStart())) wrapper.ge(ApiLogRecord::getCreateTime, RequestDateTimeFormatter.parseToUtc(query.getCreateTimeStart()));
+        if (StringUtils.hasText(query.getCreateTimeEnd())) wrapper.le(ApiLogRecord::getCreateTime, RequestDateTimeFormatter.parseToUtc(query.getCreateTimeEnd()));
         return wrapper;
     }
 

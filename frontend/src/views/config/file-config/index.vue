@@ -961,12 +961,14 @@
         {
           prop: 'createTime',
           label: 'pages.config.fileConfig.columns.createTime',
-          minWidth: 210
+          minWidth: 210,
+          sortable: true
         },
         {
           prop: 'updateTime',
           label: 'pages.config.fileConfig.columns.updateTime',
-          minWidth: 210
+          minWidth: 210,
+          sortable: true
         },
         {
           prop: 'operation',
