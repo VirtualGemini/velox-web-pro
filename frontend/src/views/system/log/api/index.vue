@@ -29,6 +29,7 @@
             </ElButton>
             <ElButton
               v-if="hasAuth('system:log:api:clean')"
+              class="velox-batch-clean"
               type="warning"
               plain
               @click="handleClean"
@@ -223,7 +224,7 @@
           prop: 'operation',
           label: 'pages.system.log.common.columns.operation',
           fixed: 'right',
-          width: 90,
+          width: 110,
           formatter: (row: ApiLogRecord) =>
             h(
               'div',

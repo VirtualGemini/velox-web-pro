@@ -474,8 +474,9 @@ html.dark .el-card {
   }
 }
 
-// 批量注销按钮（warning plain）hover/focus：与批量删除同款柔和透明，仅换为警告色
-.el-button.velox-batch-cancel.is-plain:not(.is-disabled) {
+// 批量注销/清空按钮（warning plain）hover/focus：与批量删除同款柔和透明，仅换为警告色
+.el-button.velox-batch-cancel.is-plain:not(.is-disabled),
+.el-button.velox-batch-clean.is-plain:not(.is-disabled) {
   &:hover,
   &:focus {
     color: var(--el-color-warning) !important;
