@@ -131,7 +131,7 @@
         {
           prop: 'moduleName',
           label: 'pages.system.log.operation.columns.moduleName',
-          minWidth: 140
+          minWidth: 200
         },
         {
           prop: 'actionName',
@@ -168,7 +168,7 @@
         {
           prop: 'ipLocation',
           label: 'pages.system.log.common.columns.location',
-          minWidth: 160,
+          minWidth: 250,
           formatter: (row: OperationLogRecord) =>
             h(LocationCell, {
               ipLocation: row.ipLocation,
@@ -180,7 +180,7 @@
         {
           prop: 'clientIp',
           label: 'pages.system.log.common.columns.clientIp',
-          minWidth: 140,
+          minWidth: 275,
           formatter: (row: OperationLogRecord) => formatFallback(row.clientIp)
         },
         {

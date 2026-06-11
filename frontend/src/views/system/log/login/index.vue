@@ -163,7 +163,7 @@
         {
           prop: 'ipLocation',
           label: 'pages.system.log.common.columns.location',
-          minWidth: 160,
+          minWidth: 250,
           formatter: (row: LoginLogRecord) =>
             h(LocationCell, {
               ipLocation: row.ipLocation,
@@ -175,7 +175,7 @@
         {
           prop: 'clientIp',
           label: 'pages.system.log.common.columns.clientIp',
-          minWidth: 140,
+          minWidth: 275,
           formatter: (row: LoginLogRecord) => formatFallback(row.clientIp)
         },
         {
